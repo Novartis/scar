@@ -80,7 +80,7 @@ The output folder contains four files:
 
 ## Contributing
 
-- If you'd like to contribute, please contact Caibin (caibin.sheng@novartis.com) or Antoine (antoine.deweck@novartis.com).
+- If you'd like to contribute, please contact Caibin (caibin.sheng@novartis.com).
 - Please use the [issues](https://github.com/CaibinSh/scAR/issues) to submit bug reports.
 
 ## License
