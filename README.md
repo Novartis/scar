@@ -76,7 +76,7 @@ The output folder contains four files:
 
 ## Maintainers
 
-[@Caibin](caibin.sheng@novartis.com)
+[@Caibin](https://github.com/CaibinSh)
 
 ## Contributing
 
