@@ -80,7 +80,8 @@ The output folder contains four files:
 
 ## License
 
-This project is licensed under the terms of [License](LICENSE.txt).
+This project is licensed under the terms of [License](LICENSE.txt).  
+Copyright 2022 Novartis International AG.
 
 ## Reference
 
