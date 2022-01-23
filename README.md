@@ -16,7 +16,6 @@
 - [Installation](#Installation)
 - [Usage](#Usage)
 - [Dependencies](#Dependencies)
-- [Maintainers](#Maintainers)
 - [Contributing](#Contributing)
 - [License](#License)
 - [Reference](#Reference)
@@ -73,10 +72,6 @@ The output folder contains four files:
 [![torchaudio 0.8.0](https://img.shields.io/badge/torchaudio-0.8.0-yellow.svg)](https://pytorch.org/audio/stable/index.html)
 [![tqdm 4.62.3](https://img.shields.io/badge/tqdm-4.62.3-orange.svg)](https://github.com/tqdm/tqdm)
 [![scikit-learn 1.0.1](https://img.shields.io/badge/scikit_learn-1.0.1-green.svg)](https://scikit-learn.org/)
-
-## Maintainers
-
-[@Caibin](https://github.com/CaibinSh)
 
 ## Contributing
 
