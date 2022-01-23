@@ -22,13 +22,23 @@ setup(
     include_package_data=True,
     url='https://bitbucket.prd.nibr.novartis.net/users/shengca1/repos/obfx-fbdenoiser/browse',
     license='GPL v3',
-    # install_requires=[
-    #     "pytorch >= 1.8",
-    #     "pandas"
-    # ],
+    install_requires=[
+        "pytorch",
+        "pandas",
+        "python",
+        "cudatoolkit",
+        "torchvision",
+        "torchaudio",
+        "tqdm",
+        "gpyopt",
+        "seaborn",
+        "tensorboard",
+        "scikit-learn"        
+    ],
     classifiers=[
-         "Programming Language :: Python :: 3",
-         "License :: OSI Approved :: MIT License",
-         "Operating System :: OS Independent",],
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: Linux",
+        "Topic :: Scientific :: Artificial Intelligence"],
     zip_safe=False,
 )
