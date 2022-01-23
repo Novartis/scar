@@ -77,8 +77,6 @@ The output folder contains four files:
 ## Maintainers
 
 [@Caibin](caibin.sheng@novartis.com)
-[@Gang](gang-6.li@novartis.com)
-[@Antoine](antoine.deweck@novartis.com)
 
 ## Contributing
 
