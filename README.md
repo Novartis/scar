@@ -18,14 +18,15 @@
 - [Dependencies](#Dependencies)
 - [Maintainers](#Maintainers)
 - [Contributing](#Contributing)
+- [License](#License)
 - [Reference](#Reference)
 
 ## Installation
 
-Clone this repository (will be in GitHub after OAK approval),
+Clone this repository,
 
 ```sh
-$ git clone ssh://git@bitbucket.prd.nibr.novartis.net/ods/ods-scar.git
+$ git clone https://github.com/CaibinSh/scAR.git
 ```
 
 To install the dependencies, create a conda environment:
@@ -84,10 +85,13 @@ The output folder contains four files:
 - If you'd like to contribute, please contact Caibin (caibin.sheng@novartis.com) or Antoine (antoine.deweck@novartis.com).
 - Please use the [issues](https://github.com/CaibinSh/scAR/issues) to submit bug reports.
 
+## License
+
+This project is licensed under the terms of [License](LICENSE.txt).
 
 ## Reference
 
-If you use scAR in your research, please consider citing,
+If you use scAR in your research, please consider citing our [manuscript](https://doi.org/10.1101/2022.01.14.476312),
 
 ```
 @article {Sheng2022.01.14.476312,
