@@ -8,8 +8,8 @@ import torch.nn as nn
 import torch
 from torch.distributions import Normal, kl_divergence, Multinomial, Binomial, Poisson
 
-from .vae import VAE
-from .loss_functions import loss_fn
+from ._vae import VAE
+from ._loss_functions import loss_fn
 from tqdm import tqdm
 
 #########################################################################

@@ -2,7 +2,7 @@ from scipy import stats
 import torch.nn as nn
 import torch
 from torch.distributions import Normal, kl_divergence, Multinomial, Binomial, Poisson
-from .activation_functions import mytanh, hnormalization, mySoftplus
+from ._activation_functions import mytanh, hnormalization, mySoftplus
 
 #########################################################################
 ## Variational antoencoder

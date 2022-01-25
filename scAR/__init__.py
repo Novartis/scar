@@ -1,4 +1,4 @@
 __version__ = '0.1.0'
 
-from scAR import data_loader
-from scAR.scAR import run_model
+from scAR import _data_loader as dataloader
+from scAR._scAR import run_model

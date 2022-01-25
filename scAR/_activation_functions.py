@@ -1,8 +1,4 @@
-# import numpy as np
 import torch
-# import torch.nn as nn
-# from torch.autograd import Function
-# from torch.distributions import Normal, kl_divergence, Multinomial, Binomial, Poisson
 
 def mytanh(x):
     a = x.exp()

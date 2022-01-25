@@ -9,10 +9,10 @@ import os, sys
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from . import data_loader
-from .vae import VAE
-from .loss_functions import loss_fn
-from .helper_functions import (histgram_noise_ratio,  get_correlation_btn_native_ambient,
+from . import _data_loader as dataloader
+from ._vae import VAE
+from ._loss_functions import loss_fn
+from ._helper_functions import (histgram_noise_ratio,  get_correlation_btn_native_ambient,
                               plt_correlation_btn_native_ambient, assignment_accuracy,
                               naive_assignment_accuracy, plot_a_sample)
 
@@ -271,7 +271,7 @@ def main():
     empty_profile.info(max_cols=10)
     
     print('===========================================\n  Loading data to dataloader...')
-    train_set, val_set, total_set = data_loader.get_dataset(count_matrix.values, empty_profile.values, split=0.002, batch_size=batch_size)
+    train_set, val_set, total_set = dataloader.get_dataset(count_matrix.values, empty_profile.values, split=0.002, batch_size=batch_size)
 
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
