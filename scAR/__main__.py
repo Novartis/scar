@@ -46,49 +46,49 @@ def main():
     print('empty_profile_path: ', empty_profile_path)
     print('TensorBoard path: ', TensorBoard)
     
-#     # Read data
-#     print('===========================================\n  Reading data...')
-#     print('-------------------------------------------')
-#     count_matrix = pd.read_pickle(count_matrix_path)
-#     count_matrix = count_matrix.fillna(0) # replace missing values with zeros
-#     print('  ... count_matrix:')
-#     count_matrix.info(max_cols=10)
+    # Read data
+    print('===========================================\n  Reading data...')
+    print('-------------------------------------------')
+    count_matrix = pd.read_pickle(count_matrix_path)
+    count_matrix = count_matrix.fillna(0) # replace missing values with zeros
+    print('  ... count_matrix:')
+    count_matrix.info(max_cols=10)
     
-#     if args.empty_profile:
-#         empty_profile = pd.read_pickle(empty_profile_path)
-#         print(' ... calculate empty profile using empty droplets')
-#         assert (empty_profile.index == count_matrix.columns).all()        
-#     else:
-#         empty_profile = count_matrix.sum(axis=0)/count_matrix.sum().sum()
-#         empty_profile = empty_profile.to_frame()
-#         print(' ... calculate empty profile using cell-containing droplets')
+    if args.empty_profile:
+        empty_profile = pd.read_pickle(empty_profile_path)
+        print(' ... calculate empty profile using empty droplets')
+        assert (empty_profile.index == count_matrix.columns).all()        
+    else:
+        empty_profile = count_matrix.sum(axis=0)/count_matrix.sum().sum()
+        empty_profile = empty_profile.to_frame()
+        print(' ... calculate empty profile using cell-containing droplets')
         
-#     print('-------------------------------------------')
-#     print(' ... empty_profile:')
-#     empty_profile = empty_profile.fillna(0) # replace missing values with zeros
-#     empty_profile.info(max_cols=10)
+    print('-------------------------------------------')
+    print(' ... empty_profile:')
+    empty_profile = empty_profile.fillna(0) # replace missing values with zeros
+    empty_profile.info(max_cols=10)
     
-#     print('===========================================\n  Loading data to dataloader...')
-#     train_set, val_set, total_set = dataloader.get_dataset(count_matrix.values, empty_profile.values, split=0.002, batch_size=batch_size)
+    print('===========================================\n  Loading data to dataloader...')
+    train_set, val_set, total_set = dataloader.get_dataset(count_matrix.values, empty_profile.values, split=0.002, batch_size=batch_size)
 
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
     # Run model
-    scARObj = model(raw_count = count_matrix_path,
-                    empty_profile = empty_profile_path,
+    scARObj = model(train_set,
+                    val_set,
+                    total_set,
+                    num_input_feature=count_matrix.shape[1],
                     NN_layer1=NN_layer1,
                     NN_layer2=NN_layer2,
                     latent_space=latent_space,
                     scRNAseq_tech=scRNAseq_tech)
-        
-    scARObj.train(batch_size=batch_size,
-                  epochs=epochs,
+    
+    scARObj.train(epochs=epochs,
                   plot_every_epoch=plot_every_epoch,
+                  batch_size=batch_size,
                   TensorBoard=TensorBoard,
                   save_model=save_model)
-    
-    scARObj.inference()
     
     print('===========================================\n  Saving results...')
     output_path01, output_path02, output_path03, output_path04 = os.path.join(output_dir, f'denoised_counts.pickle'), os.path.join(output_dir, f'BayesFactor.pickle'), os.path.join(output_dir, f'native_frequency.pickle'), os.path.join(output_dir, f'noise_ratio.pickle')

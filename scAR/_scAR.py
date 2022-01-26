@@ -3,8 +3,7 @@ import numpy as np
 import os, sys
 import torch
 from torch.utils.tensorboard import SummaryWriter
-from typing import Optional, Union
-from . import _data_loader as dataloader
+
 from ._vae import VAE
 from ._loss_functions import loss_fn
 from ._helper_functions import (histgram_noise_ratio,  get_correlation_btn_native_ambient,
@@ -40,44 +39,27 @@ class model():
     """
 
     def __init__(self,
-                 raw_count: Union[str, np.ndarray],
-                 empty_profile: Optional[Union[str, np.ndarray]] = None,
+                 train_set,
+                 val_set,
+                 total_set,
+                 num_input_feature: int=99,
                  NN_layer1: int=150,
                  NN_layer2: int=100,
                  latent_space: int=15,
                  scRNAseq_tech: str="scRNAseq",
                 ):
-
-        if isinstance(raw_count, str):
-            raw_count = pd.read_pickle(raw_count)
-            raw_count = raw_count.fillna(0).values # replace missing values with zeros
-        elif isinstance(raw_count, np.ndarray):
-            pass
-        else:
-            raise TypeError("Expecting str or np.array object, but get a {}".format(type(raw_count)))
-
-        if isinstance(empty_profile, str):
-            empty_profile = pd.read_pickle(empty_profile)
-            empty_profile = empty_profile.fillna(0).values # replace missing values with zeros
-        elif isinstance(empty_profile, np.ndarray):
-            pass
-        elif not empty_profile:
-            print(' ... Calculate empty profile using cell-containing droplets')
-            empty_profile = np.sum(raw_count, axis=0)/np.sum(raw_count)       
-        else:
-            raise TypeError("Expecting str / np.array / None, but get a {}".format(type(empty_profile)))
-            
-        self.raw_count = raw_count
-        self.empty_profile = empty_profile
-        self.num_input_feature = len(empty_profile)
+        self.train_set = train_set
+        self.val_set = val_set
+        self.total_set = total_set
+        self.num_input_feature = num_input_feature
         self.NN_layer1 = NN_layer1
         self.NN_layer2 = NN_layer2
         self.latent_space = latent_space
         self.scRNAseq_tech = scRNAseq_tech
-        
+        self.n_batch_train = len(train_set)
+        self.n_batch_val = len(val_set)
+
     def train(self,
-              batch_size: int=64,
-              split=0.002,
               kld_weight: float=1e-5,
               lr: float=1e-3,
               lr_step_size: int=5,
@@ -86,13 +68,9 @@ class model():
               reconstruction_weight: float=1,
               dropout_prob: float=0,
               plot_every_epoch: int=50,
+              batch_size: int=64,                                                                                                
               TensorBoard: bool=False,
               save_model: bool=False):
-        
-        train_set, val_set, self.total_set = dataloader.get_dataset(self.raw_count, self.empty_profile, split=split, batch_size=batch_size)
-        self.n_batch_train = len(train_set)
-        self.n_batch_val = len(val_set)
-        self.batch_size = batch_size
         
         # TensorBoard writer
         if TensorBoard:
@@ -128,7 +106,7 @@ class model():
                 train_recon_loss = 0
 
                 VAE_model.train()
-                for x_batch, ambient_freq in train_set:
+                for x_batch, ambient_freq in self.train_set:
 
                     optim.zero_grad()
                     z, dec_nr, dec_prob,  mu, var = VAE_model(x_batch)
@@ -160,7 +138,7 @@ class model():
                     val_recon_loss = 0
 
                     VAE_model.eval()
-                    for x_batch_val, ambient_freq_val in val_set:
+                    for x_batch_val, ambient_freq_val in self.val_set:
 
                         z_val, dec_nr_val, dec_prob_val,  mu_val, var_val = VAE_model(x_batch_val)
                         recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(x_batch_val, dec_nr_val, dec_prob_val, mu_val, var_val, ambient_freq_val,reconstruction_weight=reconstruction_weight, kld_weight=kld_weight)
@@ -210,12 +188,11 @@ class model():
 
     # Inference
     @torch.no_grad()
-    def inference(self):
+    def inference(self, batch_size):
         
         print('===========================================\n  Inferring .....')
         num_input_feature = self.num_input_feature
         sample_size = self.total_set.dataset.tensors[0].shape[0]
-        batch_size = self.batch_size
         
         self.native_counts = np.empty([sample_size, num_input_feature])
         self.bayesfactor = np.empty([sample_size, num_input_feature])
