@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import os, sys
+import os, sys, time
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from typing import Optional, Union
@@ -114,8 +114,7 @@ class model():
 
         # Run training
         print('===========================================\n  Training.....')
-
-
+        training_start_time = time.time()
         with std_out_err_redirect_tqdm() as orig_stdout:
                         
             for epoch in tqdm(range(epochs), file=orig_stdout, dynamic_ncols=True): # tqdm needs the original stdout and dynamic_ncols=True to autodetect console width
@@ -207,6 +206,7 @@ class model():
             writer.close()
         
         self.trained_model = VAE_model
+        self.runtime = time.time() - training_start_time
 
     # Inference
     @torch.no_grad()

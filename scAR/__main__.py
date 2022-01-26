@@ -46,31 +46,6 @@ def main():
     print('empty_profile_path: ', empty_profile_path)
     print('TensorBoard path: ', TensorBoard)
     
-#     # Read data
-#     print('===========================================\n  Reading data...')
-#     print('-------------------------------------------')
-#     count_matrix = pd.read_pickle(count_matrix_path)
-#     count_matrix = count_matrix.fillna(0) # replace missing values with zeros
-#     print('  ... count_matrix:')
-#     count_matrix.info(max_cols=10)
-    
-#     if args.empty_profile:
-#         empty_profile = pd.read_pickle(empty_profile_path)
-#         print(' ... calculate empty profile using empty droplets')
-#         assert (empty_profile.index == count_matrix.columns).all()        
-#     else:
-#         empty_profile = count_matrix.sum(axis=0)/count_matrix.sum().sum()
-#         empty_profile = empty_profile.to_frame()
-#         print(' ... calculate empty profile using cell-containing droplets')
-        
-#     print('-------------------------------------------')
-#     print(' ... empty_profile:')
-#     empty_profile = empty_profile.fillna(0) # replace missing values with zeros
-#     empty_profile.info(max_cols=10)
-    
-#     print('===========================================\n  Loading data to dataloader...')
-#     train_set, val_set, total_set = dataloader.get_dataset(count_matrix.values, empty_profile.values, split=0.002, batch_size=batch_size)
-
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
