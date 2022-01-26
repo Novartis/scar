@@ -13,7 +13,7 @@ setup(
     description="single cell Ambient Remover (scAR): remove ambient signals for single-cell omics data",
     packages=find_packages(),
     entry_points = {
-        'console_scripts': ['scar=scAR._scAR:main'],},
+        'console_scripts': ['scar=scAR.__main__:main'],},
     include_package_data=True,
     url='https://github.com/CaibinSh/scAR',
     license='MIT',
