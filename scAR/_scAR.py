@@ -4,7 +4,7 @@ import os, sys, time
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from typing import Optional, Union
-from . import _data_loader as dataloader
+from sklearn.model_selection import train_test_split
 from ._vae import VAE
 from ._loss_functions import loss_fn
 from ._helper_functions import (histgram_noise_ratio,  get_correlation_btn_native_ambient,
@@ -62,22 +62,27 @@ class model():
         elif isinstance(empty_profile, np.ndarray):
             pass
         elif not empty_profile:
-            print(' ... Calculate empty profile using cell-containing droplets')
+            print(' ... Evaluate empty profile from cells')
             empty_profile = np.sum(raw_count, axis=0)/np.sum(raw_count)       
         else:
             raise TypeError("Expecting str / np.array / None, but get a {}".format(type(empty_profile)))
-            
+        
+        if empty_profile.squeeze().ndim == 1:
+            empty_profile = empty_profile.squeeze().reshape(1,-1).repeat(raw_count.shape[0], axis=0)
+        
         self.raw_count = raw_count
         self.empty_profile = empty_profile
-        self.num_input_feature = len(empty_profile)
+        self.num_input_feature = raw_count.shape[1]
         self.NN_layer1 = NN_layer1
         self.NN_layer2 = NN_layer2
         self.latent_space = latent_space
         self.scRNAseq_tech = scRNAseq_tech
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         
     def train(self,
               batch_size: int=64,
-              split=0.002,
+              train_size: float=0.998,
+              shuffle: bool=True,
               kld_weight: float=1e-5,
               lr: float=1e-3,
               lr_step_size: int=5,
@@ -89,9 +94,21 @@ class model():
               TensorBoard: bool=False,
               save_model: bool=False):
         
-        train_set, val_set, self.total_set = dataloader.get_dataset(self.raw_count, self.empty_profile, split=split, batch_size=batch_size)
-        self.n_batch_train = len(train_set)
-        self.n_batch_val = len(val_set)
+        list_IDs = list(range(self.raw_count.shape[0]))
+        train_IDs, test_IDs = train_test_split(list_IDs, train_size=train_size)
+
+        # Generators
+        training_set = UMIDataset(self.raw_count, self.empty_profile, train_IDs)
+        training_generator = torch.utils.data.DataLoader(training_set, batch_size=batch_size, shuffle=shuffle)
+
+        val_set = UMIDataset(self.raw_count, self.empty_profile, test_IDs)
+        val_generator = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=shuffle)
+
+        total_set = UMIDataset(self.raw_count, self.empty_profile, list_IDs)
+        self.total_generator = torch.utils.data.DataLoader(total_set, batch_size=batch_size, shuffle=False)
+
+        self.n_batch_train = len(training_generator)
+        self.n_batch_val = len(val_generator)
         self.batch_size = batch_size
         
         # TensorBoard writer
@@ -127,7 +144,7 @@ class model():
                 train_recon_loss = 0
 
                 VAE_model.train()
-                for x_batch, ambient_freq in train_set:
+                for x_batch, ambient_freq in training_generator:
 
                     optim.zero_grad()
                     z, dec_nr, dec_prob,  mu, var = VAE_model(x_batch)
@@ -159,7 +176,7 @@ class model():
                     val_recon_loss = 0
 
                     VAE_model.eval()
-                    for x_batch_val, ambient_freq_val in val_set:
+                    for x_batch_val, ambient_freq_val in val_generator:
 
                         z_val, dec_nr_val, dec_prob_val,  mu_val, var_val = VAE_model(x_batch_val)
                         recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(x_batch_val, dec_nr_val, dec_prob_val, mu_val, var_val, ambient_freq_val,reconstruction_weight=reconstruction_weight, kld_weight=kld_weight)
@@ -214,7 +231,7 @@ class model():
         
         print('===========================================\n  Inferring .....')
         num_input_feature = self.num_input_feature
-        sample_size = self.total_set.dataset.tensors[0].shape[0]
+        sample_size = self.raw_count.shape[0]
         batch_size = self.batch_size
         
         self.native_counts = np.empty([sample_size, num_input_feature])
@@ -223,7 +240,7 @@ class model():
         self.noise_ratio = np.empty([sample_size, 1])
         i = 0
 
-        for x_batch_tot, ambient_freq_tot in self.total_set:
+        for x_batch_tot, ambient_freq_tot in self.total_generator:
 
             minibatch_size = x_batch_tot.shape[0] # if not last batch, equals to batch size
 
@@ -234,3 +251,26 @@ class model():
             self.noise_ratio[i*batch_size:i*batch_size + minibatch_size,:] = noise_ratio_batch.cpu().numpy()
 
             i += 1
+
+            
+class UMIDataset(torch.utils.data.Dataset):
+    'Characterizes dataset for PyTorch'
+    
+    def __init__(self, raw_count, empty_profile, list_IDs):
+        'Initialization'
+        self.raw_count = raw_count
+        self.empty_profile = empty_profile
+        self.list_IDs = list_IDs
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        
+    def __len__(self):
+        'Denotes the total number of samples'
+        return len(self.list_IDs)
+    
+    def __getitem__(self, index):
+        'Generates one sample of data'
+        # Select sample
+        ID = self.list_IDs[index]
+        X1 = torch.tensor(self.raw_count[ID,:], dtype=torch.float32, device=self.device)
+        X2 = torch.tensor(self.empty_profile[ID,:], dtype=torch.float32, device=self.device)
+        return X1, X2
