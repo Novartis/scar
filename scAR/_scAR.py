@@ -70,14 +70,16 @@ class model():
         if empty_profile.squeeze().ndim == 1:
             empty_profile = empty_profile.squeeze().reshape(1,-1).repeat(raw_count.shape[0], axis=0)
         
-        self.raw_count = raw_count
-        self.empty_profile = empty_profile
         self.num_input_feature = raw_count.shape[1]
         self.NN_layer1 = NN_layer1
         self.NN_layer2 = NN_layer2
         self.latent_space = latent_space
         self.scRNAseq_tech = scRNAseq_tech
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        # Loading numpy to tensor on GPU
+        self.raw_count = torch.from_numpy(raw_count).int().to(self.device)
+        self.empty_profile = torch.from_numpy(empty_profile).float().to(self.device)
         
     def train(self,
               batch_size: int=64,
@@ -96,7 +98,7 @@ class model():
         
         list_IDs = list(range(self.raw_count.shape[0]))
         train_IDs, test_IDs = train_test_split(list_IDs, train_size=train_size)
-
+        
         # Generators
         training_set = UMIDataset(self.raw_count, self.empty_profile, train_IDs)
         training_generator = torch.utils.data.DataLoader(training_set, batch_size=batch_size, shuffle=shuffle)
@@ -145,7 +147,7 @@ class model():
 
                 VAE_model.train()
                 for x_batch, ambient_freq in training_generator:
-
+                    
                     optim.zero_grad()
                     z, dec_nr, dec_prob,  mu, var = VAE_model(x_batch)
                     recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(x_batch, dec_nr, dec_prob, mu, var, ambient_freq, reconstruction_weight=reconstruction_weight, kld_weight=kld_weight)
@@ -177,7 +179,7 @@ class model():
 
                     VAE_model.eval()
                     for x_batch_val, ambient_freq_val in val_generator:
-
+                                               
                         z_val, dec_nr_val, dec_prob_val,  mu_val, var_val = VAE_model(x_batch_val)
                         recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(x_batch_val, dec_nr_val, dec_prob_val, mu_val, var_val, ambient_freq_val,reconstruction_weight=reconstruction_weight, kld_weight=kld_weight)
                         val_tot_loss += loss_minibatch.detach().item()
@@ -241,7 +243,7 @@ class model():
         i = 0
 
         for x_batch_tot, ambient_freq_tot in self.total_generator:
-
+            
             minibatch_size = x_batch_tot.shape[0] # if not last batch, equals to batch size
 
             native_counts_batch, bayesfactor_batch, native_frequencies_batch, noise_ratio_batch = self.trained_model.inference(x_batch_tot, ambient_freq_tot[0,:])
@@ -249,7 +251,6 @@ class model():
             self.bayesfactor[i*batch_size:i*batch_size + minibatch_size,:] = bayesfactor_batch
             self.native_frequencies[i*batch_size:i*batch_size + minibatch_size,:] = native_frequencies_batch.cpu().numpy()
             self.noise_ratio[i*batch_size:i*batch_size + minibatch_size,:] = noise_ratio_batch.cpu().numpy()
-
             i += 1
 
             
@@ -261,7 +262,6 @@ class UMIDataset(torch.utils.data.Dataset):
         self.raw_count = raw_count
         self.empty_profile = empty_profile
         self.list_IDs = list_IDs
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         
     def __len__(self):
         'Denotes the total number of samples'
@@ -271,6 +271,6 @@ class UMIDataset(torch.utils.data.Dataset):
         'Generates one sample of data'
         # Select sample
         ID = self.list_IDs[index]
-        X1 = torch.tensor(self.raw_count[ID,:], dtype=torch.float32, device=self.device)
-        X2 = torch.tensor(self.empty_profile[ID,:], dtype=torch.float32, device=self.device)
+        X1 = self.raw_count[ID,:]
+        X2 = self.empty_profile[ID,:]
         return X1, X2
