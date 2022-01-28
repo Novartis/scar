@@ -33,10 +33,16 @@ To install the dependencies, create a conda environment:
 $ conda env create -f scAR.yml
 ```
 
+Locate to scAR directory:
+
+```sh
+$ cd scAR
+```
+
 Pip install scAR:
 
 ```sh
-$ pip install scAR
+$ pip install .
 ```
 
 ## Usage
