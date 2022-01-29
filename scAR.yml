@@ -16,3 +16,5 @@ dependencies:
 - seaborn>=0.11.2
 - tensorboard>=2.2.1
 - scikit-learn>=1.0.1
+- anndata
+- scanpy
