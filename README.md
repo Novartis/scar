@@ -62,7 +62,7 @@ Use `scar --help` command to see other optional arguments and parameters.
 
 2) Using scAR API
 
-See this [the tutorial for denoising mRNA](/da/onc/bfx/research/shengca1/pipeline/scAR/docs/tutorials/scAR_tutorial_mRNA_denoising.ipynb)
+See this [the tutorial for denoising mRNA](docs/tutorials/scAR_tutorial_mRNA_denoising.ipynb)
 
 
 #### Output
