@@ -47,7 +47,9 @@ $ pip install .
 
 ## Usage
 
-One can run scAR from the command line,
+There are two ways to run scAR.
+
+1) Run scAR from the command line,
 ```sh
 $ scar raw_count_matrix.pickle -t technology -e empty_profile.pickle -o output
 ```
@@ -57,6 +59,10 @@ $ scar raw_count_matrix.pickle -t technology -e empty_profile.pickle -o output
 `technology`, a string, either 'scRNAseq' or 'CROPseq' or 'CITEseq'
 
 Use `scar --help` command to see other optional arguments and parameters.
+
+2) Using scAR API
+
+See this [the tutorial for denoising mRNA](/da/onc/bfx/research/shengca1/pipeline/scAR/docs/tutorials/scAR_tutorial_mRNA_denoising.ipynb)
 
 
 #### Output
