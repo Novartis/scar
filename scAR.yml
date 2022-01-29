@@ -18,3 +18,7 @@ dependencies:
 - scikit-learn>=1.0.1
 - anndata
 - scanpy
+- sphinx==4.2.0
+- nbsphinx==0.8.1
+- pip:
+  - sphinx_rtd_theme==1.0.0
