@@ -106,9 +106,6 @@ class model():
         val_set = UMIDataset(self.raw_count, self.empty_profile, test_IDs)
         val_generator = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=shuffle)
 
-        total_set = UMIDataset(self.raw_count, self.empty_profile, list_IDs)
-        self.total_generator = torch.utils.data.DataLoader(total_set, batch_size=batch_size, shuffle=False)
-
         self.n_batch_train = len(training_generator)
         self.n_batch_val = len(val_generator)
         self.batch_size = batch_size
@@ -229,21 +226,24 @@ class model():
 
     # Inference
     @torch.no_grad()
-    def inference(self):
+    def inference(self, batch_size=None):
         
         print('===========================================\n  Inferring .....')
+        total_set = UMIDataset(self.raw_count, self.empty_profile)
         num_input_feature = self.num_input_feature
-        sample_size = self.raw_count.shape[0]
-        batch_size = self.batch_size
-        
+        sample_size = self.raw_count.shape[0]        
         self.native_counts = np.empty([sample_size, num_input_feature])
         self.bayesfactor = np.empty([sample_size, num_input_feature])
         self.native_frequencies = np.empty([sample_size, num_input_feature])
         self.noise_ratio = np.empty([sample_size, 1])
+        
+        if not batch_size:
+            batch_size = sample_size
         i = 0
-
+        self.total_generator = torch.utils.data.DataLoader(total_set, batch_size=batch_size, shuffle=False)
+        
         for x_batch_tot, ambient_freq_tot in self.total_generator:
-            
+
             minibatch_size = x_batch_tot.shape[0] # if not last batch, equals to batch size
 
             native_counts_batch, bayesfactor_batch, native_frequencies_batch, noise_ratio_batch = self.trained_model.inference(x_batch_tot, ambient_freq_tot[0,:])
@@ -257,12 +257,15 @@ class model():
 class UMIDataset(torch.utils.data.Dataset):
     'Characterizes dataset for PyTorch'
     
-    def __init__(self, raw_count, empty_profile, list_IDs):
+    def __init__(self, raw_count, empty_profile, list_IDs=None):
         'Initialization'
         self.raw_count = raw_count
         self.empty_profile = empty_profile
-        self.list_IDs = list_IDs
-        
+        if list_IDs:
+            self.list_IDs = list_IDs
+        else:
+            self.list_IDs = list(range(raw_count.shape[0]))
+            
     def __len__(self):
         'Denotes the total number of samples'
         return len(self.list_IDs)
