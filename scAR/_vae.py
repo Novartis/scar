@@ -125,16 +125,8 @@ class Decoder(nn.Module):
         super().__init__()
         self.activation = nn.SELU()
         self.normalization_native_freq = hnormalization
-        self.noise_activation = mytanh
-        
-        ## activation functions for different techniques
-        if scRNAseq_tech.lower() == 'scrnaseq':
-            self.activation_native_freq = nn.ReLU()
-        elif scRNAseq_tech.lower() == 'cropseq':
-            self.activation_native_freq = nn.ReLU()
-        elif scRNAseq_tech.lower() == 'citeseq':
-            self.activation_native_freq = mySoftplus
-        
+        self.noise_activation = mytanh        
+        self.activation_native_freq = nn.ReLU()        
         self.fc4 = nn.Linear(enc_dim, fc2_dim)
         self.bn4 = nn.BatchNorm1d(fc2_dim, momentum=0.01, eps=0.001)
         self.dp4 = nn.Dropout(p=dropout_prob)
