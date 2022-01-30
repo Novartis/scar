@@ -16,7 +16,7 @@
 - [Installation](#Installation)
 - [Usage](#Usage)
 - [Dependencies](#Dependencies)
-- [Contributing](#Contributing)
+- [Resources](#Resources)
 - [License](#License)
 - [Reference](#Reference)
 
@@ -60,11 +60,6 @@ $ scar raw_count_matrix.pickle -t technology -e empty_profile.pickle -o output
 
 Use `scar --help` command to see other optional arguments and parameters.
 
-2) Using scAR API
-
-See this [tutorial for denoising mRNA](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_mRNA_denoising.ipynb)
-
-
 #### Output
 
 The output folder contains four files:   
@@ -74,6 +69,10 @@ The output folder contains four files:
 	├── expected_noise_ratio.pickle	# estimated noise ratio
 	├── probs.pickle			# bayesian factor of ambient contamination
 	└── expected_native_freq.pickle	# estimated native frequencies
+
+2) Using scAR API
+
+See the [tutorial for denoising mRNA](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_mRNA_denoising.ipynb)
 
 
 ## Dependencies
@@ -85,8 +84,11 @@ The output folder contains four files:
 [![tqdm 4.62.3](https://img.shields.io/badge/tqdm-4.62.3-orange.svg)](https://github.com/tqdm/tqdm)
 [![scikit-learn 1.0.1](https://img.shields.io/badge/scikit_learn-1.0.1-green.svg)](https://scikit-learn.org/)
 
-## Contributing
+## Resources
 
+- Tutorials and API will be available in the [documentation](docs/tutorials).
+    - [denoising scRNAseq data](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_mRNA_denoising.ipynb)
+    - [denoising CITEseq data](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_denoising_CITEseq.ipynb)
 - If you'd like to contribute, please contact Caibin (caibin.sheng@novartis.com).
 - Please use the [issues](https://github.com/CaibinSh/scAR/issues) to submit bug reports.
 
