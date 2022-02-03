@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from scipy import stats
 import torch.nn as nn
 import torch
