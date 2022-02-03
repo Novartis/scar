@@ -200,28 +200,3 @@ class CROPseq(scRNAseq_synthetic):
         
         if return_obj:
             return fig
-        
-class Stoeckius2017():
-    """
-    Real data from Stoeckius, M., Hafemeister, C., Stephenson, W., Houck-Loomis, B., Chattopadhyay, P. K., Swerdlow, H., Satija, R., & Smibert, P. (2017). Simultaneous epitope and transcriptome measurement in single cells. Nature Methods, 14(9), 865–868. https://doi.org/10.1038/nmeth.4380
-    """
-    def __init__(self):
-        
-        obs = pd.read_csv("/da/onc/bfx/research/shengca1/public_data/GSE100866/data/fb.csv",index_col=0)
-        obs.drop(columns=["cell type"],inplace=True)
-        self.obs_count = obs.values
-        self.n_cells = obs.shape[0]
-        self.n_features = obs.shape[1]
-        self.total_counts = obs.sum(axis=1)
-        self.ADTs = obs.columns
-        
-        cell_identity_ = pd.read_csv("/da/onc/bfx/research/shengca1/public_data/GSE100866/data/identity.csv",index_col=0)
-        cell_identity_ = cell_identity_.values
-        self.n_celltypes = cell_identity_.shape[1]
-        self.cell_identity = cell_identity_
-        
-        celltype=pd.read_csv("/da/onc/bfx/research/shengca1/public_data/GSE100866/data/Cell_anno_adata_pub_umap.csv",index_col=0)
-        self.celltypes = celltype["cell type"].values
-        
-        beta0_ = pd.read_csv("/da/onc/bfx/research/shengca1/public_data/GSE100866/data/ambient_profile.csv", index_col=0).T
-        self.ambient_profile = beta0_.values[0]
