@@ -40,7 +40,7 @@ def main():
     plot_every_epoch = args.plot_every_epoch
     batch_size = args.batchsize
     
-    raw_count = pd.read_pickle(count_matrix_path)
+    count_matrix = pd.read_pickle(count_matrix_path)
     
     print('===========================================')
     print('scRNAseq_tech: ', scRNAseq_tech)
