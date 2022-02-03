@@ -65,9 +65,9 @@ Use `scar --help` command to see other optional arguments and parameters.
 The output folder contains four files:   
 
 	output
-	├── expected_natives.pickle		# denoised count matrix
+	├── denoised_counts.pickle		# denoised count matrix
 	├── expected_noise_ratio.pickle	# estimated noise ratio
-	├── probs.pickle			# bayesian factor of ambient contamination
+	├── BayesFactor.pickle			# bayesian factor of ambient contamination
 	└── expected_native_freq.pickle	# estimated native frequencies
 
 2) Using scAR API
