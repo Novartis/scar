@@ -58,7 +58,7 @@ class VAE(nn.Module):
             probs_H1 = stats.poisson.cdf(x.cpu().numpy(), expected_amb_counts.cpu().numpy() + error_term)
             probs_H2 = stats.poisson.pmf(x.cpu().numpy(), expected_amb_counts.cpu().numpy() + error_term)
 
-        bf = probs_H1/(probs_H2 + 1e-9)
+        bf = (probs_H1 + 1e-9)/(probs_H2 + 1e-9)
         
         
         return expected_native_counts, bf, dec_prob, dec_nr
