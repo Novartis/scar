@@ -46,11 +46,10 @@ class VAE(nn.Module):
         # The probability that observed UMI counts do not purely come from expected distribution of ambient signals.
         
         if model.lower() == 'binomial':
-            error_term = 0.1
             amb_tot = torch.round(total_count_per_cell * dec_nr).cpu().numpy()
             # H1: x is drawn from binomial distribution with prob > amb_prob  vs H2: x is drawn from binomial distribution with prob = amb_prob 
-            probs_H1 = stats.binom.cdf(x.cpu().numpy(), amb_tot, amb_prob.cpu().numpy()+ error_term)
-            probs_H2 = stats.binom.pmf(x.cpu().numpy(), amb_tot, amb_prob.cpu().numpy()+ error_term)
+            probs_H1 = stats.binom.cdf(x.cpu().numpy(), amb_tot, amb_prob.cpu().numpy())
+            probs_H2 = stats.binom.pmf(x.cpu().numpy(), amb_tot, amb_prob.cpu().numpy())
 
         elif model.lower() == 'poisson':
             error_term = 0.1
@@ -59,7 +58,7 @@ class VAE(nn.Module):
             probs_H1 = stats.poisson.cdf(x.cpu().numpy(), expected_amb_counts.cpu().numpy() + error_term)
             probs_H2 = stats.poisson.pmf(x.cpu().numpy(), expected_amb_counts.cpu().numpy() + error_term)
 
-        bf = probs_H1/probs_H2
+        bf = probs_H1/(probs_H2 + 1e-9)
         
         
         return expected_native_counts, bf, dec_prob, dec_nr
