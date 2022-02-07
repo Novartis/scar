@@ -68,8 +68,7 @@ def main():
                   epochs=epochs,
                   plot_every_epoch=plot_every_epoch,
                   TensorBoard=TensorBoard,
-                  save_model=save_model,
-                  model=count_model,
+                  save_model=save_model
                  )
     
     scARObj.inference()
