@@ -26,7 +26,8 @@ setup(
         "gpyopt",
         "seaborn>=0.11.2",
         "tensorboard>=2.2.1",
-        "scikit-learn>=1.0.1"        
+        "scikit-learn>=1.0.1",
+        "pyro-ppl==1.8.0"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

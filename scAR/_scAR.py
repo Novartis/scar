@@ -48,6 +48,7 @@ class model():
                  NN_layer2: int=100,
                  latent_space: int=15,
                  scRNAseq_tech: str="scRNAseq",
+                 model: str="binomial"
                 ):
 
         if isinstance(raw_count, str):
@@ -77,6 +78,7 @@ class model():
         self.NN_layer2 = NN_layer2
         self.latent_space = latent_space
         self.scRNAseq_tech = scRNAseq_tech
+        self.model = model
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Loading numpy to tensor on GPU
@@ -119,7 +121,7 @@ class model():
                             f'NN_layer1={self.NN_layer1}, NN_layer2={self.NN_layer2}, latent_space={self.latent_space}, kld_weight={kld_weight}, lr={lr}, epochs={epochs}, reconstruction_weight={reconstruction_weight}, dropout_prob={dropout_prob}', 0)
 
         # Define model
-        VAE_model = VAE(self.num_input_feature, self.NN_layer1, self.NN_layer2, self.latent_space, self.scRNAseq_tech, dropout_prob).cuda()
+        VAE_model = VAE(self.num_input_feature, self.NN_layer1, self.NN_layer2, self.latent_space, self.scRNAseq_tech, dropout_prob, model=self.model).cuda()
 
         # Define optimizer
         optim = torch.optim.Adam(VAE_model.parameters(), lr=lr)
@@ -148,8 +150,8 @@ class model():
                 for x_batch, ambient_freq in training_generator:
                     
                     optim.zero_grad()
-                    z, dec_nr, dec_prob,  mu, var = VAE_model(x_batch)
-                    recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(x_batch, dec_nr, dec_prob, mu, var, ambient_freq, reconstruction_weight=reconstruction_weight, kld_weight=kld_weight)
+                    z, dec_nr, dec_prob,  mu, var, dec_dp = VAE_model(x_batch)
+                    recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(x_batch, dec_nr, dec_prob, mu, var, ambient_freq, reconstruction_weight=reconstruction_weight, kld_weight=kld_weight, dec_dp=dec_dp, model=self.model)
                     loss_minibatch.backward()
                     optim.step()
 
@@ -179,8 +181,8 @@ class model():
                     VAE_model.eval()
                     for x_batch_val, ambient_freq_val in val_generator:
                                                
-                        z_val, dec_nr_val, dec_prob_val,  mu_val, var_val = VAE_model(x_batch_val)
-                        recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(x_batch_val, dec_nr_val, dec_prob_val, mu_val, var_val, ambient_freq_val,reconstruction_weight=reconstruction_weight, kld_weight=kld_weight)
+                        z_val, dec_nr_val, dec_prob_val,  mu_val, var_val, dec_dp_val = VAE_model(x_batch_val)
+                        recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(x_batch_val, dec_nr_val, dec_prob_val, mu_val, var_val, ambient_freq_val,reconstruction_weight=reconstruction_weight, kld_weight=kld_weight, dec_dp=dec_dp_val, model=self.model)
                         val_tot_loss += loss_minibatch.detach().item()
                         val_recon_loss += recon_loss_minibatch.detach().item()
                         val_kld_loss += kld_loss_minibatch.detach().item()
@@ -197,7 +199,7 @@ class model():
 
                     step = epoch // plot_every_epoch
                     with torch.no_grad():
-                        z_eval, dec_nr_eval, dec_prob_eval, mu_eval, var_eval = VAE_model(self.total_set.dataset.tensors[0])
+                        z_eval, dec_nr_eval, dec_prob_eval, mu_eval, var_eval, dec_dp_eval = VAE_model(self.total_set.dataset.tensors[0])
 
                     pr, r2, _, _ = get_correlation_btn_native_ambient(epoch, dec_prob_eval, empty_frequencies=ambient_freq_val[0,:], scRNAseq_tech=self.scRNAseq_tech)
 

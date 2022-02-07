@@ -12,17 +12,19 @@ from ._activation_functions import mytanh, hnormalization, mySoftplus
 
 class VAE(nn.Module):
 
-    def __init__(self, n_genes, fc1_dim, fc2_dim, enc_dim, scRNAseq_tech = 'scRNAseq', dropout_prob=0):
+    def __init__(self, n_genes, fc1_dim, fc2_dim, enc_dim, scRNAseq_tech = 'scRNAseq', dropout_prob=0, model='binomial'):
         super().__init__()
         self.scRNAseq_tech = scRNAseq_tech
+        self.model = model
         if fc1_dim==None and fc2_dim==None and enc_dim==None:
             fc1_dim, fc2_dim, enc_dim = 150, 100, 15
                 
         self.encoder = Encoder(n_genes, fc1_dim, fc2_dim, enc_dim, dropout_prob)
-        self.decoder = Decoder(n_genes, fc1_dim, fc2_dim, enc_dim, scRNAseq_tech, dropout_prob)
+        self.decoder = Decoder(n_genes, fc1_dim, fc2_dim, enc_dim, scRNAseq_tech, dropout_prob, model)
         
         print("..Running VAE using the following param set:")
         print("......scAR mode: ", scRNAseq_tech)
+        print("......count model: ", model)
         print("......num_input_feature: ", n_genes)
         print("......NN_layer1: ", fc1_dim)
         print("......NN_layer2: ", fc2_dim)
@@ -31,13 +33,13 @@ class VAE(nn.Module):
 
     def forward(self, x):
         z, mu, var = self.encoder(x)
-        dec_nr, dec_prob = self.decoder(z)
-        return z, dec_nr, dec_prob,  mu, var
+        dec_nr, dec_prob, dec_dp = self.decoder(z)
+        return z, dec_nr, dec_prob,  mu, var, dec_dp
     
     def inference(self, x, amb_prob, model='poisson'):
         
         # Estimate native signals
-        z, dec_nr, dec_prob,  mu, var = self.forward(x)
+        z, dec_nr, dec_prob,  mu, var, dec_dp = self.forward(x)
         total_count_per_cell = x.sum(dim=1).view(-1, 1)
         prob_native = dec_prob*(1-dec_nr)
         expected_native_counts = (total_count_per_cell * prob_native).cpu().numpy()
@@ -125,7 +127,7 @@ class Decoder(nn.Module):
 
     Made up of 2 FC layers.
     """
-    def __init__(self, n_genes, fc1_dim, fc2_dim, enc_dim, scRNAseq_tech, dropout_prob):
+    def __init__(self, n_genes, fc1_dim, fc2_dim, enc_dim, scRNAseq_tech, dropout_prob, model):
         super().__init__()
         self.activation = nn.SELU()
         self.normalization_native_freq = hnormalization
@@ -139,6 +141,11 @@ class Decoder(nn.Module):
         self.dp5 = nn.Dropout(p=dropout_prob)
         self.noise_fc = nn.Linear(fc1_dim, 1)
         self.out_fc = nn.Linear(fc1_dim, n_genes)
+        self.model = model
+        if model.lower() == 'zeroinflatedpoisson':
+            self.dropoutprob = nn.Linear(fc1_dim, 1)
+            self.dropout_activation = nn.Sigmoid()
+            
 
     def forward(self, z):
         # decode layers
@@ -160,4 +167,11 @@ class Decoder(nn.Module):
         dec_nr = self.noise_fc(dec)
         dec_nr = self.noise_activation(dec_nr)
         
-        return dec_nr, dec_prob
+        # final layers to learn the dropout probability
+        if self.model.lower() == 'zeroinflatedpoisson':
+            dec_dp = self.dropoutprob(dec)
+            dec_dp = self.dropout_activation(dec_dp)
+        else:
+            dec_dp = None
+            
+        return dec_nr, dec_prob, dec_dp

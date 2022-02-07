@@ -15,8 +15,8 @@ def main():
     parser.add_argument('-e','--empty_profile', type=str, default=None, help='the file of empty profile obtained from empty droplets, 1D array')
     parser.add_argument('-t', '--technology', type=str, default='scRNAseq', help='scRNAseq technology, e.g. scRNAseq, CROPseq, CITEseq, ... etc.')
     parser.add_argument('-o', '--output', type=str, default=None, help='output directory')
-    parser.add_argument('-tb', '--TensorBoard', type=str, default=False, help='Tensorboard directory')
-    
+    parser.add_argument('-m', '--count_model', type=str, default='binomial', help='count model')
+    parser.add_argument('-tb', '--TensorBoard', type=str, default=False, help='Tensorboard directory')    
     parser.add_argument('-hl1', '--hidden_layer1', type=int, default=None, help='number of neurons in the first layer')
     parser.add_argument('-hl2', '--hidden_layer2', type=int, default=None, help='number of neurons in the second layer')
     parser.add_argument('-ls', '--latent_space', type=int, default=None, help='dimension of latent space')
@@ -31,6 +31,7 @@ def main():
     empty_profile_path = args.empty_profile
     scRNAseq_tech = args.technology
     output_dir = os.getcwd() if not args.output else args.output  # if None, output to current directory
+    count_model = args.count_model
     TensorBoard = args.TensorBoard
     NN_layer1 = args.hidden_layer1
     NN_layer2 = args.hidden_layer2
@@ -44,6 +45,7 @@ def main():
     
     print('===========================================')
     print('scRNAseq_tech: ', scRNAseq_tech)
+    print('count_model: ', count_model)
     print('output_dir: ', output_dir)
     print('count_matrix_path: ', count_matrix_path)
     print('empty_profile_path: ', empty_profile_path)
@@ -58,13 +60,17 @@ def main():
                     NN_layer1=NN_layer1,
                     NN_layer2=NN_layer2,
                     latent_space=latent_space,
-                    scRNAseq_tech=scRNAseq_tech)
+                    scRNAseq_tech=scRNAseq_tech,
+                    model=count_model
+                   )
         
     scARObj.train(batch_size=batch_size,
                   epochs=epochs,
                   plot_every_epoch=plot_every_epoch,
                   TensorBoard=TensorBoard,
-                  save_model=save_model)
+                  save_model=save_model,
+                  model=count_model,
+                 )
     
     scARObj.inference()
     
