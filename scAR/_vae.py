@@ -34,31 +34,33 @@ class VAE(nn.Module):
         dec_nr, dec_prob = self.decoder(z)
         return z, dec_nr, dec_prob,  mu, var
     
-    def inference(self, x, amb_prob, model='binomial'):
+    def inference(self, x, amb_prob, model='poisson'):
         
         # Estimate native signals
         z, dec_nr, dec_prob,  mu, var = self.forward(x)
         total_count_per_cell = x.sum(dim=1).view(-1, 1)
         prob_native = dec_prob*(1-dec_nr)
         expected_native_counts = (total_count_per_cell * prob_native).cpu().numpy()
+        x_np = x.cpu().numpy()
         
         ### Calculate the Bayesian factors
         # The probability that observed UMI counts do not purely come from expected distribution of ambient signals.
         
         if model.lower() == 'binomial':
-            amb_tot = torch.round(total_count_per_cell * dec_nr).cpu().numpy()
+            amb_tot = torch.ceil(total_count_per_cell * dec_nr).cpu().numpy()
+            error_term = ((x_np.sum()-amb_tot.sum())/len(x_np.flatten()))
             # H1: x is drawn from binomial distribution with prob > amb_prob  vs H2: x is drawn from binomial distribution with prob = amb_prob 
-            probs_H1 = stats.binom.cdf(x.cpu().numpy(), amb_tot, amb_prob.cpu().numpy())
-            probs_H2 = stats.binom.pmf(x.cpu().numpy(), amb_tot, amb_prob.cpu().numpy())
+            probs_H1 = stats.binom.cdf(x_np-error_term, amb_tot, amb_prob.cpu().numpy())
+            probs_H2 = stats.binom.pmf(x_np-error_term, amb_tot, amb_prob.cpu().numpy())
 
         elif model.lower() == 'poisson':
-            error_term = 0.1
-            expected_amb_counts = total_count_per_cell * dec_nr * amb_prob
+            expected_amb_counts = (total_count_per_cell * dec_nr * amb_prob).cpu().numpy()
+            error_term = ((x_np.sum()-expected_amb_counts.sum())/len(x_np.flatten())) # adding this error term significantly improve the performance
             # H1: x is drawn from Poisson distribution with prob > amb_prob  vs H2: x is drawn from Poisson distribution with prob = amb_prob 
-            probs_H1 = stats.poisson.cdf(x.cpu().numpy(), expected_amb_counts.cpu().numpy() + error_term)
-            probs_H2 = stats.poisson.pmf(x.cpu().numpy(), expected_amb_counts.cpu().numpy() + error_term)
+            probs_H1 = stats.poisson.cdf(x_np, expected_amb_counts + error_term)
+            probs_H2 = stats.poisson.pmf(x_np, expected_amb_counts + error_term)
 
-        bf = (probs_H1 + 1e-9)/(probs_H2 + 1e-9)
+        bf = (probs_H1 + 1e-22)/(probs_H2 + 1e-22)
         
         
         return expected_native_counts, bf, dec_prob, dec_nr
