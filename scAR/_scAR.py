@@ -230,7 +230,7 @@ class model():
 
     # Inference
     @torch.no_grad()
-    def inference(self, batch_size=None):
+    def inference(self, batch_size=None, model='poisson', adjust='micro'):
         
         print('===========================================\n  Inferring .....')
         total_set = UMIDataset(self.raw_count, self.empty_profile)
@@ -250,11 +250,11 @@ class model():
 
             minibatch_size = x_batch_tot.shape[0] # if not last batch, equals to batch size
 
-            native_counts_batch, bayesfactor_batch, native_frequencies_batch, noise_ratio_batch = self.trained_model.inference(x_batch_tot, ambient_freq_tot[0,:])
+            native_counts_batch, bayesfactor_batch, native_frequencies_batch, noise_ratio_batch = self.trained_model.inference(x_batch_tot, ambient_freq_tot[0,:], model=model, adjust=adjust)
             self.native_counts[i*batch_size:i*batch_size + minibatch_size,:] = native_counts_batch
             self.bayesfactor[i*batch_size:i*batch_size + minibatch_size,:] = bayesfactor_batch
-            self.native_frequencies[i*batch_size:i*batch_size + minibatch_size,:] = native_frequencies_batch.cpu().numpy()
-            self.noise_ratio[i*batch_size:i*batch_size + minibatch_size,:] = noise_ratio_batch.cpu().numpy()
+            self.native_frequencies[i*batch_size:i*batch_size + minibatch_size,:] = native_frequencies_batch
+            self.noise_ratio[i*batch_size:i*batch_size + minibatch_size,:] = noise_ratio_batch
             i += 1
 
             

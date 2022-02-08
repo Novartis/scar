@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import numpy as np
 from scipy import stats
 import torch.nn as nn
 import torch
-from torch.distributions import Normal, kl_divergence, Multinomial, Binomial, Poisson
-from ._activation_functions import mytanh, hnormalization, mySoftplus
+from ._activation_functions import mytanh, hnormalization 
 
 #########################################################################
 ## Variational antoencoder
@@ -14,6 +14,8 @@ class VAE(nn.Module):
 
     def __init__(self, n_genes, fc1_dim, fc2_dim, enc_dim, scRNAseq_tech = 'scRNAseq', dropout_prob=0, model='binomial'):
         super().__init__()
+        assert scRNAseq_tech.lower() in ['scrnaseq', 'cropseq', 'citeseq']
+        assert model.lower() in ['binomial', 'poisson', 'zeroinflatedpoisson']
         self.scRNAseq_tech = scRNAseq_tech
         self.model = model
         if fc1_dim==None and fc2_dim==None and enc_dim==None:
@@ -36,36 +38,55 @@ class VAE(nn.Module):
         dec_nr, dec_prob, dec_dp = self.decoder(z)
         return z, dec_nr, dec_prob,  mu, var, dec_dp
     
-    def inference(self, x, amb_prob, model='poisson'):
+    def inference(self, x, amb_prob, model='poisson', adjust = 'micro'):
+        """
+        Inference of presence of native signal
+        """
+        assert model.lower() in ['poisson', 'binomial', 'zeroinflatedpoisson']
+        assert adjust in [False, 'global', 'micro']
         
         # Estimate native signals
-        z, dec_nr, dec_prob,  mu, var, dec_dp = self.forward(x)
-        total_count_per_cell = x.sum(dim=1).view(-1, 1)
-        prob_native = dec_prob*(1-dec_nr)
-        expected_native_counts = (total_count_per_cell * prob_native).cpu().numpy()
+        _, dec_nr, dec_prob,  _, _, _ = self.forward(x)
+        
+        # Copy tensor to CPU
         x_np = x.cpu().numpy()
+        nr = dec_nr.cpu().numpy().reshape(-1, 1)
+        nat_prob = dec_prob.cpu().numpy()
+        amb_prob = amb_prob.cpu().numpy().reshape(1, -1)
+        
+        total_count_per_cell = x_np.sum(axis=1).reshape(-1, 1)
+        expected_native_counts = total_count_per_cell * (1-nr) * nat_prob
+        expected_amb_counts = total_count_per_cell * nr * amb_prob
+        tot_amb = expected_amb_counts.sum(axis=1).reshape(-1, 1)
+        
+        if not adjust:
+            adjust = 0
+        elif adjust == 'global':
+            adjust = (total_count_per_cell.sum() - tot_amb.sum())/len(x_np.flatten())
+        elif adjust == 'micro':
+            adjust = (total_count_per_cell - tot_amb)/x_np.shape[1]
+            adjust = np.repeat(adjust, x_np.shape[1], axis=1)
         
         ### Calculate the Bayesian factors
         # The probability that observed UMI counts do not purely come from expected distribution of ambient signals.
-        
+        # H1: x is drawn from distribution (binomial or poission or zeroinflatedpoisson) with prob > amb_prob
+        # H2: x is drawn from distribution (binomial or poission or zeroinflatedpoisson) with prob = amb_prob 
+
         if model.lower() == 'binomial':
-            amb_tot = torch.ceil(total_count_per_cell * dec_nr).cpu().numpy()
-            error_term = ((x_np.sum()-amb_tot.sum())/len(x_np.flatten()))
-            # H1: x is drawn from binomial distribution with prob > amb_prob  vs H2: x is drawn from binomial distribution with prob = amb_prob 
-            probs_H1 = stats.binom.cdf(x_np-error_term, amb_tot, amb_prob.cpu().numpy())
-            probs_H2 = stats.binom.pmf(x_np-error_term, amb_tot, amb_prob.cpu().numpy())
-
+            probs_H1 = stats.binom.logcdf(x_np, tot_amb + adjust, amb_prob)
+            probs_H2 = stats.binom.logpmf(x_np, tot_amb + adjust, amb_prob)
+            
         elif model.lower() == 'poisson':
-            expected_amb_counts = (total_count_per_cell * dec_nr * amb_prob).cpu().numpy()
-            error_term = ((x_np.sum()-expected_amb_counts.sum())/len(x_np.flatten())) # adding this error term significantly improve the performance
-            # H1: x is drawn from Poisson distribution with prob > amb_prob  vs H2: x is drawn from Poisson distribution with prob = amb_prob 
-            probs_H1 = stats.poisson.cdf(x_np, expected_amb_counts + error_term)
-            probs_H2 = stats.poisson.pmf(x_np, expected_amb_counts + error_term)
-
-        bf = (probs_H1 + 1e-22)/(probs_H2 + 1e-22)
+            probs_H1 = stats.poisson.logcdf(x_np, expected_amb_counts + adjust)
+            probs_H2 = stats.poisson.logpmf(x_np, expected_amb_counts + adjust)
         
+        elif model.lower() == 'zeroinflatedpoisson':
+            raise NotImplementedError
+         
+        bf = np.clip(probs_H1 - probs_H2 + 1e-22, -709.78, 709.78)
+        bf = np.exp(bf)
         
-        return expected_native_counts, bf, dec_prob, dec_nr
+        return expected_native_counts, bf, dec_prob.cpu().numpy(), dec_nr.cpu().numpy()
 
 #########################################################################
 ## Encoder
@@ -144,9 +165,8 @@ class Decoder(nn.Module):
         self.model = model
         if model.lower() == 'zeroinflatedpoisson':
             self.dropoutprob = nn.Linear(fc1_dim, 1)
-            self.dropout_activation = nn.Sigmoid()
+            self.dropout_activation = mytanh
             
-
     def forward(self, z):
         # decode layers
         dec = self.fc4(z)
@@ -157,7 +177,6 @@ class Decoder(nn.Module):
         dec = self.activation(dec)
         dec = torch.clamp(dec, min=None, max=1e7)
 
-        
         # final layers to produce prob parameters
         dec_prob = self.out_fc(dec)
         dec_prob = self.activation_native_freq(dec_prob)
@@ -171,6 +190,7 @@ class Decoder(nn.Module):
         if self.model.lower() == 'zeroinflatedpoisson':
             dec_dp = self.dropoutprob(dec)
             dec_dp = self.dropout_activation(dec_dp)
+            dec_dp = torch.nan_to_num(dec_dp, nan=1e-7)
         else:
             dec_dp = None
             
