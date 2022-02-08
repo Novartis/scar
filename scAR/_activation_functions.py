@@ -9,11 +9,10 @@ def mytanh(x):
     return tanh
 
 def hnormalization(x):
-#     x = torch.nan_to_num(x, nan=1e-7)
     return x/(x.sum(dim=1).view(-1,1) + 1e-5)
 
 def mySoftplus(x):
-    mask0 = x<=-5 #
+    mask0 = x<=-5
     x[mask0] = 0
     x[~mask0] = (x[~mask0].exp()+1).log()
     return x
