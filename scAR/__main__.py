@@ -24,6 +24,7 @@ def main():
     parser.add_argument('-s', '--save_model', type=int, default=False, help='whether save the trained model')
     parser.add_argument('-plot', '--plot_every_epoch', type=int, default=50, help='plot every epochs')
     parser.add_argument('-batchsize', '--batchsize', type=int, default=64, help='batch size')
+    parser.add_argument('-adjust', '--adjust', type=str, default='micro', help='batch size')
 
     args = parser.parse_args()
 
@@ -40,6 +41,7 @@ def main():
     save_model = args.save_model
     plot_every_epoch = args.plot_every_epoch
     batch_size = args.batchsize
+    adjust = args.adjust
     
     count_matrix = pd.read_pickle(count_matrix_path)
     
@@ -71,7 +73,7 @@ def main():
                   save_model=save_model
                  )
     
-    scARObj.inference()
+    scARObj.inference(adjust=adjust)
     
     print('===========================================\n  Saving results...')
     output_path01, output_path02, output_path03, output_path04 = os.path.join(output_dir, f'denoised_counts.pickle'), os.path.join(output_dir, f'BayesFactor.pickle'), os.path.join(output_dir, f'native_frequency.pickle'), os.path.join(output_dir, f'noise_ratio.pickle')
