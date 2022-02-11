@@ -26,6 +26,7 @@ def get_reconstruction_loss(x, dec_nr, dec_prob, amb_prob, dec_dp, model):
         
     elif model.lower() == 'binomial':
         recon_loss = -Binomial(tot_count, probs=prob_tot, validate_args=False).log_prob(x)
+        recon_loss = torch.nan_to_num(recon_loss, nan=1e-7, posinf=1e15, neginf=-1e15)
         recon_loss = recon_loss.sum(axis=1).mean()
         
     elif model.lower() == 'poisson':
