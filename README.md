@@ -6,7 +6,7 @@
 ![variational autoencoders](https://img.shields.io/badge/variational_autoencoders-005AF0?style=for-the-badge.svg)
 ![denoising](https://img.shields.io/badge/denoising-005AF0?style=for-the-badge.svg)
 
-**scAR** (single cell Ambient Remover) is a package for denoising multiple single cell omics data (inc. scRNAseq, single cell CRISPR screening, CITE-seq and single cell indexing). It is built using probabilistic deep learning, more specifically, variational autoencoders, illustrated as follows:
+**scAR** (single cell Ambient Remover) is a package for denoising multiple single cell omics data. It can be used for multiple tasks, such as, **sgRNA assignment** for scCRISPRseq, **identity barcode assignment** for cell indexing, **protein denoising** for CITE-seq, **mRNA denoising** for scRNAseq, and etc... It is built using probabilistic deep learning, illustrated as follows:
 
 <img src='docs/img/overview_scAR.png' width="1200">
 
@@ -71,6 +71,15 @@ The output folder contains four files:
 	└── expected_native_freq.pickle	# estimated native frequencies
 
 2) Using scAR API
+
+```sh
+>>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+>>> scarObj.train()
+>>> scarObj.inference()
+>>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
+>>> adata.obsm["X_scAR_assignment"] = scarObj.assignment
+```
+
 
 See the [tutorial for denoising mRNA](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_mRNA_denoising.ipynb)
 

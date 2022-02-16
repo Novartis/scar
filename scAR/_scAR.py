@@ -38,12 +38,40 @@ class model():
     single cell Ambient Remover [Sheng2022].
     Parameters
     ----------
-    ...
+    raw_count
+        Raw count matrix (nd.array, pd.DataFrame, or a path).
+    empty_profile
+        Empty profile (a vector or matrix, nd.array, pd.DataFrame, or a path). Default: None, averaging raw counts to estimate the ambinet profile.
+    NN_layer1
+        Neuron number of the first hidden layer (int). Default: 150.
+    NN_layer2
+        Neuron number of the second hidden layer (int). Default: 100.
+    latent_space
+        Neuron number of the latent space (int). Default: 15.
+    scRNAseq_tech
+        One of the following:
+        * ``'scRNAseq'`` - any mRNA counts, including mRNA counts in single cell CRISPR screens and CITE-seq experiments. Default.
+        * ``'CITEseq'`` - protein counts for CITEseq
+        * ``'CROPseq'`` - sgRNA/identity barcode counts, or any data types of super high sparsity. E.g., in cell indexing experiments, we would expect a single true signal (1) and many negative signals (0) for each cell,
+    model
+        Count model, one of the following:
+        * ``'binomial'`` - binomial model. Defualt.
+        * ``'poisson'`` - poisson model
+        * ``'zeroinflatedpoisson'`` - zeroinflatedpoisson model, choose this one when the raw counts are sparse
+
+    Examples
+    --------
+    >>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+    >>> scarObj.train()
+    >>> scarObj.inference()
+    >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
+    >>> adata.obsm["X_scAR_assignment"] = scarObj.assignment
+    
     """
 
     def __init__(self,
-                 raw_count: Union[str, np.ndarray],
-                 empty_profile: Optional[Union[str, np.ndarray]] = None,
+                 raw_count: Union[str, np.ndarray, pd.DataFrame],
+                 empty_profile: Optional[Union[str, np.ndarray, pd.DataFrame]] = None,
                  NN_layer1: int=150,
                  NN_layer2: int=100,
                  latent_space: int=15,
@@ -53,26 +81,32 @@ class model():
 
         if isinstance(raw_count, str):
             raw_count = pd.read_pickle(raw_count)
-            raw_count = raw_count.fillna(0).values # replace missing values with zeros
         elif isinstance(raw_count, np.ndarray):
-            pass
+            raw_count = pd.DataFrame(raw_count, index=range(raw_count.shape[0]), columns=range(raw_count.shape[1]))
+        elif isinstance(raw_count, pd.DataFrame): pass
         else:
-            raise TypeError("Expecting str or np.array object, but get a {}".format(type(raw_count)))
+            raise TypeError("Expecting str or np.array or pd.DataFrame object, but get a {}".format(type(raw_count)))
+        raw_count = raw_count.fillna(0) # replace missing values with zeros
 
         if isinstance(empty_profile, str):
             empty_profile = pd.read_pickle(empty_profile)
             empty_profile = empty_profile.fillna(0).values # replace missing values with zeros
+        elif isinstance(empty_profile, pd.DataFrame):
+            empty_profile = empty_profile.fillna(0).values # replace missing values with zeros
         elif isinstance(empty_profile, np.ndarray):
-            pass
+            empty_profile = np.nan_to_num(empty_profile) # replace missing values with zeros
         elif not empty_profile:
             print(' ... Evaluate empty profile from cells')
-            empty_profile = np.sum(raw_count, axis=0)/np.sum(raw_count)       
+            empty_profile = raw_count.sum()/raw_count.sum().sum()
+            empty_profile = empty_profile.fillna(0).values
         else:
-            raise TypeError("Expecting str / np.array / None, but get a {}".format(type(empty_profile)))
+            raise TypeError("Expecting str / np.array / None / pd.DataFrame, but get a {}".format(type(empty_profile)))
         
         if empty_profile.squeeze().ndim == 1:
             empty_profile = empty_profile.squeeze().reshape(1,-1).repeat(raw_count.shape[0], axis=0)
-        
+            
+        self.cellID = list(raw_count.index)
+        self.feature_names = list(raw_count.columns)
         self.num_input_feature = raw_count.shape[1]
         self.NN_layer1 = NN_layer1
         self.NN_layer2 = NN_layer2
@@ -82,7 +116,7 @@ class model():
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Loading numpy to tensor on GPU
-        self.raw_count = torch.from_numpy(raw_count).int().to(self.device)
+        self.raw_count = torch.from_numpy(raw_count.values).int().to(self.device)
         self.empty_profile = torch.from_numpy(empty_profile).float().to(self.device)
         
     def train(self,
@@ -99,7 +133,48 @@ class model():
               plot_every_epoch: int=50,
               TensorBoard: bool=False,
               save_model: bool=False):
-        
+
+        """
+        training scAR model
+        Parameters
+        ----------
+        batch_size
+            Batch_size (int). Default: 64.
+        train_size
+            Proportion of train samples (float). Default: 0.998.
+        shuffle
+            Whether shuffle the data (bool). Default: True.
+        kld_weight
+            The weight on KL-divergence (float, positive). Default: 1e-5.
+        lr
+            Initial learning rate (float). Default: 1e-3.
+        lr_step_size
+            Period of learning rate decay (float). Default: 5. See https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html.
+        lr_gamma
+            Multiplicative factor of learning rate decay (float). Default: 0.97. See https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html.
+        epochs
+            Training iterations (float). Default: 800.
+        reconstruction_weight
+            The weight on reconstruction error (float, positive). Default: 1.
+        dropout_prob
+            Dropout probability of nodes (float). Default: 0
+        TensorBoard
+            Whether output training details through Tensorboard (bool). Default: False. Under development...
+        plot_every_epoch
+            The epochs by which diagnostic plots will be generated in TensorBoard (int). Default: 50. Under development...
+        save_model
+            Whether to save trained models. Default: False. Under development...
+
+        Examples
+        --------
+        >>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+        >>> scarObj.train()
+        >>> scarObj.inference()
+        >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
+        >>> adata.obsm["X_scAR_assignment"] = scarObj.assignment
+
+        """
+
         list_IDs = list(range(self.raw_count.shape[0]))
         train_IDs, test_IDs = train_test_split(list_IDs, train_size=train_size)
         
@@ -256,7 +331,23 @@ class model():
             self.native_frequencies[i*batch_size:i*batch_size + minibatch_size,:] = native_frequencies_batch
             self.noise_ratio[i*batch_size:i*batch_size + minibatch_size,:] = noise_ratio_batch
             i += 1
+    
+#     def assignment(self, feature_type='sgRNAs', cutoff=3, MOI=None):
 
+#         feature_assignment = pd.DataFrame(index=range(self.bayesfactor.shape[0],columns=[feature_type, f'n_{feature_type}'])
+#         for cell, row in feature_assignment.iterrows():
+#             sgRNA_max_exp = row[row==row.max()]
+#             if row.max()==0:
+#                 sgRNA_assign.loc[cell, f'n_{feature_type}'] = 0
+#                 sgRNA_assign.loc[cell, feature_type] = np.nan
+#             elif len(sgRNA_max_exp)==1:
+#                 sgRNA_assign.loc[cell, f'n_{feature_type}'] = 1
+#                 sgRNA_assign.loc[cell, feature_type] = sgRNA_max_exp.index[0]
+#             else:
+#                 sgRNA_assign.loc[cell, f'n_{feature_type}'] = 2
+#                 sgRNA_assign.loc[cell, feature_type] = (', ').join(sgRNA_max_exp.index)
+
+#         return sgRNA_assign
             
 class UMIDataset(torch.utils.data.Dataset):
     'Characterizes dataset for PyTorch'
