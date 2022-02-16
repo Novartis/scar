@@ -35,7 +35,8 @@ def std_out_err_redirect_tqdm():
 class model():
     
     """
-    single cell Ambient Remover [Sheng2022].
+    scAR class object, Single cell Ambient Remover [Sheng2022].
+    
     Parameters
     ----------
     raw_count
@@ -50,14 +51,14 @@ class model():
         Neuron number of the latent space (int). Default: 15.
     scRNAseq_tech
         One of the following:
-        * ``'scRNAseq'`` - any mRNA counts, including mRNA counts in single cell CRISPR screens and CITE-seq experiments. Default.
-        * ``'CITEseq'`` - protein counts for CITEseq
-        * ``'CROPseq'`` - sgRNA/identity barcode counts, or any data types of super high sparsity. E.g., in cell indexing experiments, we would expect a single true signal (1) and many negative signals (0) for each cell,
+            'scRNAseq' -- any mRNA counts, including mRNA counts in single cell CRISPR screens and CITE-seq experiments. Default.
+            'CITEseq' -- protein counts for CITEseq
+            'CROPseq' -- sgRNA/identity barcode counts, or any data types of super high sparsity. E.g., in cell indexing experiments, we would expect a single true signal (1) and many negative signals (0) for each cell,
     model
         Count model, one of the following:
-        * ``'binomial'`` - binomial model. Defualt.
-        * ``'poisson'`` - poisson model
-        * ``'zeroinflatedpoisson'`` - zeroinflatedpoisson model, choose this one when the raw counts are sparse
+            'binomial' -- binomial model. Defualt.
+            'poisson' -- poisson model
+            'zeroinflatedpoisson' -- zeroinflatedpoisson model, choose this one when the raw counts are sparse
 
     Examples
     --------
@@ -135,7 +136,8 @@ class model():
               save_model: bool=False):
 
         """
-        training scAR model
+        Training scAR model
+        
         Parameters
         ----------
         batch_size
@@ -159,12 +161,16 @@ class model():
         dropout_prob
             Dropout probability of nodes (float). Default: 0
         TensorBoard
-            Whether output training details through Tensorboard (bool). Default: False. Under development...
+            Whether output training details through Tensorboard (bool). Default: False. Under development.
         plot_every_epoch
-            The epochs by which diagnostic plots will be generated in TensorBoard (int). Default: 50. Under development...
+            The epochs by which diagnostic plots will be generated in TensorBoard (int). Default: 50. Under development.
         save_model
-            Whether to save trained models. Default: False. Under development...
+            Whether to save trained models. Default: False. Under development.
 
+        Return
+        --------
+        After training, a trained_model attribute will be added.
+        
         Examples
         --------
         >>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
@@ -268,7 +274,7 @@ class model():
                     writer.flush()
 
                 ################################################################################
-                ## Save intermediate results every 100 epoch...
+                ## Save intermediate results every 50 epoch...
                 ################################################################################
                 if (epoch % plot_every_epoch == plot_every_epoch-1) and TensorBoard:
 
@@ -305,7 +311,40 @@ class model():
 
     # Inference
     @torch.no_grad()
-    def inference(self, batch_size=None, model='poisson', adjust='micro'):
+    def inference(self, batch_size=None, model='poisson', adjust='micro', feature_type='sgRNAs', cutoff=3, MOI=None):
+        """
+        Infering the expected native signals, noise ratios, Bayesfactors, and expected native frequencies
+        Parameters
+        ----------
+        batch_size
+            Batch_size (int). Set a value upon GPU memory issue. Default: None.
+        model
+            Inference model for evaluation of ambient presence (str). Default: poisson.
+        adjust
+            Used only for calculating Bayesfactors to improve performance. One of the following:
+                'micro' -- adjust the estimated native counts per cell. This can overcome the issue of over- or under-estimation of noise. Default.
+                'global' -- adjust the estimated native counts globally. This can overcome the issue of over- or under-estimation of noise.
+                False -- no adjustment, use the model-returned native counts.
+        feature_type
+            Feature types (string), e.g., 'sgRNAs', 'CMOs', 'Tags', and etc..
+        cutoff
+            Cutoff for Bayesfactors. Default: 3. See https://doi.org/10.1007/s42113-019-00070-x.
+        MOI
+            Multiplicity of Infection. If assigned, it will allow optimized thresholding, which tests a series of cutoffs to find the best one based on distributions of infections under given MOI. See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development.
+        
+        Return
+        --------
+        After inferring, several attributes will be added, inc. native_counts, bayesfactor, native_frequencies, and noise_ratio. a feature_assignment will be added in 'CROPseq' mode.
+    
+        Examples
+        -------- 
+        >>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+        >>> scarObj.train()
+        >>> scarObj.inference()
+        >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
+        >>> adata.obsm["X_scAR_assignment"] = scarObj.assignment
+
+        """
         
         print('===========================================\n  Inferring .....')
         total_set = UMIDataset(self.raw_count, self.empty_profile)
@@ -320,7 +359,7 @@ class model():
             batch_size = sample_size
         i = 0
         self.total_generator = torch.utils.data.DataLoader(total_set, batch_size=batch_size, shuffle=False)
-        
+               
         for x_batch_tot, ambient_freq_tot in self.total_generator:
 
             minibatch_size = x_batch_tot.shape[0] # if not last batch, equals to batch size
@@ -331,24 +370,30 @@ class model():
             self.native_frequencies[i*batch_size:i*batch_size + minibatch_size,:] = native_frequencies_batch
             self.noise_ratio[i*batch_size:i*batch_size + minibatch_size,:] = noise_ratio_batch
             i += 1
+        
+        if self.scRNAseq_tech.lower() == 'cropseq':
+            self.assignment(feature_type=feature_type, cutoff=cutoff, MOI=MOI)
     
-#     def assignment(self, feature_type='sgRNAs', cutoff=3, MOI=None):
+    def assignment(self, feature_type='sgRNAs', cutoff=3, MOI=None):
 
-#         feature_assignment = pd.DataFrame(index=range(self.bayesfactor.shape[0],columns=[feature_type, f'n_{feature_type}'])
-#         for cell, row in feature_assignment.iterrows():
-#             sgRNA_max_exp = row[row==row.max()]
-#             if row.max()==0:
-#                 sgRNA_assign.loc[cell, f'n_{feature_type}'] = 0
-#                 sgRNA_assign.loc[cell, feature_type] = np.nan
-#             elif len(sgRNA_max_exp)==1:
-#                 sgRNA_assign.loc[cell, f'n_{feature_type}'] = 1
-#                 sgRNA_assign.loc[cell, feature_type] = sgRNA_max_exp.index[0]
-#             else:
-#                 sgRNA_assign.loc[cell, f'n_{feature_type}'] = 2
-#                 sgRNA_assign.loc[cell, feature_type] = (', ').join(sgRNA_max_exp.index)
-
-#         return sgRNA_assign
-            
+        feature_assignment = pd.DataFrame(index=self.cellID, columns=[feature_type, f'n_{feature_type}'])
+        bayesfactor_df = pd.DataFrame(self.bayesfactor, index=self.cellID, columns=self.feature_names)
+        bayesfactor_df[bayesfactor_df<cutoff] = 0  # Apply the cutoff for Bayesfactors
+        
+        for cell, row in bayesfactor_df.iterrows():
+            bayesfactor_max = row[row==row.max()]
+            if row.max()==0:
+                feature_assignment.loc[cell, f'n_{feature_type}'] = 0
+                feature_assignment.loc[cell, feature_type] = np.nan
+            elif len(bayesfactor_max)==1:
+                feature_assignment.loc[cell, f'n_{feature_type}'] = 1
+                feature_assignment.loc[cell, feature_type] = bayesfactor_max.index[0]
+            else:
+                feature_assignment.loc[cell, f'n_{feature_type}'] = 2
+                feature_assignment.loc[cell, feature_type] = (', ').join(bayesfactor_max.index)
+        
+        self.feature_assignment = feature_assignment
+        
 class UMIDataset(torch.utils.data.Dataset):
     'Characterizes dataset for PyTorch'
     

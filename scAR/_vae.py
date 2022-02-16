@@ -38,6 +38,7 @@ class VAE(nn.Module):
         dec_nr, dec_prob, dec_dp = self.decoder(z)
         return z, dec_nr, dec_prob,  mu, var, dec_dp
     
+    @torch.no_grad()
     def inference(self, x, amb_prob, model='poisson', adjust = 'micro'):
         """
         Inference of presence of native signal
