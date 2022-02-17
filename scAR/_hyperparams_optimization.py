@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import GPy
 import GPyOpt
 from sklearn.metrics import r2_score

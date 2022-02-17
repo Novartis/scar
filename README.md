@@ -49,7 +49,21 @@ $ pip install .
 
 There are two ways to run scAR.
 
-1) Run scAR from the command line,
+1) Use scAR API if you are Python users
+
+```sh
+>>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+>>> scarObj.train()
+>>> scarObj.inference()
+>>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
+>>> adata.obsm["X_scAR_assignment"] = scarObj.feature_assignment  # feature assignment, e.g., sgRNAs, tags, and etc.. Only available in 'cropseq' mode
+```
+
+
+See the [tutorial for denoising mRNA](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_mRNA_denoising.ipynb)
+
+
+2) Run scAR from the command line
 ```sh
 $ scar raw_count_matrix.pickle -t technology -e empty_profile.pickle -o output
 ```
@@ -60,7 +74,6 @@ $ scar raw_count_matrix.pickle -t technology -e empty_profile.pickle -o output
 
 Use `scar --help` command to see other optional arguments and parameters.
 
-#### Output
 
 The output folder contains four files:   
 
@@ -68,20 +81,9 @@ The output folder contains four files:
 	├── denoised_counts.pickle		# denoised count matrix
 	├── expected_noise_ratio.pickle	# estimated noise ratio
 	├── BayesFactor.pickle			# bayesian factor of ambient contamination
+	├── assignment.pickle			# feature assignment, e.g., sgRNAs, tags, and etc.. Output only in 'cropseq' mode
 	└── expected_native_freq.pickle	# estimated native frequencies
 
-2) Using scAR API
-
-```sh
->>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
->>> scarObj.train()
->>> scarObj.inference()
->>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
->>> adata.obsm["X_scAR_assignment"] = scarObj.assignment
-```
-
-
-See the [tutorial for denoising mRNA](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_mRNA_denoising.ipynb)
 
 
 ## Dependencies

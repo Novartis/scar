@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import torch.nn as nn
 import torch
 from torch.distributions import Normal, kl_divergence, Multinomial, Binomial, Poisson

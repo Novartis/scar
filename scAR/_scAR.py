@@ -66,7 +66,7 @@ class model():
     >>> scarObj.train()
     >>> scarObj.inference()
     >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
-    >>> adata.obsm["X_scAR_assignment"] = scarObj.assignment
+    >>> adata.obsm["X_scAR_assignment"] = scarObj.feature_assignment  # in 'cropseq' mode
     
     """
 
@@ -177,7 +177,7 @@ class model():
         >>> scarObj.train()
         >>> scarObj.inference()
         >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
-        >>> adata.obsm["X_scAR_assignment"] = scarObj.assignment
+        >>> adata.obsm["X_scAR_assignment"] = scarObj.feature_assignment   # in 'cropseq' mode
 
         """
 
@@ -321,7 +321,7 @@ class model():
         model
             Inference model for evaluation of ambient presence (str). Default: poisson.
         adjust
-            Used only for calculating Bayesfactors to improve performance. One of the following:
+            Only used for calculating Bayesfactors to improve performance. One of the following:
                 'micro' -- adjust the estimated native counts per cell. This can overcome the issue of over- or under-estimation of noise. Default.
                 'global' -- adjust the estimated native counts globally. This can overcome the issue of over- or under-estimation of noise.
                 False -- no adjustment, use the model-returned native counts.
@@ -342,7 +342,7 @@ class model():
         >>> scarObj.train()
         >>> scarObj.inference()
         >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
-        >>> adata.obsm["X_scAR_assignment"] = scarObj.assignment
+        >>> adata.obsm["X_scAR_assignment"] = scarObj.feature_assignment  # in 'cropseq' mode
 
         """
         
@@ -373,6 +373,8 @@ class model():
         
         if self.scRNAseq_tech.lower() == 'cropseq':
             self.assignment(feature_type=feature_type, cutoff=cutoff, MOI=MOI)
+        else:
+            self.feature_assignment = None
     
     def assignment(self, feature_type='sgRNAs', cutoff=3, MOI=None):
 
