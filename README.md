@@ -59,8 +59,7 @@ There are two ways to run scAR.
 >>> adata.obsm["X_scAR_assignment"] = scarObj.feature_assignment  # feature assignment, e.g., sgRNAs, tags, and etc.. Only available in 'cropseq' mode
 ```
 
-
-See the [tutorial for denoising mRNA](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_mRNA_denoising.ipynb)
+See the [tutorials](#Resources)
 
 
 2) Run scAR from the command line
@@ -75,14 +74,14 @@ $ scar raw_count_matrix.pickle -t technology -e empty_profile.pickle -o output
 Use `scar --help` command to see other optional arguments and parameters.
 
 
-The output folder contains four files:   
+The output folder contains four (or five) files:   
 
 	output
 	├── denoised_counts.pickle		# denoised count matrix
 	├── expected_noise_ratio.pickle	# estimated noise ratio
 	├── BayesFactor.pickle			# bayesian factor of ambient contamination
-	├── assignment.pickle			# feature assignment, e.g., sgRNAs, tags, and etc.. Output only in 'cropseq' mode
-	└── expected_native_freq.pickle	# estimated native frequencies
+	├── expected_native_freq.pickle	# estimated native frequencies
+	└── assignment.pickle			# feature assignment, e.g., sgRNAs, tags, and etc.. Gernerated under 'cropseq' mode
 
 
 
@@ -97,9 +96,10 @@ The output folder contains four files:
 
 ## Resources
 
-- Tutorials and API will be available in the [documentation](docs/tutorials).
-    - [denoising scRNAseq data](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_mRNA_denoising.ipynb)
-    - [denoising CITEseq data](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_denoising_CITEseq.ipynb)
+- Tutorials:
+    - [sgRNA Assignment single-cell CRISPR screens](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_sgRNA_assignment.ipynb)
+    - [Denoising protein data for CITE-seq](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_denoising_CITEseq.ipynb)
+    - [Denoising mRNA data for scRNAseq](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_mRNA_denoising.ipynb)
 - If you'd like to contribute, please contact Caibin (caibin.sheng@novartis.com).
 - Please use the [issues](https://github.com/CaibinSh/scAR/issues) to submit bug reports.
 
