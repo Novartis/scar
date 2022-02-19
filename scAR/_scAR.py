@@ -329,7 +329,7 @@ class model():
             Feature types (string), e.g., 'sgRNAs', 'CMOs', 'Tags', and etc..
         cutoff
             Cutoff for Bayesfactors. Default: 3. See https://doi.org/10.1007/s42113-019-00070-x.
-        MOI
+        MOI(Under development)
             Multiplicity of Infection. If assigned, it will allow optimized thresholding, which tests a series of cutoffs to find the best one based on distributions of infections under given MOI. See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development.
         
         Return
@@ -391,7 +391,7 @@ class model():
                 feature_assignment.loc[cell, f'n_{feature_type}'] = 1
                 feature_assignment.loc[cell, feature_type] = bayesfactor_max.index[0]
             else:
-                feature_assignment.loc[cell, f'n_{feature_type}'] = 2
+                feature_assignment.loc[cell, f'n_{feature_type}'] = len(bayesfactor_max)
                 feature_assignment.loc[cell, feature_type] = (', ').join(bayesfactor_max.index)
         
         self.feature_assignment = feature_assignment
