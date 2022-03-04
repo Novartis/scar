@@ -18,7 +18,7 @@ setup(
     url='https://github.com/CaibinSh/scAR',
     license='MIT',
     install_requires=[
-        "torch==1.10.0",
+        "torch>=1.10.0",
         "pandas>=1.3.4",
         "torchvision>=0.9.0",
         "torchaudio>=0.8.0",

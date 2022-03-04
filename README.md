@@ -28,21 +28,20 @@ Clone this repository,
 $ git clone https://github.com/CaibinSh/scAR.git
 ```
 
-To install the dependencies, create a conda environment:
-```sh
-$ conda env create -f scAR.yml
-```
-
-Locate to scAR directory:
+Enter the cloned directory:
 
 ```sh
 $ cd scAR
 ```
 
-Pip install scAR:
-
+To install the dependencies, create a conda environment:
 ```sh
-$ pip install .
+$ conda env create -f scAR.yml
+```
+
+To activate the scAR conda environment run:
+```sh
+$ conda activate scAR
 ```
 
 ## Usage
