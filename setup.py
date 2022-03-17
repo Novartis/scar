@@ -3,7 +3,7 @@ from glob import glob
 import os.path
 
 # Set __version__
-exec(open('scAR/__init__.py').read())
+exec(open('scAR/main/__init__.py').read())
 
 setup(
     name='scAR',
@@ -13,12 +13,12 @@ setup(
     description="single cell Ambient Remover (scAR): remove ambient signals for single-cell omics data",
     packages=find_packages(),
     entry_points = {
-        'console_scripts': ['scar=scAR.__main__:main'],},
+        'console_scripts': ['scar=scAR.main.__main__:main'],},
     include_package_data=True,
     url='https://github.com/CaibinSh/scAR',
     license='MIT',
     install_requires=[
-        "torch==1.10.0",
+        "torch>=1.10.0",
         "pandas>=1.3.4",
         "torchvision>=0.9.0",
         "torchaudio>=0.8.0",
