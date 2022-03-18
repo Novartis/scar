@@ -9,9 +9,6 @@ from typing import Optional, Union
 from sklearn.model_selection import train_test_split
 from ._vae import VAE
 from ._loss_functions import loss_fn
-from ._helper_functions import (histgram_noise_ratio,  get_correlation_btn_native_ambient,
-                              plt_correlation_btn_native_ambient, assignment_accuracy,
-                              naive_assignment_accuracy, plot_a_sample)
 
 import contextlib
 from tqdm import tqdm
