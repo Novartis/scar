@@ -131,7 +131,6 @@ class model():
               epochs: int=800,
               reconstruction_weight: float=1,
               dropout_prob: float=0,
-              plot_every_epoch: int=50,
               TensorBoard: bool=False,
               save_model: bool=False):
 
@@ -162,8 +161,6 @@ class model():
             Dropout probability of nodes (float). Default: 0
         TensorBoard
             Whether output training details through Tensorboard (bool). Default: False. Under development.
-        plot_every_epoch
-            The epochs by which diagnostic plots will be generated in TensorBoard (int). Default: 50. Under development.
         save_model
             Whether to save trained models. Default: False. Under development.
 
@@ -271,28 +268,6 @@ class model():
                     writer.add_scalar('ValLoss/total loss', val_tot_loss, epoch)
                     writer.add_scalar('ValLoss/reconstruction loss', val_recon_loss, epoch)
                     writer.add_scalar('ValLoss/kld_loss', val_kld_loss, epoch)
-                    writer.flush()
-
-                ################################################################################
-                ## Save intermediate results every 50 epoch...
-                ################################################################################
-                if (epoch % plot_every_epoch == plot_every_epoch-1) and TensorBoard:
-
-                    step = epoch // plot_every_epoch
-                    with torch.no_grad():
-                        z_eval, dec_nr_eval, dec_prob_eval, mu_eval, var_eval, dec_dp_eval = VAE_model(self.total_set.dataset.tensors[0])
-
-                    pr, r2, _, _ = get_correlation_btn_native_ambient(epoch, dec_prob_eval, empty_frequencies=ambient_freq_val[0,:], scRNAseq_tech=self.scRNAseq_tech)
-
-                    writer.add_scalar('RegressionError/correlation coeffcient', pr, epoch)
-                    writer.add_scalar('RegressionError/R2', r2, epoch)
-
-                    # ..log a Matplotlib Figure showing the model's predictions on the full dataset
-                    # 1, noise ratio
-                    writer.add_figure('noise ratio', histgram_noise_ratio(epoch, dec_nr_eval, return_obj=True), global_step=epoch)
-
-                    # 2, native frequencies
-                    writer.add_figure('correlation', plt_correlation_btn_native_ambient(epoch, dec_prob_eval, scRNAseq_tech=self.scRNAseq_tech, empty_frequencies=ambient_freq_val[0,:], return_obj=True), global_step=epoch)
                     writer.flush()
 
         if save_model:
