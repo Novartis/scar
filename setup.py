@@ -23,7 +23,6 @@ setup(
         "torchvision>=0.9.0",
         "torchaudio>=0.8.0",
         "tqdm==4.62.3",
-        "gpyopt",
         "seaborn>=0.11.2",
         "tensorboard>=2.2.1",
         "scikit-learn>=1.0.1",
