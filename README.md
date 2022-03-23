@@ -5,6 +5,9 @@
 ![machine learning](https://img.shields.io/badge/machine_learning-005AF0?style=for-the-badge.svg)
 ![variational autoencoders](https://img.shields.io/badge/variational_autoencoders-005AF0?style=for-the-badge.svg)
 ![denoising](https://img.shields.io/badge/denoising-005AF0?style=for-the-badge.svg)
+<br>
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 
 **scAR** (single cell Ambient Remover) is a package for denoising multiple single cell omics data. It can be used for multiple tasks, such as, **sgRNA assignment** for scCRISPRseq, **identity barcode assignment** for cell indexing, **protein denoising** for CITE-seq, **mRNA denoising** for scRNAseq, and etc... It is built using probabilistic deep learning, illustrated as follows:
 
