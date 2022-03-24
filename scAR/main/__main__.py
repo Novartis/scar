@@ -44,12 +44,8 @@ def main():
         default="scRNAseq",
         help="scRNAseq technology, e.g. scRNAseq, CROPseq, CITEseq, ... etc.",
     )
-    parser.add_argument(
-        "-o", "--output", type=str, default=None, help="output directory"
-    )
-    parser.add_argument(
-        "-m", "--count_model", type=str, default="binomial", help="count model"
-    )
+    parser.add_argument("-o", "--output", type=str, default=None, help="output directory")
+    parser.add_argument("-m", "--count_model", type=str, default="binomial", help="count model")
     parser.add_argument(
         "-tb", "--TensorBoard", type=str, default=False, help="Tensorboard directory"
     )
@@ -74,9 +70,7 @@ def main():
         default=None,
         help="dimension of latent space",
     )
-    parser.add_argument(
-        "-epo", "--epochs", type=int, default=800, help="training epochs"
-    )
+    parser.add_argument("-epo", "--epochs", type=int, default=800, help="training epochs")
     parser.add_argument(
         "-s",
         "--save_model",
@@ -84,9 +78,7 @@ def main():
         default=False,
         help="whether save the trained model",
     )
-    parser.add_argument(
-        "-batchsize", "--batchsize", type=int, default=64, help="batch size"
-    )
+    parser.add_argument("-batchsize", "--batchsize", type=int, default=64, help="batch size")
     parser.add_argument(
         "-adjust",
         "--adjust",
@@ -200,9 +192,9 @@ def main():
         index=count_matrix.index,
         columns=count_matrix.columns,
     ).to_pickle(output_path03)
-    pd.DataFrame(
-        scARObj.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]
-    ).to_pickle(output_path04)
+    pd.DataFrame(scARObj.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]).to_pickle(
+        output_path04
+    )
 
     print(f"...denoised counts saved in: {output_path01}")
     print(f"...BayesFactor matrix saved in: {output_path02}")
