@@ -1,8 +1,8 @@
+"""Data generater"""
 # -*- coding: utf-8 -*-
 
 import numpy as np
 from numpy import random
-import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -18,11 +18,16 @@ class scRNAseq_synthetic:
     n_celltypes
         The number of cell types or cells with distinct identity barcodes.
     n_features
-        The number of features, e.g., genes or sgRNAs or cell indexing barcodes or antibody-conjugated ologos.
+        The number of features, e.g., genes or sgRNAs or cell indexing barcodes \
+        or antibody-conjugated ologos.
     n_total_molecules
-        The total real number of molecules in a cell. Together with the following capture_rate, it defines the total molecules being observed in a cell. By default, 4000.
+        The total real number of molecules in a cell. Together with the following \
+        capture_rate, it defines the total molecules being observed in a cell. \
+        By default, 4000.
     capture_rate
-        The capture rate for each molecule. Together with the above total number of molecules, it defines the total observed molecules in a cell. By default, 0.7.
+        The capture rate for each molecule. Together with the above total number of \
+        molecules, it defines the total observed molecules in a cell. \
+        By default, 0.7.
     """
 
     def __init__(self, n_cells, n_celltypes, n_features, n_total_molecules=8000, capture_rate=0.7):
@@ -35,11 +40,12 @@ class scRNAseq_synthetic:
 
 # Synthetic CITEseq datasets
 class CITEseq(scRNAseq_synthetic):
+    """Synthetic CITEseq datasets"""
     def __init__(self, n_cells, n_celltypes, n_features, n_total_molecules=8000, capture_rate=0.7):
         super().__init__(n_cells, n_celltypes, n_features, n_total_molecules, capture_rate)
 
     def generate(self):
-
+        """generate"""
         # simulate native expression frequencies for each cell
         cell_comp_prior = random.dirichlet(np.ones(self.n_celltypes))
         celltype = random.choice(a=self.n_celltypes, size=self.n_cells, p=cell_comp_prior)
@@ -100,7 +106,7 @@ class CITEseq(scRNAseq_synthetic):
         self.empty_droplets = ambient_signals_empty.astype(int)
 
     def heatmap(self, return_obj=False):
-
+        """heatmap"""
         native_signals = self.native_signals[self.celltype.argsort()]
         ambient_signals = self.ambient_signals[self.celltype.argsort()]
         obs = self.obs_count[self.celltype.argsort()]
@@ -172,8 +178,8 @@ class CROPseq(scRNAseq_synthetic):
         self.noise_ratio = noise_ratio
         self.average_counts_per_cell = average_counts_per_cell
 
-    # generate a pool of sgRNAs
     def set_sgRNA_frequency(self):
+        """generate a pool of sgRNAs"""
         if self.library_pattern == "uniform":
             self.sgRNA_freq = 1.0 / self.n_features
         elif self.library_pattern == "pyramid":
@@ -188,9 +194,8 @@ class CROPseq(scRNAseq_synthetic):
             log_values = (uniform_spaced_values + 0.001) ** (1 / 10)
             self.sgRNA_freq = log_values / np.sum(log_values)
 
-    # generate native signals
     def set_native_signals(self):
-
+        """generate native signal"""
         self.set_sgRNA_frequency()
 
         # cells without any sgRNAs
@@ -199,7 +204,8 @@ class CROPseq(scRNAseq_synthetic):
         # Doublets
         n_doublets = int(self.n_cells * self.doublet_rate)
 
-        # total number of single sgRNAs which are integrated into cells (cells with double sgRNAs will be counted twice)
+        # total number of single sgRNAs which are integrated into cells
+        # (cells with double sgRNAs will be counted twice)
         n_cells_integrated = self.n_cells - n_cells_miss + n_doublets
 
         # create cells with sgRNAs based on sgRNA frequencies
@@ -209,7 +215,7 @@ class CROPseq(scRNAseq_synthetic):
         self.cell_identity = np.eye(self.n_features)[self.celltype]  # cell_identity
 
     def add_ambient(self):
-
+        """add_ambient"""
         self.set_native_signals()
         sgRNA_mixed_freq = (
             1 - self.noise_ratio
@@ -217,9 +223,8 @@ class CROPseq(scRNAseq_synthetic):
         sgRNA_mixed_freq = sgRNA_mixed_freq / sgRNA_mixed_freq.sum(axis=1, keepdims=True)
         return sgRNA_mixed_freq
 
-    # function to generate counts per cell
     def generate(self):
-
+        """generate counts per cell"""
         # generate total counts per cell
         total_counts = random.negative_binomial(
             self.average_counts_per_cell, 0.7, size=self.n_cells
@@ -245,7 +250,7 @@ class CROPseq(scRNAseq_synthetic):
         self.ambient_signals = np.clip(obs - self.native_signals, 0, None)
 
     def heatmap(self, return_obj=False):
-
+        """heatmap"""
         native_signals = self.native_signals[self.celltype.argsort()]
         ambient_signals = self.ambient_signals[self.celltype.argsort()]
         obs = self.obs_count[self.celltype.argsort()]
