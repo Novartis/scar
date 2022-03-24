@@ -17,4 +17,4 @@ jobs:
         pip install pylint
     - name: Run Pylint
       run: |
-        pylint --fail-under 5 scAR
+        pylint scAR --fail-under 5 
