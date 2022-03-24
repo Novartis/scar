@@ -1,23 +1,28 @@
+"""main"""
 # -*- coding: utf-8 -*-
 
-import argparse, os
+import argparse
+import os
 import pandas as pd
-from ._scAR import model
 from scAR.main import __version__
+from ._scAR import model
 
 
 def main():
-
+    """Main function"""
     ##########################################################################################
     ## argument parser
     ##########################################################################################
 
     parser = argparse.ArgumentParser(
-        description="single cell Ambient Remover (scAR): denoising drop-based single-cell omics data",
+        description="single cell Ambient Remover (scAR): denoising drop-based single-cell \
+            omics data",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "--version", action="version", version="%(prog)s {version}".format(version=__version__)
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
     parser.add_argument(
         "count_matrix",
@@ -39,8 +44,12 @@ def main():
         default="scRNAseq",
         help="scRNAseq technology, e.g. scRNAseq, CROPseq, CITEseq, ... etc.",
     )
-    parser.add_argument("-o", "--output", type=str, default=None, help="output directory")
-    parser.add_argument("-m", "--count_model", type=str, default="binomial", help="count model")
+    parser.add_argument(
+        "-o", "--output", type=str, default=None, help="output directory"
+    )
+    parser.add_argument(
+        "-m", "--count_model", type=str, default="binomial", help="count model"
+    )
     parser.add_argument(
         "-tb", "--TensorBoard", type=str, default=False, help="Tensorboard directory"
     )
@@ -59,22 +68,36 @@ def main():
         help="number of neurons in the second layer",
     )
     parser.add_argument(
-        "-ls", "--latent_space", type=int, default=None, help="dimension of latent space"
+        "-ls",
+        "--latent_space",
+        type=int,
+        default=None,
+        help="dimension of latent space",
     )
-    parser.add_argument("-epo", "--epochs", type=int, default=800, help="training epochs")
     parser.add_argument(
-        "-s", "--save_model", type=int, default=False, help="whether save the trained model"
+        "-epo", "--epochs", type=int, default=800, help="training epochs"
     )
-    parser.add_argument("-batchsize", "--batchsize", type=int, default=64, help="batch size")
+    parser.add_argument(
+        "-s",
+        "--save_model",
+        type=int,
+        default=False,
+        help="whether save the trained model",
+    )
+    parser.add_argument(
+        "-batchsize", "--batchsize", type=int, default=64, help="batch size"
+    )
     parser.add_argument(
         "-adjust",
         "--adjust",
         type=str,
         default="micro",
         help="""Only used  for calculating Bayesfactors to improve performance,
-                                    'micro' -- adjust the estimated native counts per cell. This can overcome the issue of over- or under-estimation of noise. Default.
-                                    'global' -- adjust the estimated native counts globally. This can overcome the issue of over- or under-estimation of noise.
-                                    False -- no adjustment, use the model-returned native counts.""",
+                'micro' -- adjust the estimated native counts per cell. \
+                    This can overcome the issue of over- or under-estimation of noise. Default.
+                'global' -- adjust the estimated native counts globally. \
+                    This can overcome the issue of over- or under-estimation of noise.
+                False -- no adjustment, use the model-returned native counts.""",
     )
     parser.add_argument(
         "-ft",
@@ -95,7 +118,10 @@ def main():
         "--MOI",
         type=float,
         default=None,
-        help="Multiplicity of Infection. If assigned, it will allow optimized thresholding, which tests a series of cutoffs to find the best one based on distributions of infections under given MOI. See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development.",
+        help="Multiplicity of Infection. If assigned, it will allow optimized thresholding, \
+            which tests a series of cutoffs to find the best one based on distributions of \
+            infections under given MOI. \
+            See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development.",
     )
 
     args = parser.parse_args()
@@ -143,7 +169,10 @@ def main():
     )
 
     scARObj.train(
-        batch_size=batch_size, epochs=epochs, TensorBoard=TensorBoard, save_model=save_model
+        batch_size=batch_size,
+        epochs=epochs,
+        TensorBoard=TensorBoard,
+        save_model=save_model,
     )
 
     scARObj.inference(adjust=adjust)
@@ -153,10 +182,10 @@ def main():
 
     print("===========================================\n  Saving results...")
     output_path01, output_path02, output_path03, output_path04 = (
-        os.path.join(output_dir, f"denoised_counts.pickle"),
-        os.path.join(output_dir, f"BayesFactor.pickle"),
-        os.path.join(output_dir, f"native_frequency.pickle"),
-        os.path.join(output_dir, f"noise_ratio.pickle"),
+        os.path.join(output_dir, "denoised_counts.pickle"),
+        os.path.join(output_dir, "BayesFactor.pickle"),
+        os.path.join(output_dir, "native_frequency.pickle"),
+        os.path.join(output_dir, "noise_ratio.pickle"),
     )
 
     # save results
@@ -167,11 +196,13 @@ def main():
         scARObj.bayesfactor, index=count_matrix.index, columns=count_matrix.columns
     ).to_pickle(output_path02)
     pd.DataFrame(
-        scARObj.native_frequencies, index=count_matrix.index, columns=count_matrix.columns
+        scARObj.native_frequencies,
+        index=count_matrix.index,
+        columns=count_matrix.columns,
     ).to_pickle(output_path03)
-    pd.DataFrame(scARObj.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]).to_pickle(
-        output_path04
-    )
+    pd.DataFrame(
+        scARObj.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]
+    ).to_pickle(output_path04)
 
     print(f"...denoised counts saved in: {output_path01}")
     print(f"...BayesFactor matrix saved in: {output_path02}")
@@ -179,11 +210,11 @@ def main():
     print(f"...expected noise ratio saved in: {output_path04}")
 
     if scRNAseq_tech.lower() == "cropseq":
-        output_path05 = os.path.join(output_dir, f"assignment.pickle")
+        output_path05 = os.path.join(output_dir, "assignment.pickle")
         scARObj.feature_assignment.to_pickle(output_path05)
         print(f"...assignment saved in: {output_path05}")
 
-    print(f"===========================================\n  Done!!!")
+    print("===========================================\n  Done!!!")
 
 
 if __name__ == "__main__":

@@ -17,4 +17,4 @@ jobs:
         pip install pylint
     - name: Run Pylint
       run: |
-        pylint scAR
+        pylint scAR --disable=C0103 --disable=R0914 --disable=R0915
