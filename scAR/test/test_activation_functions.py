@@ -27,7 +27,8 @@ class ActivationFunctionsTest(unittest.TestCase):
         """
         self.assertTrue(
             torch.allclose(
-                hnormalization(torch.tensor(numpy.full((20, 8), 1))).double(), torch.tensor(numpy.full((20, 8), 0.1250))
+                hnormalization(torch.tensor(numpy.full((20, 8), 1))).double(),
+                torch.tensor(numpy.full((20, 8), 0.1250)),
             )
         )
 
@@ -37,6 +38,7 @@ class ActivationFunctionsTest(unittest.TestCase):
         """
         self.assertTrue(
             torch.allclose(
-                mySoftplus(torch.tensor(numpy.full((20, 8), 0.1))).double(), torch.tensor(numpy.full((20, 8), 0.7444))
+                mySoftplus(torch.tensor(numpy.full((20, 8), 0.1))).double(),
+                torch.tensor(numpy.full((20, 8), 0.7444)),
             )
         )

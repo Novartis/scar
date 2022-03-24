@@ -24,9 +24,9 @@ def get_reconstruction_loss(x, dec_nr, dec_prob, amb_prob, dec_dp, model):
     prob_tot = dec_prob * (1 - dec_nr) + amb_prob * dec_nr
 
     if model.lower() == "zeroinflatedpoisson":
-        recon_loss = -ZeroInflatedPoisson(rate=tot_count * prob_tot / (1 - dec_dp), gate=dec_dp, validate_args=False).log_prob(
-            x
-        )
+        recon_loss = -ZeroInflatedPoisson(
+            rate=tot_count * prob_tot / (1 - dec_dp), gate=dec_dp, validate_args=False
+        ).log_prob(x)
         recon_loss = torch.nan_to_num(recon_loss, nan=1e-7, posinf=1e15, neginf=-1e15)
         recon_loss = recon_loss.sum(axis=1).mean()
 
@@ -45,7 +45,18 @@ def get_reconstruction_loss(x, dec_nr, dec_prob, amb_prob, dec_dp, model):
     return recon_loss
 
 
-def loss_fn(x, dec_nr, dec_prob, mu, var, amb_prob, reconstruction_weight, kld_weight=1e-5, dec_dp=None, model="binomial"):
+def loss_fn(
+    x,
+    dec_nr,
+    dec_prob,
+    mu,
+    var,
+    amb_prob,
+    reconstruction_weight,
+    kld_weight=1e-5,
+    dec_dp=None,
+    model="binomial",
+):
 
     recon_loss = get_reconstruction_loss(x, dec_nr, dec_prob, amb_prob, dec_dp=dec_dp, model=model)
     kld_loss = kld(mu, var).sum()

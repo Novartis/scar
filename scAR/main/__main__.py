@@ -16,9 +16,14 @@ def main():
         description="single cell Ambient Remover (scAR): denoising drop-based single-cell omics data",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument("--version", action="version", version="%(prog)s {version}".format(version=__version__))
     parser.add_argument(
-        "count_matrix", type=str, nargs="+", help="the file of observed count matrix, 2D array (cells x genes)"
+        "--version", action="version", version="%(prog)s {version}".format(version=__version__)
+    )
+    parser.add_argument(
+        "count_matrix",
+        type=str,
+        nargs="+",
+        help="the file of observed count matrix, 2D array (cells x genes)",
     )
     parser.add_argument(
         "-e",
@@ -36,12 +41,30 @@ def main():
     )
     parser.add_argument("-o", "--output", type=str, default=None, help="output directory")
     parser.add_argument("-m", "--count_model", type=str, default="binomial", help="count model")
-    parser.add_argument("-tb", "--TensorBoard", type=str, default=False, help="Tensorboard directory")
-    parser.add_argument("-hl1", "--hidden_layer1", type=int, default=None, help="number of neurons in the first layer")
-    parser.add_argument("-hl2", "--hidden_layer2", type=int, default=None, help="number of neurons in the second layer")
-    parser.add_argument("-ls", "--latent_space", type=int, default=None, help="dimension of latent space")
+    parser.add_argument(
+        "-tb", "--TensorBoard", type=str, default=False, help="Tensorboard directory"
+    )
+    parser.add_argument(
+        "-hl1",
+        "--hidden_layer1",
+        type=int,
+        default=None,
+        help="number of neurons in the first layer",
+    )
+    parser.add_argument(
+        "-hl2",
+        "--hidden_layer2",
+        type=int,
+        default=None,
+        help="number of neurons in the second layer",
+    )
+    parser.add_argument(
+        "-ls", "--latent_space", type=int, default=None, help="dimension of latent space"
+    )
     parser.add_argument("-epo", "--epochs", type=int, default=800, help="training epochs")
-    parser.add_argument("-s", "--save_model", type=int, default=False, help="whether save the trained model")
+    parser.add_argument(
+        "-s", "--save_model", type=int, default=False, help="whether save the trained model"
+    )
     parser.add_argument("-batchsize", "--batchsize", type=int, default=64, help="batch size")
     parser.add_argument(
         "-adjust",
@@ -79,7 +102,9 @@ def main():
     count_matrix_path = args.count_matrix[0]
     empty_profile_path = args.empty_profile
     scRNAseq_tech = args.technology
-    output_dir = os.getcwd() if not args.output else args.output  # if None, output to current directory
+    output_dir = (
+        os.getcwd() if not args.output else args.output
+    )  # if None, output to current directory
     count_model = args.count_model
     TensorBoard = args.TensorBoard
     NN_layer1 = args.hidden_layer1
@@ -117,7 +142,9 @@ def main():
         model=count_model,
     )
 
-    scARObj.train(batch_size=batch_size, epochs=epochs, TensorBoard=TensorBoard, save_model=save_model)
+    scARObj.train(
+        batch_size=batch_size, epochs=epochs, TensorBoard=TensorBoard, save_model=save_model
+    )
 
     scARObj.inference(adjust=adjust)
 
@@ -133,10 +160,18 @@ def main():
     )
 
     # save results
-    pd.DataFrame(scARObj.native_counts, index=count_matrix.index, columns=count_matrix.columns).to_pickle(output_path01)
-    pd.DataFrame(scARObj.bayesfactor, index=count_matrix.index, columns=count_matrix.columns).to_pickle(output_path02)
-    pd.DataFrame(scARObj.native_frequencies, index=count_matrix.index, columns=count_matrix.columns).to_pickle(output_path03)
-    pd.DataFrame(scARObj.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]).to_pickle(output_path04)
+    pd.DataFrame(
+        scARObj.native_counts, index=count_matrix.index, columns=count_matrix.columns
+    ).to_pickle(output_path01)
+    pd.DataFrame(
+        scARObj.bayesfactor, index=count_matrix.index, columns=count_matrix.columns
+    ).to_pickle(output_path02)
+    pd.DataFrame(
+        scARObj.native_frequencies, index=count_matrix.index, columns=count_matrix.columns
+    ).to_pickle(output_path03)
+    pd.DataFrame(scARObj.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]).to_pickle(
+        output_path04
+    )
 
     print(f"...denoised counts saved in: {output_path01}")
     print(f"...BayesFactor matrix saved in: {output_path02}")

@@ -12,7 +12,16 @@ from ._activation_functions import mytanh, hnormalization
 
 
 class VAE(nn.Module):
-    def __init__(self, n_genes, fc1_dim, fc2_dim, enc_dim, scRNAseq_tech="scRNAseq", dropout_prob=0, model="binomial"):
+    def __init__(
+        self,
+        n_genes,
+        fc1_dim,
+        fc2_dim,
+        enc_dim,
+        scRNAseq_tech="scRNAseq",
+        dropout_prob=0,
+        model="binomial",
+    ):
         super().__init__()
         assert scRNAseq_tech.lower() in ["scrnaseq", "cropseq", "citeseq"]
         assert model.lower() in ["binomial", "poisson", "zeroinflatedpoisson"]
@@ -22,7 +31,9 @@ class VAE(nn.Module):
             fc1_dim, fc2_dim, enc_dim = 150, 100, 15
 
         self.encoder = Encoder(n_genes, fc1_dim, fc2_dim, enc_dim, dropout_prob)
-        self.decoder = Decoder(n_genes, fc1_dim, fc2_dim, enc_dim, scRNAseq_tech, dropout_prob, model)
+        self.decoder = Decoder(
+            n_genes, fc1_dim, fc2_dim, enc_dim, scRNAseq_tech, dropout_prob, model
+        )
 
         print("..Running VAE using the following param set:")
         print("......scAR mode: ", scRNAseq_tech)

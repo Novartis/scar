@@ -82,11 +82,17 @@ class model:
         if isinstance(raw_count, str):
             raw_count = pd.read_pickle(raw_count)
         elif isinstance(raw_count, np.ndarray):
-            raw_count = pd.DataFrame(raw_count, index=range(raw_count.shape[0]), columns=range(raw_count.shape[1]))
+            raw_count = pd.DataFrame(
+                raw_count, index=range(raw_count.shape[0]), columns=range(raw_count.shape[1])
+            )
         elif isinstance(raw_count, pd.DataFrame):
             pass
         else:
-            raise TypeError("Expecting str or np.array or pd.DataFrame object, but get a {}".format(type(raw_count)))
+            raise TypeError(
+                "Expecting str or np.array or pd.DataFrame object, but get a {}".format(
+                    type(raw_count)
+                )
+            )
         raw_count = raw_count.fillna(0)  # replace missing values with zeros
 
         if isinstance(empty_profile, str):
@@ -101,10 +107,16 @@ class model:
             empty_profile = raw_count.sum() / raw_count.sum().sum()
             empty_profile = empty_profile.fillna(0).values
         else:
-            raise TypeError("Expecting str / np.array / None / pd.DataFrame, but get a {}".format(type(empty_profile)))
+            raise TypeError(
+                "Expecting str / np.array / None / pd.DataFrame, but get a {}".format(
+                    type(empty_profile)
+                )
+            )
 
         if empty_profile.squeeze().ndim == 1:
-            empty_profile = empty_profile.squeeze().reshape(1, -1).repeat(raw_count.shape[0], axis=0)
+            empty_profile = (
+                empty_profile.squeeze().reshape(1, -1).repeat(raw_count.shape[0], axis=0)
+            )
 
         self.cellID = list(raw_count.index)
         self.feature_names = list(raw_count.columns)
@@ -185,7 +197,9 @@ class model:
 
         # Generators
         training_set = UMIDataset(self.raw_count, self.empty_profile, train_IDs)
-        training_generator = torch.utils.data.DataLoader(training_set, batch_size=batch_size, shuffle=shuffle)
+        training_generator = torch.utils.data.DataLoader(
+            training_set, batch_size=batch_size, shuffle=shuffle
+        )
 
         val_set = UMIDataset(self.raw_count, self.empty_profile, test_IDs)
         val_generator = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=shuffle)
@@ -285,7 +299,9 @@ class model:
                     VAE_model.eval()
                     for x_batch_val, ambient_freq_val in val_generator:
 
-                        z_val, dec_nr_val, dec_prob_val, mu_val, var_val, dec_dp_val = VAE_model(x_batch_val)
+                        z_val, dec_nr_val, dec_prob_val, mu_val, var_val, dec_dp_val = VAE_model(
+                            x_batch_val
+                        )
                         recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(
                             x_batch_val,
                             dec_nr_val,
@@ -331,7 +347,15 @@ class model:
 
     # Inference
     @torch.no_grad()
-    def inference(self, batch_size=None, model="poisson", adjust="micro", feature_type="sgRNAs", cutoff=3, MOI=None):
+    def inference(
+        self,
+        batch_size=None,
+        model="poisson",
+        adjust="micro",
+        feature_type="sgRNAs",
+        cutoff=3,
+        MOI=None,
+    ):
         """
         Infering the expected native signals, noise ratios, Bayesfactors, and expected native frequencies
         Parameters
@@ -378,19 +402,34 @@ class model:
         if not batch_size:
             batch_size = sample_size
         i = 0
-        self.total_generator = torch.utils.data.DataLoader(total_set, batch_size=batch_size, shuffle=False)
+        self.total_generator = torch.utils.data.DataLoader(
+            total_set, batch_size=batch_size, shuffle=False
+        )
 
         for x_batch_tot, ambient_freq_tot in self.total_generator:
 
             minibatch_size = x_batch_tot.shape[0]  # if not last batch, equals to batch size
 
-            native_counts_batch, bayesfactor_batch, native_frequencies_batch, noise_ratio_batch = self.trained_model.inference(
+            (
+                native_counts_batch,
+                bayesfactor_batch,
+                native_frequencies_batch,
+                noise_ratio_batch,
+            ) = self.trained_model.inference(
                 x_batch_tot, ambient_freq_tot[0, :], model=model, adjust=adjust
             )
-            self.native_counts[i * batch_size : i * batch_size + minibatch_size, :] = native_counts_batch
-            self.bayesfactor[i * batch_size : i * batch_size + minibatch_size, :] = bayesfactor_batch
-            self.native_frequencies[i * batch_size : i * batch_size + minibatch_size, :] = native_frequencies_batch
-            self.noise_ratio[i * batch_size : i * batch_size + minibatch_size, :] = noise_ratio_batch
+            self.native_counts[
+                i * batch_size : i * batch_size + minibatch_size, :
+            ] = native_counts_batch
+            self.bayesfactor[
+                i * batch_size : i * batch_size + minibatch_size, :
+            ] = bayesfactor_batch
+            self.native_frequencies[
+                i * batch_size : i * batch_size + minibatch_size, :
+            ] = native_frequencies_batch
+            self.noise_ratio[
+                i * batch_size : i * batch_size + minibatch_size, :
+            ] = noise_ratio_batch
             i += 1
 
         if self.scRNAseq_tech.lower() == "cropseq":
@@ -400,8 +439,12 @@ class model:
 
     def assignment(self, feature_type="sgRNAs", cutoff=3, MOI=None):
 
-        feature_assignment = pd.DataFrame(index=self.cellID, columns=[feature_type, f"n_{feature_type}"])
-        bayesfactor_df = pd.DataFrame(self.bayesfactor, index=self.cellID, columns=self.feature_names)
+        feature_assignment = pd.DataFrame(
+            index=self.cellID, columns=[feature_type, f"n_{feature_type}"]
+        )
+        bayesfactor_df = pd.DataFrame(
+            self.bayesfactor, index=self.cellID, columns=self.feature_names
+        )
         bayesfactor_df[bayesfactor_df < cutoff] = 0  # Apply the cutoff for Bayesfactors
 
         for cell, row in bayesfactor_df.iterrows():
