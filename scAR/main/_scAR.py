@@ -1,22 +1,26 @@
+"""_scAR"""
 # -*- coding: utf-8 -*-
 
+import sys
+import time
+from typing import Optional, Union
+import contextlib
 import pandas as pd
 import numpy as np
-import os, sys, time
 import torch
 from torch.utils.tensorboard import SummaryWriter
-from typing import Optional, Union
 from sklearn.model_selection import train_test_split
-from ._vae import VAE
-from ._loss_functions import loss_fn
-
-import contextlib
 from tqdm import tqdm
 from tqdm.contrib import DummyTqdmFile
 
-# Writing progressbar into stdout rather than stderr, from https://github.com/tqdm/tqdm/blob/master/examples/redirect_print.py
+from ._vae import VAE
+from ._loss_functions import loss_fn
+
+# Writing progressbar into stdout rather than stderr,
+# from https://github.com/tqdm/tqdm/blob/master/examples/redirect_print.py
 @contextlib.contextmanager
 def std_out_err_redirect_tqdm():
+    """std_out_err_redirect_tqdm"""
     orig_out_err = sys.stdout, sys.stderr
     try:
         sys.stdout, sys.stderr = map(DummyTqdmFile, orig_out_err)
@@ -40,7 +44,8 @@ class model:
     raw_count
         Raw count matrix (nd.array, pd.DataFrame, or a path).
     empty_profile
-        Empty profile (a vector or matrix, nd.array, pd.DataFrame, or a path). Default: None, averaging raw counts to estimate the ambinet profile.
+        Empty profile (a vector or matrix, nd.array, pd.DataFrame, or a path).
+        Default: None, averaging raw counts to estimate the ambinet profile.
     NN_layer1
         Neuron number of the first hidden layer (int). Default: 150.
     NN_layer2
@@ -49,14 +54,19 @@ class model:
         Neuron number of the latent space (int). Default: 15.
     scRNAseq_tech
         One of the following:
-            'scRNAseq' -- any mRNA counts, including mRNA counts in single cell CRISPR screens and CITE-seq experiments. Default.
+            'scRNAseq' -- any mRNA counts, including mRNA counts in single cell
+                          CRISPR screens and CITE-seq experiments. Default.
             'CITEseq' -- protein counts for CITEseq
-            'CROPseq' -- sgRNA/identity barcode counts, or any data types of super high sparsity. E.g., in cell indexing experiments, we would expect a single true signal (1) and many negative signals (0) for each cell,
+            'CROPseq' -- sgRNA/identity barcode counts, or any data types of super
+                         high sparsity. E.g., in cell indexing experiments, we would
+                         expect a single true signal (1) and many negative signals
+                         (0) for each cell,
     model
         Count model, one of the following:
             'binomial' -- binomial model. Defualt.
             'poisson' -- poisson model
-            'zeroinflatedpoisson' -- zeroinflatedpoisson model, choose this one when the raw counts are sparse
+            'zeroinflatedpoisson' -- zeroinflatedpoisson model, choose this one when
+             the raw counts are sparse
 
     Examples
     --------
@@ -89,9 +99,7 @@ class model:
             pass
         else:
             raise TypeError(
-                "Expecting str or np.array or pd.DataFrame object, but get a {}".format(
-                    type(raw_count)
-                )
+                f"Expecting str or np.array or pd.DataFrame object, but get a {type(raw_count)}"
             )
         raw_count = raw_count.fillna(0)  # replace missing values with zeros
 
@@ -108,9 +116,7 @@ class model:
             empty_profile = empty_profile.fillna(0).values
         else:
             raise TypeError(
-                "Expecting str / np.array / None / pd.DataFrame, but get a {}".format(
-                    type(empty_profile)
-                )
+                f"Expecting str / np.array / None / pd.DataFrame, but get a {type(empty_profile)}"
             )
 
         if empty_profile.squeeze().ndim == 1:
@@ -164,9 +170,11 @@ class model:
         lr
             Initial learning rate (float). Default: 1e-3.
         lr_step_size
-            Period of learning rate decay (float). Default: 5. See https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html.
+            Period of learning rate decay (float). Default: 5.
+            See https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html.
         lr_gamma
-            Multiplicative factor of learning rate decay (float). Default: 0.97. See https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html.
+            Multiplicative factor of learning rate decay (float). Default: 0.97.
+            See https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html.
         epochs
             Training iterations (float). Default: 800.
         reconstruction_weight
@@ -174,7 +182,8 @@ class model:
         dropout_prob
             Dropout probability of nodes (float). Default: 0
         TensorBoard
-            Whether output training details through Tensorboard (bool). Default: False. Under development.
+            Whether output training details through Tensorboard (bool). Default: False.
+            Under development.
         save_model
             Whether to save trained models. Default: False. Under development.
 
@@ -289,9 +298,9 @@ class model:
 
                 # ...log the running validation loss
                 if TensorBoard:
-                    ###################################################################################
+                    ###############################################################################
                     # model evaluation
-                    ###################################################################################
+                    ###############################################################################
                     val_tot_loss = 0
                     val_kld_loss = 0
                     val_recon_loss = 0
@@ -357,7 +366,9 @@ class model:
         MOI=None,
     ):
         """
-        Infering the expected native signals, noise ratios, Bayesfactors, and expected native frequencies
+        Infering the expected native signals, noise ratios, Bayesfactors, and expected native
+        frequencies
+
         Parameters
         ----------
         batch_size
@@ -366,19 +377,25 @@ class model:
             Inference model for evaluation of ambient presence (str). Default: poisson.
         adjust
             Only used for calculating Bayesfactors to improve performance. One of the following:
-                'micro' -- adjust the estimated native counts per cell. This can overcome the issue of over- or under-estimation of noise. Default.
-                'global' -- adjust the estimated native counts globally. This can overcome the issue of over- or under-estimation of noise.
+                'micro' -- adjust the estimated native counts per cell.
+                This can overcome the issue of over- or under-estimation of noise. Default.
+                'global' -- adjust the estimated native counts globally.
+                This can overcome the issue of over- or under-estimation of noise.
                 False -- no adjustment, use the model-returned native counts.
         feature_type
             Feature types (string), e.g., 'sgRNAs', 'CMOs', 'Tags', and etc..
         cutoff
             Cutoff for Bayesfactors. Default: 3. See https://doi.org/10.1007/s42113-019-00070-x.
         MOI(Under development)
-            Multiplicity of Infection. If assigned, it will allow optimized thresholding, which tests a series of cutoffs to find the best one based on distributions of infections under given MOI. See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development.
+            Multiplicity of Infection. If assigned, it will allow optimized thresholding,
+            which tests a series of cutoffs to find the best one based on distributions of
+            infections under given MOI. See http://dx.doi.org/10.1016/j.cell.2016.11.038.
+            Under development.
 
         Return
         --------
-        After inferring, several attributes will be added, inc. native_counts, bayesfactor, native_frequencies, and noise_ratio. a feature_assignment will be added in 'CROPseq' mode.
+        After inferring, several attributes will be added, inc. native_counts, bayesfactor,
+        native_frequencies, and noise_ratio. a feature_assignment will be added in 'CROPseq' mode.
 
         Examples
         --------
@@ -438,7 +455,7 @@ class model:
             self.feature_assignment = None
 
     def assignment(self, feature_type="sgRNAs", cutoff=3, MOI=None):
-
+        """assignment"""
         feature_assignment = pd.DataFrame(
             index=self.cellID, columns=[feature_type, f"n_{feature_type}"]
         )
@@ -463,7 +480,7 @@ class model:
 
 
 class UMIDataset(torch.utils.data.Dataset):
-    "Characterizes dataset for PyTorch"
+    """Characterizes dataset for PyTorch"""
 
     def __init__(self, raw_count, empty_profile, list_IDs=None):
         "Initialization"
