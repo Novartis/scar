@@ -25,6 +25,12 @@ jobs:
           export PATH="$GITHUB_PATH:$PATH"
           source activate scAR
           scar --help
+      - name: Run pylint
+        run: |
+          export PATH="$GITHUB_PATH:$PATH"
+          source activate scAR
+          conda install pylint
+          pylint scAR --fail-under 5
       - name: Run unit tests
         run: |
           export PATH="$GITHUB_PATH:$PATH"
