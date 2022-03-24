@@ -41,6 +41,7 @@ class scRNAseq_synthetic:
 # Synthetic CITEseq datasets
 class CITEseq(scRNAseq_synthetic):
     """Synthetic CITEseq datasets"""
+
     def __init__(self, n_cells, n_celltypes, n_features, n_total_molecules=8000, capture_rate=0.7):
         super().__init__(n_cells, n_celltypes, n_features, n_total_molecules, capture_rate)
 
