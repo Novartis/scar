@@ -19,7 +19,7 @@ jobs:
           echo $CONDA/bin >> $GITHUB_PATH
       - name: Install dependencies
         run: |
-          conda env create -f scAR.yml
+          conda env create -f scAR-cpu.yml
       - name: Run binary
         run: |
           export PATH="$GITHUB_PATH:$PATH"

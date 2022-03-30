@@ -22,11 +22,11 @@ setup(
         "pandas>=1.3.4",
         "torchvision>=0.9.0",
         "torchaudio>=0.8.0",
-        "tqdm==4.62.3",
+        "tqdm>=4.62.3",
         "seaborn>=0.11.2",
         "tensorboard>=2.2.1",
         "scikit-learn>=1.0.1",
-        "pyro-ppl==1.8.0"
+        "pyro-ppl>=1.8.0"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
