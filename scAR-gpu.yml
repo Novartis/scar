@@ -3,7 +3,6 @@ channels:
 - nvidia
 - pytorch
 - conda-forge
-- anaconda
 dependencies:
 - conda-forge::python>=3.8.6
 - nvidia::cudatoolkit>=11.1
