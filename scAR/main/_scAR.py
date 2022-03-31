@@ -59,7 +59,7 @@ class model():
 
     Examples
     --------
-    >>> from scAR.main._scAR import model
+    >>> from scAR import model
     >>> scarObj = model(adata.X.to_df(), empty_profile)
     >>> scarObj.train()
     >>> scarObj.inference()
@@ -168,7 +168,7 @@ class model():
         
         Examples
         --------
-        >>> from scAR.main._scAR import model
+        >>> from scAR import model
         >>> scarObj = model(adata.X.to_df(), empty_profile)
         >>> scarObj.train()
         >>> scarObj.inference()
@@ -312,7 +312,7 @@ class model():
     
         Examples
         -------- 
-        >>> from scAR.main._scAR import model
+        >>> from scAR import model
         >>> scarObj = model(adata.X.to_df(), empty_profile)
         >>> scarObj.train()
         >>> scarObj.inference()

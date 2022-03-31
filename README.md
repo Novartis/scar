@@ -51,7 +51,7 @@ There are two ways to run scAR.
 1) Use scAR API if you are Python users
 
 ```sh
->>> from scAR.main._scAR import model
+>>> from scAR import model
 >>> scarObj = model(adata.X.to_df(), empty_profile)
 >>> scarObj.train()
 >>> scarObj.inference()
