@@ -3,7 +3,7 @@ from glob import glob
 import os.path
 
 # Set __version__
-exec(open('scAR/main/__init__.py').read())
+exec(open('scAR/__init__.py').read())
 
 setup(
     name='scAR',
@@ -15,7 +15,7 @@ setup(
     entry_points = {
         'console_scripts': ['scar=scAR.main.__main__:main'],},
     include_package_data=True,
-    url='https://github.com/CaibinSh/scAR',
+    url='https://github.com/Novartis/scAR',
     license='MIT',
     install_requires=[
         "torch>=1.10.0",
