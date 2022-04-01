@@ -3,7 +3,7 @@
 import argparse, os
 import pandas as pd
 from ._scAR import model
-from .__init__ import __version__
+from scAR.main import __version__
 
 def main():
     
@@ -24,7 +24,6 @@ def main():
     parser.add_argument('-ls', '--latent_space', type=int, default=None, help='dimension of latent space')
     parser.add_argument('-epo', '--epochs', type=int, default=800, help='training epochs')
     parser.add_argument('-s', '--save_model', type=int, default=False, help='whether save the trained model')
-    parser.add_argument('-plot', '--plot_every_epoch', type=int, default=50, help='plot every epochs')
     parser.add_argument('-batchsize', '--batchsize', type=int, default=64, help='batch size')
     parser.add_argument('-adjust', '--adjust', type=str, default='micro',
                         help='''Only used  for calculating Bayesfactors to improve performance,
@@ -51,7 +50,6 @@ def main():
     latent_space = args.latent_space
     epochs = args.epochs
     save_model = args.save_model
-    plot_every_epoch = args.plot_every_epoch
     batch_size = args.batchsize
     adjust = args.adjust
     feature_type = args.feature_type
@@ -83,7 +81,6 @@ def main():
         
     scARObj.train(batch_size=batch_size,
                   epochs=epochs,
-                  plot_every_epoch=plot_every_epoch,
                   TensorBoard=TensorBoard,
                   save_model=save_model
                  )

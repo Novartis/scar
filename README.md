@@ -1,6 +1,6 @@
 # scAR  
 
-[![scAR](https://img.shields.io/badge/scAR-005AF0?style=for-the-badge&logo=dependabot&logoColor=white.svg)](https://github.com/CaibinSh/scAR)
+[![scAR](https://img.shields.io/badge/scAR-005AF0?style=for-the-badge&logo=dependabot&logoColor=white.svg)](https://github.com/Novartis/scAR)
 ![single-cell omics](https://img.shields.io/badge/single_cell_omics-005AF0?style=for-the-badge.svg)
 ![machine learning](https://img.shields.io/badge/machine_learning-005AF0?style=for-the-badge.svg)
 ![variational autoencoders](https://img.shields.io/badge/variational_autoencoders-005AF0?style=for-the-badge.svg)
@@ -25,24 +25,33 @@
 Clone this repository,
 
 ```sh
-$ git clone https://github.com/CaibinSh/scAR.git
+$ git clone https://github.com/Novartis/scAR.git
 ```
 
-To install the dependencies, create a conda environment:
-```sh
-$ conda env create -f scAR.yml
-```
-
-Locate to scAR directory:
+Enter the cloned directory:
 
 ```sh
 $ cd scAR
 ```
 
-Pip install scAR:
 
+To install the dependencies, create a conda environment:
+
+> Please use `scAR-gpu` if you have an nvidia graphis card and the corresponging driver installed.
 ```sh
-$ pip install .
+$ conda env create -f scAR-gpu.yml
+```
+
+or 
+
+> Please use `scAR-cpu` if you don't have a graphis card availalble.
+```sh
+$ conda env create -f scAR-cpu.yml
+```
+
+To activate the scAR conda environment run:
+```sh
+$ conda activate scAR
 ```
 
 ## Usage
@@ -52,7 +61,8 @@ There are two ways to run scAR.
 1) Use scAR API if you are Python users
 
 ```sh
->>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+>>> from scAR import model
+>>> scarObj = model(adata.X.to_df(), empty_profile)
 >>> scarObj.train()
 >>> scarObj.inference()
 >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
@@ -101,7 +111,7 @@ The output folder contains four (or five) files:
     - [Denoising protein data for CITE-seq](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_denoising_CITEseq.ipynb)
     - [Denoising mRNA data for scRNAseq](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_mRNA_denoising.ipynb)
 - If you'd like to contribute, please contact Caibin (caibin.sheng@novartis.com).
-- Please use the [issues](https://github.com/CaibinSh/scAR/issues) to submit bug reports.
+- Please use the [issues](https://github.com/Novartis/scAR/issues) to submit bug reports.
 
 ## License
 

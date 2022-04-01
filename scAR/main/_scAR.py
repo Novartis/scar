@@ -9,9 +9,6 @@ from typing import Optional, Union
 from sklearn.model_selection import train_test_split
 from ._vae import VAE
 from ._loss_functions import loss_fn
-from ._helper_functions import (histgram_noise_ratio,  get_correlation_btn_native_ambient,
-                              plt_correlation_btn_native_ambient, assignment_accuracy,
-                              naive_assignment_accuracy, plot_a_sample)
 
 import contextlib
 from tqdm import tqdm
@@ -62,7 +59,8 @@ class model():
 
     Examples
     --------
-    >>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+    >>> from scAR import model
+    >>> scarObj = model(adata.X.to_df(), empty_profile)
     >>> scarObj.train()
     >>> scarObj.inference()
     >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
@@ -131,7 +129,6 @@ class model():
               epochs: int=800,
               reconstruction_weight: float=1,
               dropout_prob: float=0,
-              plot_every_epoch: int=50,
               TensorBoard: bool=False,
               save_model: bool=False):
 
@@ -162,8 +159,6 @@ class model():
             Dropout probability of nodes (float). Default: 0
         TensorBoard
             Whether output training details through Tensorboard (bool). Default: False. Under development.
-        plot_every_epoch
-            The epochs by which diagnostic plots will be generated in TensorBoard (int). Default: 50. Under development.
         save_model
             Whether to save trained models. Default: False. Under development.
 
@@ -173,7 +168,8 @@ class model():
         
         Examples
         --------
-        >>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+        >>> from scAR import model
+        >>> scarObj = model(adata.X.to_df(), empty_profile)
         >>> scarObj.train()
         >>> scarObj.inference()
         >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
@@ -202,12 +198,12 @@ class model():
                             f'NN_layer1={self.NN_layer1}, NN_layer2={self.NN_layer2}, latent_space={self.latent_space}, kld_weight={kld_weight}, lr={lr}, epochs={epochs}, reconstruction_weight={reconstruction_weight}, dropout_prob={dropout_prob}', 0)
 
         # Define model
-        VAE_model = VAE(self.num_input_feature, self.NN_layer1, self.NN_layer2, self.latent_space, self.scRNAseq_tech, dropout_prob, model=self.model).cuda()
+        VAE_model = VAE(self.num_input_feature, self.NN_layer1, self.NN_layer2, self.latent_space, self.scRNAseq_tech, dropout_prob, model=self.model).to(self.device)
 
         # Define optimizer
         optim = torch.optim.Adam(VAE_model.parameters(), lr=lr)
         scheduler = torch.optim.lr_scheduler.StepLR(optim, step_size=lr_step_size, gamma=lr_gamma)
-
+    
         print("......kld_weight: ", kld_weight)
         print("......lr: ", lr)
         print("......lr_step_size: ", lr_step_size)
@@ -273,28 +269,6 @@ class model():
                     writer.add_scalar('ValLoss/kld_loss', val_kld_loss, epoch)
                     writer.flush()
 
-                ################################################################################
-                ## Save intermediate results every 50 epoch...
-                ################################################################################
-                if (epoch % plot_every_epoch == plot_every_epoch-1) and TensorBoard:
-
-                    step = epoch // plot_every_epoch
-                    with torch.no_grad():
-                        z_eval, dec_nr_eval, dec_prob_eval, mu_eval, var_eval, dec_dp_eval = VAE_model(self.total_set.dataset.tensors[0])
-
-                    pr, r2, _, _ = get_correlation_btn_native_ambient(epoch, dec_prob_eval, empty_frequencies=ambient_freq_val[0,:], scRNAseq_tech=self.scRNAseq_tech)
-
-                    writer.add_scalar('RegressionError/correlation coeffcient', pr, epoch)
-                    writer.add_scalar('RegressionError/R2', r2, epoch)
-
-                    # ..log a Matplotlib Figure showing the model's predictions on the full dataset
-                    # 1, noise ratio
-                    writer.add_figure('noise ratio', histgram_noise_ratio(epoch, dec_nr_eval, return_obj=True), global_step=epoch)
-
-                    # 2, native frequencies
-                    writer.add_figure('correlation', plt_correlation_btn_native_ambient(epoch, dec_prob_eval, scRNAseq_tech=self.scRNAseq_tech, empty_frequencies=ambient_freq_val[0,:], return_obj=True), global_step=epoch)
-                    writer.flush()
-
         if save_model:
             torch.save(VAE_model, save_model)
 
@@ -338,7 +312,8 @@ class model():
     
         Examples
         -------- 
-        >>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+        >>> from scAR import model
+        >>> scarObj = model(adata.X.to_df(), empty_profile)
         >>> scarObj.train()
         >>> scarObj.inference()
         >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
