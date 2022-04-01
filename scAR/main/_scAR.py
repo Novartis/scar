@@ -59,7 +59,8 @@ class model():
 
     Examples
     --------
-    >>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+    >>> from scAR import model
+    >>> scarObj = model(adata.X.to_df(), empty_profile)
     >>> scarObj.train()
     >>> scarObj.inference()
     >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
@@ -167,7 +168,8 @@ class model():
         
         Examples
         --------
-        >>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+        >>> from scAR import model
+        >>> scarObj = model(adata.X.to_df(), empty_profile)
         >>> scarObj.train()
         >>> scarObj.inference()
         >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
@@ -196,12 +198,12 @@ class model():
                             f'NN_layer1={self.NN_layer1}, NN_layer2={self.NN_layer2}, latent_space={self.latent_space}, kld_weight={kld_weight}, lr={lr}, epochs={epochs}, reconstruction_weight={reconstruction_weight}, dropout_prob={dropout_prob}', 0)
 
         # Define model
-        VAE_model = VAE(self.num_input_feature, self.NN_layer1, self.NN_layer2, self.latent_space, self.scRNAseq_tech, dropout_prob, model=self.model).cuda()
+        VAE_model = VAE(self.num_input_feature, self.NN_layer1, self.NN_layer2, self.latent_space, self.scRNAseq_tech, dropout_prob, model=self.model).to(self.device)
 
         # Define optimizer
         optim = torch.optim.Adam(VAE_model.parameters(), lr=lr)
         scheduler = torch.optim.lr_scheduler.StepLR(optim, step_size=lr_step_size, gamma=lr_gamma)
-
+    
         print("......kld_weight: ", kld_weight)
         print("......lr: ", lr)
         print("......lr_step_size: ", lr_step_size)
@@ -310,7 +312,8 @@ class model():
     
         Examples
         -------- 
-        >>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+        >>> from scAR import model
+        >>> scarObj = model(adata.X.to_df(), empty_profile)
         >>> scarObj.train()
         >>> scarObj.inference()
         >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts

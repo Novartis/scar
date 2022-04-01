@@ -61,7 +61,8 @@ There are two ways to run scAR.
 1) Use scAR API if you are Python users
 
 ```sh
->>> scarObj = scAR.model(adata.X.to_df(), empty_profile)
+>>> from scAR import model
+>>> scarObj = model(adata.X.to_df(), empty_profile)
 >>> scarObj.train()
 >>> scarObj.inference()
 >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
