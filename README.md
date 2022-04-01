@@ -34,9 +34,19 @@ Enter the cloned directory:
 $ cd scAR
 ```
 
+
 To install the dependencies, create a conda environment:
+
+> Please use `scAR-gpu` if you have an nvidia graphis card and the corresponging driver installed.
 ```sh
-$ conda env create -f scAR.yml
+$ conda env create -f scAR-gpu.yml
+```
+
+or 
+
+> Please use `scAR-cpu` if you don't have a graphis card availalble.
+```sh
+$ conda env create -f scAR-cpu.yml
 ```
 
 To activate the scAR conda environment run:
