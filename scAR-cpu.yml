@@ -8,7 +8,6 @@ dependencies:
 - nvidia::cudatoolkit>=11.1
 - pytorch::pytorch>=1.10.0
 - pytorch::torchvision>=0.9.0
-- pytorch::torchaudio>=0.8.0
 - pytorch-mutex=*=cpu
 - conda-forge::tqdm>=4.62.3
 - conda-forge::pandas>=1.3.4
