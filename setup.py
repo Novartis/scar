@@ -21,7 +21,6 @@ setup(
         "torch>=1.10.0",
         "pandas>=1.3.4",
         "torchvision>=0.9.0",
-        "torchaudio>=0.8.0",
         "tqdm>=4.62.3",
         "seaborn>=0.11.2",
         "tensorboard>=2.2.1",
