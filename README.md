@@ -1,8 +1,8 @@
 # scAR  
 
 [![scAR](https://anaconda.org/bioconda/scar/badges/version.svg)](https://anaconda.org/bioconda/scar)
-![Stars](https://img.shields.io/github/stars/Novartis/scar?logo=GitHub&color=red)
-![single-cell omics](https://anaconda.org/bioconda/scar/badges/downloads.svg)
+[![Stars](https://img.shields.io/github/stars/Novartis/scar?logo=GitHub&color=red)](https://github.com/Novartis/scAR)
+![Downloads](https://anaconda.org/bioconda/scar/badges/downloads.svg)
 
 **scAR** (single cell Ambient Remover) is a package for denoising multiple single cell omics data. It can be used for multiple tasks, such as, **sgRNA assignment** for scCRISPRseq, **identity barcode assignment** for cell indexing, **protein denoising** for CITE-seq, **mRNA denoising** for scRNAseq, and etc... It is built using probabilistic deep learning, illustrated as follows:
 
