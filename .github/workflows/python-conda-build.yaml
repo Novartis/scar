@@ -41,6 +41,6 @@ jobs:
         run: |
           export PATH="$GITHUB_PATH:$PATH"
           source activate scAR
-          cd scAR/test
+          cd test
           python test_scar_integration.py
           cd -
