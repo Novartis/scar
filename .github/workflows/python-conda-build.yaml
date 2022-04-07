@@ -36,7 +36,7 @@ jobs:
           export PATH="$GITHUB_PATH:$PATH"
           source activate scAR
           cd /home/runner/work/scAR/scAR/scAR/test
-          python test_scar_integration.py
+          python scar_integration_test.py
           cd -
       - name: Run unit tests
         run: |
