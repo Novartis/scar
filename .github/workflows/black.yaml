@@ -9,6 +9,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: psf/black@stable
         with:
-          options: "--check --diff --verbose --line-length 127"
+          options: "--diff --verbose --line-length 127"
           src: "./scAR"
           version: "22.3.0"
