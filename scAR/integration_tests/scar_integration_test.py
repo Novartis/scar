@@ -1,3 +1,4 @@
+from xml.dom import ValidationErr
 from scAR import model
 import pandas as pd
 import sys
@@ -16,11 +17,7 @@ scarObj.train(epochs=40,
 
 scarObj.inference()
 
-status = scarObj.feature_assignment.equals(expected_output)
-
-if status:
+if scarObj.feature_assignment.equals(expected_output):
     sys.stdout.write(f"Successful integration test.{os.linesep}")
-    sys.exit(0)
 else:
-    sys.stdout.write(f"Error in integration test.{os.linesep}")
-    sys.exit(1)
+    raise ValidationErr(f"Error in integration test.{os.linesep}")
