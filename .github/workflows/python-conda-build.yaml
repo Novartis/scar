@@ -31,6 +31,12 @@ jobs:
           source activate scAR
           conda install pylint
           pylint scAR --fail-under 0.5
+      - name: Run unit tests
+        run: |
+          export PATH="$GITHUB_PATH:$PATH"
+          source activate scAR
+          conda install pytest
+          pytest scAR --ignore scAR/integration_tests
       - name: Run integration tests
         run: |
           export PATH="$GITHUB_PATH:$PATH"
@@ -38,9 +44,4 @@ jobs:
           cd scAR/integration_tests
           python scar_integration_test.py
           cd -
-      - name: Run unit tests
-        run: |
-          export PATH="$GITHUB_PATH:$PATH"
-          source activate scAR
-          conda install pytest
-          pytest scAR --ignore scAR/integration_tests
+
