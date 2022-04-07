@@ -19,7 +19,7 @@ scarObj.inference()
 status = scarObj.feature_assignment.equals(expected_output)
 
 if status:
-    sys.stdout.write(f"Sucessful integration test.{os.linesep}")
+    sys.stdout.write(f"Successful integration test.{os.linesep}")
     sys.exit(0)
 else:
     sys.stdout.write(f"Error in integration test.{os.linesep}")
