@@ -36,12 +36,4 @@ jobs:
           export PATH="$GITHUB_PATH:$PATH"
           source activate scAR
           conda install pytest
-          pytest scAR --ignore scAR/integration_tests
-      - name: Run integration tests
-        run: |
-          export PATH="$GITHUB_PATH:$PATH"
-          source activate scAR
-          cd scAR/integration_tests
-          python scar_integration_test.py
-          cd -
-
+          pytest scAR
