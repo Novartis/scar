@@ -1,6 +1,4 @@
-from logging import root
 import pandas as pd
-from pathlib import Path
 from scAR import model
 import unittest
 
