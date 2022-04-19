@@ -1,10 +1,8 @@
 # scAR  
 
-[![scAR](https://img.shields.io/badge/scAR-005AF0?style=for-the-badge&logo=dependabot&logoColor=white.svg)](https://github.com/Novartis/scAR)
-![single-cell omics](https://img.shields.io/badge/single_cell_omics-005AF0?style=for-the-badge.svg)
-![machine learning](https://img.shields.io/badge/machine_learning-005AF0?style=for-the-badge.svg)
-![variational autoencoders](https://img.shields.io/badge/variational_autoencoders-005AF0?style=for-the-badge.svg)
-![denoising](https://img.shields.io/badge/denoising-005AF0?style=for-the-badge.svg)
+[![scAR](https://anaconda.org/bioconda/scar/badges/version.svg)](https://anaconda.org/bioconda/scar)
+[![Stars](https://img.shields.io/github/stars/Novartis/scar?logo=GitHub&color=red)](https://github.com/Novartis/scAR)
+[![Downloads](https://anaconda.org/bioconda/scar/badges/downloads.svg)](https://anaconda.org/bioconda/scar/files)
 
 **scAR** (single cell Ambient Remover) is a package for denoising multiple single cell omics data. It can be used for multiple tasks, such as, **sgRNA assignment** for scCRISPRseq, **identity barcode assignment** for cell indexing, **protein denoising** for CITE-seq, **mRNA denoising** for scRNAseq, and etc... It is built using probabilistic deep learning, illustrated as follows:
 
@@ -22,7 +20,25 @@
 
 ## Installation
 
-Clone this repository,
+#### Conda
+1, Install [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)  
+2, Create conda environment
+```sh
+$ conda create -n scAR_env
+```
+
+3, Activate conda environment
+```sh
+$ conda activate scAR_env
+```  
+
+4, Install scar
+```sh
+$ conda install -c bioconda scar
+```
+
+#### Git+pip
+Alternatively, clone this repository,
 
 ```sh
 $ git clone https://github.com/Novartis/scAR.git
@@ -61,7 +77,7 @@ There are two ways to run scAR.
 1) Use scAR API if you are Python users
 
 ```sh
->>> from scAR import model
+>>> from scar import model
 >>> scarObj = model(adata.X.to_df(), empty_profile)
 >>> scarObj.train()
 >>> scarObj.inference()
