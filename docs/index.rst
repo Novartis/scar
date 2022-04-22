@@ -11,10 +11,12 @@ Welcome to scAR's documentation!
 .. image:: img/overview_scAR.png
    :width: 1000
 
-
 .. toctree::
    :maxdepth: 2
    
    Installation
    Tutorials
-   *.ipynb
+   API
+   Release notes
+   License
+   Citation
