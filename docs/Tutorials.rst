@@ -12,4 +12,4 @@ sgRNA assignment in single-cell CRISPR screens
 .. toctree::
    :maxdepth: 2
    
-   scAR_tutorial_sgRNA_assignment.ipynb
+   scAR_tutorial_sgRNA_assignment
