@@ -7,3 +7,4 @@
 #tensorboard>=2.2.1
 #scikit-learn>=1.0.1
 #pyro-ppl>=1.8.0
+myst-parser
