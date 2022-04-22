@@ -17,3 +17,4 @@ Welcome to scAR's documentation!
    
    Installation
    Tutorials
+   tutorials/*.ipynb
