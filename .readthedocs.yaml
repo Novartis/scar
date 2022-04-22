@@ -12,6 +12,5 @@ mkdocs:
   fail_on_warning: false
 
 python:
-  version: "3.8"
   install:
     - requirements: docs/requirements.txt
