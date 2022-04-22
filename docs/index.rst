@@ -6,18 +6,14 @@
 Welcome to scAR's documentation!
 ================================
 
+**scAR** (single-cell Ambient Remover) is a package for denoising multiple single cell omics data. It can be used for multiple tasks, such as, sgRNA assignment for scCRISPRseq, identity barcode assignment for cell indexing, protein denoising for CITE-seq, mRNA denoising for scRNAseq, and etc.. It is built using probabilistic deep learning, illustrated as follows:
+
+.. image:: img/overview_scAR.png
+   :width: 1000
+
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-* :ref:`Tutorials`
-* :ref:`License`
-* :ref:`Citation`
+   
+   Installation
+   Tutorials
