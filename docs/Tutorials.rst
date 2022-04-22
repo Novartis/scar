@@ -9,4 +9,7 @@ Tutorials
 sgRNA assignment in single-cell CRISPR screens
 ------------------------------------------------
 
-1, 
+.. toctree::
+   :maxdepth: 2
+   
+   scAR_tutorial_sgRNA_assignment.ipynb

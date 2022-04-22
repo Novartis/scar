@@ -17,5 +17,5 @@ Welcome to scAR's documentation!
    
    Installation
    Tutorials
-   tutorials/*.ipynb
    scAR_tutorial_sgRNA_assignment.ipynb
+   #tutorials/*.ipynb
