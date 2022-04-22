@@ -10,7 +10,7 @@ sgRNA assignment for single-cell CRISPR screens
 ------------------------------------------------
 sgRNA assignment for single-cell CRISPR screens
 
-.. nbgallery::
+.. toctree::
    
    scAR_tutorial_sgRNA_assignment
 
@@ -19,7 +19,7 @@ Denoising protein data for CITE-seq
 ------------------------------------------------
 Denoising protein data for CITE-seq
 
-.. nbgallery::
+.. toctree::
    
    tutorials/scAR_tutorial_denoising_CITEseq
 
@@ -28,7 +28,7 @@ Denoising mRNA data for scRNAseq
 ------------------------------------------------
 Denoising mRNA data for scRNAseq
 
-.. nbgallery::
+.. toctree::
    
    tutorials/scAR_tutorial_mRNA_denoising
 

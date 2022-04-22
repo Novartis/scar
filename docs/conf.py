@@ -34,8 +34,8 @@ release = __version__
 extensions = ['myst_parser',
               'sphinx.ext.autosectionlabel',
               'nbsphinx',
-              'sphinx_gallery.gen_gallery',
-              'sphinx_gallery.load_style',
+              # 'sphinx_gallery.gen_gallery',
+              # 'sphinx_gallery.load_style',
              ] #sphinxcontrib.osexample
 
 nbsphinx_execute = 'never'
