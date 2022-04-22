@@ -41,7 +41,7 @@ nbsphinx_execute = 'never'
 nbsphinx_allow_errors = True
 
 # Add type of source files
-# source_suffix = ['.rst', '.md', '.ipynb']
+source_suffix = ['.rst', '.md'] #, '.ipynb'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['tutorials']
