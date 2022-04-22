@@ -34,14 +34,15 @@ release = __version__
 extensions = ['myst_parser',
               'sphinx.ext.autosectionlabel',
               'nbsphinx',
-              # 'sphinx_gallery.load_style',
+              'sphinx_gallery.gen_gallery',
+              'sphinx_gallery.load_style',
              ] #sphinxcontrib.osexample
 
 nbsphinx_execute = 'never'
 nbsphinx_allow_errors = True
 
 # Add type of source files
-source_suffix = ['.rst', '.md'] #, '.ipynb'
+source_suffix = ['.rst', '.md', '.ipynb'] #, 
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['tutorials']

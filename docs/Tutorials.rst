@@ -10,22 +10,26 @@ sgRNA assignment for single-cell CRISPR screens
 ------------------------------------------------
 sgRNA assignment for single-cell CRISPR screens
 
-.. notebook::
+.. nbgallery::
    
-   scAR_tutorial_sgRNA_assignment.ipynb
+   scAR_tutorial_sgRNA_assignment
 
 
 Denoising protein data for CITE-seq
 ------------------------------------------------
 Denoising protein data for CITE-seq
 
-.. notebook:: tutorials/scAR_tutorial_denoising_CITEseq.ipynb
+.. nbgallery::
+   
+   tutorials/scAR_tutorial_denoising_CITEseq
 
 
 Denoising mRNA data for scRNAseq
 ------------------------------------------------
 Denoising mRNA data for scRNAseq
 
-:ref: 'tutorials/scAR_tutorial_mRNA_denoising.ipynb'
+.. nbgallery::
+   
+   tutorials/scAR_tutorial_mRNA_denoising
 
 Denoising mRNA data for scRNAseq
