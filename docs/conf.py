@@ -33,6 +33,7 @@ release = __version__
 # ones.
 extensions = ['myst_parser',
               'sphinx.ext.autosectionlabel',
+              'nbsphinx',
              ] #sphinxcontrib.osexample
 
 # Add any paths that contain templates here, relative to this directory.
