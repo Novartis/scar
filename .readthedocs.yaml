@@ -5,11 +5,11 @@ build:
   tools:
     python: "3.8"
 
-#sphinx:
-#  configuration: docs/conf.py
-mkdocs:
+sphinx:
+  configuration: docs/conf.py
+#mkdocs:
 #   configuration: mkdocs.yml
-  fail_on_warning: false
+#  fail_on_warning: false
 
 python:
   install:
