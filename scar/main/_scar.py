@@ -28,11 +28,11 @@ def std_out_err_redirect_tqdm():
     finally:
         sys.stdout, sys.stderr = orig_out_err
 
-# scAR object
+# scar object
 class model():
     
     """
-    scAR class object, Single cell Ambient Remover [Sheng2022].
+    scar class object, Single cell Ambient Remover [Sheng2022].
     
     Parameters
     ----------
@@ -59,12 +59,12 @@ class model():
 
     Examples
     --------
-    >>> from scAR import model
+    >>> from scar import model
     >>> scarObj = model(adata.X.to_df(), empty_profile)
     >>> scarObj.train()
     >>> scarObj.inference()
-    >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
-    >>> adata.obsm["X_scAR_assignment"] = scarObj.feature_assignment  # in 'cropseq' mode
+    >>> adata.layers["X_scar_denoised"] = scarObj.native_counts
+    >>> adata.obsm["X_scar_assignment"] = scarObj.feature_assignment  # in 'cropseq' mode
     
     """
 
@@ -133,7 +133,7 @@ class model():
               save_model: bool=False):
 
         """
-        Training scAR model
+        Training scar model
         
         Parameters
         ----------
@@ -168,12 +168,12 @@ class model():
         
         Examples
         --------
-        >>> from scAR import model
+        >>> from scar import model
         >>> scarObj = model(adata.X.to_df(), empty_profile)
         >>> scarObj.train()
         >>> scarObj.inference()
-        >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
-        >>> adata.obsm["X_scAR_assignment"] = scarObj.feature_assignment   # in 'cropseq' mode
+        >>> adata.layers["X_scar_denoised"] = scarObj.native_counts
+        >>> adata.obsm["X_scar_assignment"] = scarObj.feature_assignment   # in 'cropseq' mode
 
         """
 
@@ -312,12 +312,12 @@ class model():
     
         Examples
         -------- 
-        >>> from scAR import model
+        >>> from scar import model
         >>> scarObj = model(adata.X.to_df(), empty_profile)
         >>> scarObj.train()
         >>> scarObj.inference()
-        >>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
-        >>> adata.obsm["X_scAR_assignment"] = scarObj.feature_assignment  # in 'cropseq' mode
+        >>> adata.layers["X_scar_denoised"] = scarObj.native_counts
+        >>> adata.obsm["X_scar_assignment"] = scarObj.feature_assignment  # in 'cropseq' mode
 
         """
         
