@@ -1,4 +1,4 @@
-name: scAR
+name: scar
 channels:
 - nvidia
 - pytorch
