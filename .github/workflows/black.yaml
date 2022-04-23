@@ -10,5 +10,5 @@ jobs:
       - uses: psf/black@stable
         with:
           options: "--diff --verbose --line-length 127"
-          src: "./scAR"
+          src: "./scar"
           version: "22.3.0"
