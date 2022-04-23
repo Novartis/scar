@@ -13,7 +13,6 @@ scAR
 
 .. toctree::
    :maxdepth: 1
-   :titlesonly:
    :caption: Table of Contents
    
    Introduction
@@ -24,3 +23,4 @@ scAR
    Contacts
    License
    Citation
+   GitHub <https://github.com/Novartis/scAR>

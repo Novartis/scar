@@ -12,13 +12,13 @@ Conda install
 
 .. code-block:: console
 
-   conda create -n scAR
+   conda create -n scar
     
 3, Activate conda environment
 
 .. code-block:: console
    
-   conda activate scAR
+   conda activate scar
 
 4, Install scar
 
@@ -29,7 +29,7 @@ Conda install
 
 Git + pip
 ------------
-1, Clone scAR repository,
+1, Clone scar repository,
 
 .. code-block:: console
    
@@ -44,23 +44,23 @@ Git + pip
 3, Create a conda environment,
 
 .. note::
-    Please use `scAR-gpu` if you have an nvidia graphis card and the corresponging driver installed.
+    Please use `scar-gpu` if you have an nvidia graphis card and the corresponging driver installed.
     
     .. code-block:: console
        
-       conda env create -f scAR-gpu.yml
+       conda env create -f scar-gpu.yml
    
 or
 
 .. note::
-    Please use `scAR-cpu` if you don't have a graphis card availalble.
+    Please use `scar-cpu` if you don't have a graphis card availalble.
     
     .. code-block:: console
        
-       conda env create -f scAR-cpu.yml
+       conda env create -f scar-cpu.yml
 
-4, Activate the scAR conda environment,
+4, Activate the scar conda environment,
 
 .. code-block:: console
    
-   conda activate scAR
+   conda activate scar

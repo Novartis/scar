@@ -13,6 +13,6 @@ The following authors contributed to design, implementation, integration, and ma
 `@adeweck <https://github.com/adeweck>`_
 
 
-Contribution
+Contributing
 ------------------------------------------------
 All feedback and contribution are welcome! Please file `issues <https://github.com/Novartis/scAR/issues>`_ or send emails to caibin.sheng@novartis.com
