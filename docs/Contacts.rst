@@ -3,12 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Tutorials
+Contacts
 ===============
 
-.. nbgallery::
-   
-   scAR_tutorial_sgRNA_assignment
-   scAR_tutorial_denoising_CITEseq
-   scAR_tutorial_mRNA_denoising
+Contribution
+------------------------------------------------
 

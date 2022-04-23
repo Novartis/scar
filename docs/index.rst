@@ -3,20 +3,24 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to scAR's documentation!
+
+scAR
 ================================
 
-**scAR** (single-cell Ambient Remover) is a package for denoising multiple single cell omics data. It can be used for multiple tasks, such as, sgRNA assignment for scCRISPRseq, identity barcode assignment for cell indexing, protein denoising for CITE-seq, mRNA denoising for scRNAseq, and etc.. It is built using probabilistic deep learning, illustrated as follows:
+**scAR** (single-cell Ambient Remover) is a tool for denoising the ambient signals in droplet-based single cell omics. It can be used for multiple tasks, such as, **sgRNA assignment** for scCRISPRseq, **identity barcode assignment** for cell indexing, **protein denoising** for CITE-seq, **mRNA denoising** for scRNAseq, and etc.. It is developed by Oncology Data Science, Novartis Institute for BioMedical Research.
 
-.. image:: img/overview_scAR.png
-   :width: 1000
+|
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :titlesonly:
+   :caption: Table of Contents
    
+   Introduction
    Installation
    Tutorials
    API
    Release notes
+   Contacts
    License
    Citation

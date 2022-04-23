@@ -5,10 +5,7 @@
 [![Downloads](https://anaconda.org/bioconda/scar/badges/downloads.svg)](https://anaconda.org/bioconda/scar/files)
 [![Documentation Status](https://readthedocs.org/projects/scar-tutorial/badge/?version=latest)](https://scar-tutorial.readthedocs.io/en/latest/?badge=latest)
 
-**scAR** (single cell Ambient Remover) is a package for denoising multiple single cell omics data. It can be used for multiple tasks, such as, **sgRNA assignment** for scCRISPRseq, **identity barcode assignment** for cell indexing, **protein denoising** for CITE-seq, **mRNA denoising** for scRNAseq, and etc... It is built using probabilistic deep learning, illustrated as follows:
-
-<img src='docs/img/overview_scAR.png' width="1200">
-
+**scAR** (<u>s</u>ingle-<u>c</u>ell <u>A</u>mbient <u>R</u>emover) is a tool for denoising the ambient signals in droplet-based single cell omics. It can be used for multiple tasks, such as, **sgRNA assignment** for scCRISPRseq, **identity barcode assignment** for cell indexing, **protein denoising** for CITE-seq, **mRNA denoising** for scRNAseq, and etc..
 
 # Table of Contents
 
@@ -17,8 +14,6 @@
 - [Resources](#Resources)
 - [License](#License)
 - [Reference](#Reference)
-
-See details in [documentation](https://scar-tutorial.readthedocs.io/en/latest/).
 
 ## [Installation](https://scar-tutorial.readthedocs.io/en/latest/Installation.html)
 
@@ -32,7 +27,7 @@ See details in [documentation](https://scar-tutorial.readthedocs.io/en/latest/).
 
 ## Resources
 
-- [Tutorials](https://scar-tutorial.readthedocs.io/en/latest/Tutorials.html).
+- Installation, Tutorials, and API can be found in the [documentation](https://scar-tutorial.readthedocs.io/en/latest/index.html).
 - If you'd like to contribute, please contact Caibin (caibin.sheng@novartis.com).
 - Please use the [issues](https://github.com/Novartis/scAR/issues) to submit bug reports.
 

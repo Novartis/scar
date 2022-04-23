@@ -1,14 +1,9 @@
-.. scAR documentation master file, created by
-   sphinx-quickstart on Fri Apr 22 15:48:44 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Installation
 ===============
 
 To use scAR, first install it using conda install or Git+pip.
 
-Option 1, Conda install
+Conda install
 ------------------------
 
 1, Install `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html>`_
@@ -32,7 +27,7 @@ Option 1, Conda install
    conda install -c bioconda scar
 
 
-Option 2, Git + pip
+Git + pip
 ------------
 1, Clone scAR repository,
 
