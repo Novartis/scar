@@ -1,11 +1,18 @@
-.. scAR documentation master file, created by
-   sphinx-quickstart on Fri Apr 22 15:48:44 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Contacts
 ===============
 
+Authors
+------------------------------------------------
+The following authors contributed to design, implementation, integration, and maintenace of scAR.  
+
+`@Caibin <https://github.com/CaibinSh>`_
+`@AlexMTYZ <https://github.com/AlexMTYZ>`_
+`@fgypas <https://github.com/fgypas>`_
+`@mr-nvs <https://github.com/mr-nvs>`_
+`@Tobias-Ternent <https://github.com/Tobias-Ternent>`_
+`@adeweck <https://github.com/adeweck>`_
+
+
 Contribution
 ------------------------------------------------
-
+All feedback and contribution are welcome! Please file `issues <https://github.com/Novartis/scAR/issues>`_ or send emails to caibin.sheng@novartis.com
