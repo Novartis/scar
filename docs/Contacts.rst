@@ -14,7 +14,11 @@ The following authors contributed to design, implementation, integration, and ma
 
 Contributing
 ------------------------------------------------
-All feedback and contribution are welcome! Please file `issues <https://github.com/Novartis/scAR/issues>`_ or send emails to caibin.sheng@novartis.com
+All kinds of contribution are welcome! Please file `issues <https://github.com/Novartis/scAR/issues>`_.
+
+Comments
+------------------------------------------------
+Post your comments or questions here:
 
 .. disqus::
     :disqus_identifier: scar-discussion
