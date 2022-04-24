@@ -12,7 +12,9 @@ The following authors contributed to design, implementation, integration, and ma
 `@Tobias-Ternent <https://github.com/Tobias-Ternent>`_
 `@adeweck <https://github.com/adeweck>`_
 
-
 Contributing
 ------------------------------------------------
 All feedback and contribution are welcome! Please file `issues <https://github.com/Novartis/scAR/issues>`_ or send emails to caibin.sheng@novartis.com
+
+.. disqus::
+    :disqus_identifier: Discussion
