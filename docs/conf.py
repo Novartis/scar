@@ -37,6 +37,7 @@ extensions = ['myst_parser',
               'nbsphinx',
               # 'sphinx_gallery.gen_gallery',
               'sphinx_gallery.load_style',
+              'sphinx_disqus.disqus',
              ] #sphinxcontrib.osexample
 
 nbsphinx_execute = 'never'
@@ -54,8 +55,7 @@ templates_path = ['tutorials']
 exclude_patterns = ['Thumbs.db', '.DS_Store']
 
 # Add comments
-extensions = ["sphinx_disqus.disqus"]
-disqus_shortname = "my-cool-project"
+disqus_shortname = "scar-discussion"
 
 # -- Options for HTML output -------------------------------------------------
 

@@ -17,4 +17,4 @@ Contributing
 All feedback and contribution are welcome! Please file `issues <https://github.com/Novartis/scAR/issues>`_ or send emails to caibin.sheng@novartis.com
 
 .. disqus::
-    :disqus_identifier: Discussion
+    :disqus_identifier: scar-discussion
