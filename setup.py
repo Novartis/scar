@@ -3,7 +3,7 @@ from glob import glob
 import os.path
 
 # Set __version__
-exec(open('scAR/main/__init__.py').read())
+exec(open('scAR/main/__version__.py').read())
 
 setup(
     name='scAR',
