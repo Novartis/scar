@@ -4,7 +4,7 @@ import unittest
 import numpy
 import torch
 from decimal import Decimal
-from scAR.main._activation_functions import mytanh, hnormalization, mySoftplus
+from scar.main._activation_functions import mytanh, hnormalization, mySoftplus
 
 
 class ActivationFunctionsTest(unittest.TestCase):

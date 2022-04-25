@@ -6,14 +6,14 @@ import os.path
 exec(open('scAR/main/__version__.py').read())
 
 setup(
-    name='scAR',
+    name='scar',
     version=__version__,
     author="Caibin Sheng",
     author_email="caibin.sheng@novartis.com",
     description="single cell Ambient Remover (scAR): remove ambient signals for single-cell omics data",
     packages=find_packages(),
     entry_points = {
-        'console_scripts': ['scar=scAR.main.__main__:main'],},
+        'console_scripts': ['scar=scar.main.__main__:main'],},
     include_package_data=True,
     url='https://github.com/Novartis/scAR',
     license='MIT',

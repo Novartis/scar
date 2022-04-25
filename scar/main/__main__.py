@@ -2,8 +2,8 @@
 
 import argparse, os
 import pandas as pd
-from ._scAR import model
-from scAR.main import __version__
+from ._scar import model
+from scar.main import __version__
 
 def main():
     
@@ -70,7 +70,7 @@ def main():
         os.makedirs(output_dir)
 
     # Run model
-    scARObj = model(raw_count = count_matrix_path,
+    scarObj = model(raw_count = count_matrix_path,
                     empty_profile = empty_profile_path,
                     NN_layer1=NN_layer1,
                     NN_layer2=NN_layer2,
@@ -79,25 +79,25 @@ def main():
                     model=count_model
                    )
         
-    scARObj.train(batch_size=batch_size,
+    scarObj.train(batch_size=batch_size,
                   epochs=epochs,
                   TensorBoard=TensorBoard,
                   save_model=save_model
                  )
     
-    scARObj.inference(adjust=adjust)
+    scarObj.inference(adjust=adjust)
     
     if scRNAseq_tech.lower() == 'cropseq':
-        scARObj.assignment(feature_type=feature_type, cutoff=cutoff, MOI=MOI)
+        scarObj.assignment(feature_type=feature_type, cutoff=cutoff, MOI=MOI)
     
     print('===========================================\n  Saving results...')
     output_path01, output_path02, output_path03, output_path04 = os.path.join(output_dir, f'denoised_counts.pickle'), os.path.join(output_dir, f'BayesFactor.pickle'), os.path.join(output_dir, f'native_frequency.pickle'), os.path.join(output_dir, f'noise_ratio.pickle')
         
     # save results
-    pd.DataFrame(scARObj.native_counts, index=count_matrix.index, columns=count_matrix.columns).to_pickle(output_path01)
-    pd.DataFrame(scARObj.bayesfactor, index=count_matrix.index, columns=count_matrix.columns).to_pickle(output_path02)
-    pd.DataFrame(scARObj.native_frequencies, index=count_matrix.index, columns=count_matrix.columns).to_pickle(output_path03)
-    pd.DataFrame(scARObj.noise_ratio, index=count_matrix.index, columns=['noise_ratio']).to_pickle(output_path04)
+    pd.DataFrame(scarObj.native_counts, index=count_matrix.index, columns=count_matrix.columns).to_pickle(output_path01)
+    pd.DataFrame(scarObj.bayesfactor, index=count_matrix.index, columns=count_matrix.columns).to_pickle(output_path02)
+    pd.DataFrame(scarObj.native_frequencies, index=count_matrix.index, columns=count_matrix.columns).to_pickle(output_path03)
+    pd.DataFrame(scarObj.noise_ratio, index=count_matrix.index, columns=['noise_ratio']).to_pickle(output_path04)
     
     print(f'...denoised counts saved in: {output_path01}')
     print(f'...BayesFactor matrix saved in: {output_path02}')
@@ -106,7 +106,7 @@ def main():
     
     if scRNAseq_tech.lower() == 'cropseq':
         output_path05 = os.path.join(output_dir, f'assignment.pickle')
-        scARObj.feature_assignment.to_pickle(output_path05)
+        scarObj.feature_assignment.to_pickle(output_path05)
         print(f'...assignment saved in: {output_path05}')
 
     
