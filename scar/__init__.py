@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from scar.main._scar import model
-from scar.main import _data_generater as DataSimulator
+from .main.__version__ import __version__
+from .main._scar import model
+from .main import _data_generater as DataSimulator

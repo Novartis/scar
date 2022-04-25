@@ -3,7 +3,7 @@
 import argparse, os
 import pandas as pd
 from ._scar import model
-from scar.main import __version__
+from .__version__ import __version__
 
 def main():
     
