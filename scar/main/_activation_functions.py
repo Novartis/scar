@@ -2,7 +2,6 @@
 
 import torch
 
-
 def mytanh(x):
     a = x.exp()
     tanh = (a - 1 / a) / (a + 1 / a)

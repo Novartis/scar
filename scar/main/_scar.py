@@ -360,16 +360,14 @@ class model:
             writer.add_hparams(
                 {
                     "lr": lr,
-                    "NN_layer1": NN_layer1,
-                    "NN_layer2": NN_layer2,
-                    "latent_space": latent_space,
+                    "NN_layer1": self.NN_layer1,
+                    "NN_layer2": self.NN_layer2,
+                    "latent_space": self.latent_space,
                     "reconstruction_weight": reconstruction_weight,
                     "kld_weight": kld_weight,
                     "epochs": epochs,
-                },
-                {"hparam/corr": pr, "hparam/R2": r2},
+                }
             )
-            # writer.add_graph(model, total_set.dataset.tensors[0].cpu())
             writer.close()
 
         self.trained_model = VAE_model
