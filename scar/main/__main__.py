@@ -174,10 +174,10 @@ def main():
 
     print("===========================================\n  Saving results...")
     output_path01, output_path02, output_path03, output_path04 = (
-        os.path.join(output_dir, f"denoised_counts.pickle"),
-        os.path.join(output_dir, f"BayesFactor.pickle"),
-        os.path.join(output_dir, f"native_frequency.pickle"),
-        os.path.join(output_dir, f"noise_ratio.pickle"),
+        os.path.join(output_dir, "denoised_counts.pickle"),
+        os.path.join(output_dir, "BayesFactor.pickle"),
+        os.path.join(output_dir, "native_frequency.pickle"),
+        os.path.join(output_dir, "noise_ratio.pickle"),
     )
 
     # save results
