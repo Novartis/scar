@@ -1,6 +1,7 @@
 name: scar
 channels:
 - nvidia
+- pytorch-nightly
 - pytorch
 - conda-forge
 dependencies:
