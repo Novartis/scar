@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import pandas as pd
-import numpy as np
 import os, sys, time
 import torch
+import contextlib
+import pandas as pd
+import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 from typing import Optional, Union
 from sklearn.model_selection import train_test_split
-import contextlib
 from tqdm import tqdm
 from tqdm.contrib import DummyTqdmFile
 from ._vae import VAE
@@ -28,11 +28,11 @@ def std_out_err_redirect_tqdm():
         sys.stdout, sys.stderr = orig_out_err
 
 
-# scar object
+# scar class
 class model:
 
     """
-    scar class object, Single cell Ambient Remover [Sheng2022].
+    scar class, Single cell Ambient Remover [Sheng2022].
 
     Parameters
     ----------
@@ -77,7 +77,22 @@ class model:
         latent_space: int = 15,
         scRNAseq_tech: str = "scRNAseq",
         model: str = "binomial",
+        cellID: Optional[Union[str, list]] = None,
+        feature_names: str = None,
+        num_input_feature: int = 100,
+        device: str = None,
+        n_batch_train: int = None,
+        n_batch_val: int = None,
+        batch_size: int = None,
+        runtime: int = None,
+        trained_model = None,
+        native_counts = None,
+        bayesfactor = None,
+        native_frequencies = None,
+        noise_ratio = None,
+        feature_assignment = None
     ):
+        """initialize object"""
 
         if isinstance(raw_count, str):
             raw_count = pd.read_pickle(raw_count)
@@ -95,21 +110,15 @@ class model:
                     type(raw_count)
                 )
             )
-        raw_count = raw_count.fillna(0)  # replace missing values with zeros
+        raw_count = raw_count.fillna(0)  # missing vals -> zeros
 
         if isinstance(empty_profile, str):
             empty_profile = pd.read_pickle(empty_profile)
-            empty_profile = empty_profile.fillna(
-                0
-            ).values  # replace missing values with zeros
+            empty_profile = empty_profile.fillna(0).values  # missing vals -> zeros
         elif isinstance(empty_profile, pd.DataFrame):
-            empty_profile = empty_profile.fillna(
-                0
-            ).values  # replace missing values with zeros
+            empty_profile = empty_profile.fillna(0).values  # missing vals -> zeros
         elif isinstance(empty_profile, np.ndarray):
-            empty_profile = np.nan_to_num(
-                empty_profile
-            )  # replace missing values with zeros
+            empty_profile = np.nan_to_num(empty_profile)  # missing vals -> zeros
         elif not empty_profile:
             print(" ... Evaluate empty profile from cells")
             empty_profile = raw_count.sum() / raw_count.sum().sum()
@@ -155,7 +164,7 @@ class model:
         reconstruction_weight: float = 1,
         dropout_prob: float = 0,
         TensorBoard: bool = False,
-        save_model: bool = False,
+        save_model: bool = False
     ):
 
         """
@@ -469,6 +478,7 @@ class model:
             self.feature_assignment = None
 
     def assignment(self, feature_type="sgRNAs", cutoff=3, MOI=None):
+        """assignment of feature barcodes"""
 
         feature_assignment = pd.DataFrame(
             index=self.cellID, columns=[feature_type, f"n_{feature_type}"]
@@ -496,10 +506,10 @@ class model:
 
 
 class UMIDataset(torch.utils.data.Dataset):
-    "Characterizes dataset for PyTorch"
+    """Characterizes dataset for PyTorch"""
 
     def __init__(self, raw_count, empty_profile, list_IDs=None):
-        "Initialization"
+        """Initialization"""
         self.raw_count = raw_count
         self.empty_profile = empty_profile
         if list_IDs:
@@ -508,13 +518,14 @@ class UMIDataset(torch.utils.data.Dataset):
             self.list_IDs = list(range(raw_count.shape[0]))
 
     def __len__(self):
-        "Denotes the total number of samples"
+        """Denotes the total number of samples"""
         return len(self.list_IDs)
 
     def __getitem__(self, index):
-        "Generates one sample of data"
+        """Generates one sample of data"""
         # Select sample
         ID = self.list_IDs[index]
         X1 = self.raw_count[ID, :]
         X2 = self.empty_profile[ID, :]
         return X1, X2
+    
