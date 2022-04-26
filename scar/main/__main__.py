@@ -13,7 +13,7 @@ def main():
     ##########################################################################################
 
     parser = argparse.ArgumentParser(
-        description="single cell Ambient Remover (scAR): denoising drop-based single-cell omics data",
+        description="scAR (single cell Ambient Remover): denoising drop-based single-cell omics data",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -90,9 +90,9 @@ def main():
         type=str,
         default="micro",
         help="""Only used  for calculating Bayesfactors to improve performance,
-                                    'micro' -- adjust the estimated native counts per cell. This can overcome the issue of over- or under-estimation of noise. Default.
-                                    'global' -- adjust the estimated native counts globally. This can overcome the issue of over- or under-estimation of noise.
-                                    False -- no adjustment, use the model-returned native counts.""",
+        'micro' -- adjust the estimated native counts per cell. Default.
+        'global' -- adjust the estimated native counts globally.
+        False -- no adjustment, use the model-returned native counts."""
     )
     parser.add_argument(
         "-ft",
@@ -113,7 +113,9 @@ def main():
         "--MOI",
         type=float,
         default=None,
-        help="Multiplicity of Infection. If assigned, it will allow optimized thresholding, which tests a series of cutoffs to find the best one based on distributions of infections under given MOI. See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development.",
+        help="Multiplicity of Infection. If assigned, it will allow optimized thresholding, \
+        which tests a series of cutoffs to find the best one based on distributions of infections under given MOI. \
+        See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development."
     )
 
     args = parser.parse_args()
@@ -196,18 +198,19 @@ def main():
         scarObj.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]
     ).to_pickle(output_path04)
 
-    print(f"...denoised counts saved in: {output_path01}")
-    print(f"...BayesFactor matrix saved in: {output_path02}")
-    print(f"...expected native frequencies saved in: {output_path03}")
-    print(f"...expected noise ratio saved in: {output_path04}")
+    print("...denoised counts saved in: ", output_path01)
+    print("...BayesFactor matrix saved in: ", output_path02)
+    print("...expected native frequencies saved in: ", output_path03)
+    print("...expected noise ratio saved in: ", output_path04)
 
     if scRNAseq_tech.lower() == "cropseq":
-        output_path05 = os.path.join(output_dir, f"assignment.pickle")
+        output_path05 = os.path.join(output_dir, "assignment.pickle")
         scarObj.feature_assignment.to_pickle(output_path05)
-        print(f"...assignment saved in: {output_path05}")
+        print("...assignment saved in: ", output_path05)
 
-    print(f"===========================================\n  Done!!!")
+    print("===========================================\n  Done!!!")
 
 
 if __name__ == "__main__":
     main()
+    
