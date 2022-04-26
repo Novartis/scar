@@ -18,7 +18,7 @@ def hnormalization(var_in):
     return var_in / (var_in.sum(dim=1).view(-1, 1) + 1e-5)
 
 
-def mySoftplus(var_in):
+def mysoftplus(var_in):
     """customized softplus activation, output range: [0, inf)"""
     var_sp = softplus(var_in)
     threshold = softplus(torch.tensor(-5.0))
