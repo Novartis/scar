@@ -4,6 +4,7 @@ channels:
 - pytorch
 - conda-forge
 dependencies:
+- setuptools<=59.5.0
 - conda-forge::python>=3.8.6
 - nvidia::cudatoolkit>=11.1
 - pytorch::pytorch>=1.10.0
