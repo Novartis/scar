@@ -7,11 +7,11 @@ import torch
 from ._activation_functions import mytanh, hnormalization
 
 #########################################################################
-## Variational antoencoder
+## Variational autoencoder
 #########################################################################
 
-
 class VAE(nn.Module):
+    """Variational autoencoder"""
     def __init__(
         self,
         n_genes,
@@ -22,6 +22,7 @@ class VAE(nn.Module):
         dropout_prob=0,
         model="binomial",
     ):
+        """initialization"""
         super().__init__()
         assert scRNAseq_tech.lower() in ["scrnaseq", "cropseq", "citeseq"]
         assert model.lower() in ["binomial", "poisson", "zeroinflatedpoisson"]
@@ -45,6 +46,7 @@ class VAE(nn.Module):
         print("......dropout_prob: ", dropout_prob)
 
     def forward(self, x):
+        """forward function"""
         z, mu, var = self.encoder(x)
         dec_nr, dec_prob, dec_dp = self.decoder(z)
         return z, dec_nr, dec_prob, mu, var, dec_dp
@@ -52,7 +54,7 @@ class VAE(nn.Module):
     @torch.no_grad()
     def inference(self, x, amb_prob, model="poisson", adjust="micro"):
         """
-        Inference of presence of native signal
+        Inference of presence of native signals
         """
         assert model.lower() in ["poisson", "binomial", "zeroinflatedpoisson"]
         assert adjust in [False, "global", "micro"]
@@ -80,9 +82,12 @@ class VAE(nn.Module):
             adjust = np.repeat(adjust, x_np.shape[1], axis=1)
 
         ### Calculate the Bayesian factors
-        # The probability that observed UMI counts do not purely come from expected distribution of ambient signals.
-        # H1: x is drawn from distribution (binomial or poission or zeroinflatedpoisson) with prob > amb_prob
-        # H2: x is drawn from distribution (binomial or poission or zeroinflatedpoisson) with prob = amb_prob
+        # The probability that observed UMI counts do not purely 
+        # come from expected distribution of ambient signals.
+        # H1: x is drawn from distribution (binomial or poission or
+        # zeroinflatedpoisson)with prob > amb_prob
+        # H2: x is drawn from distribution (binomial or poission or
+        # zeroinflatedpoisson) with prob = amb_prob
 
         if model.lower() == "binomial":
             probs_H1 = stats.binom.logcdf(x_np, tot_amb + adjust, amb_prob)
@@ -112,6 +117,7 @@ class Encoder(nn.Module):
     """
 
     def __init__(self, n_genes, fc1_dim, fc2_dim, enc_dim, dropout_prob):
+        """initialization"""
         super().__init__()
         self.activation = nn.SELU()
         self.fc1 = nn.Linear(n_genes, fc1_dim)
@@ -126,13 +132,12 @@ class Encoder(nn.Module):
         self.z_transformation = nn.Softmax(dim=-1)
 
     def reparametrize(self, mu, log_vars):
-
+        """reparameterization"""
         var = log_vars.exp() + 1e-4
-
         return torch.distributions.Normal(mu, var.sqrt()).rsample(), mu, var
 
     def forward(self, x):
-        # encode
+        """forward function"""
         x = (x + 1).log2()  # log transformation of count data
         enc = self.fc1(x)
         enc = self.bn1(enc)
@@ -155,8 +160,6 @@ class Encoder(nn.Module):
 #########################################################################
 ## Decoder
 #########################################################################
-
-
 class Decoder(nn.Module):
     """
     A decoder model that takes the encodings and a batch (source) matrix and produces decodings.
@@ -167,6 +170,7 @@ class Decoder(nn.Module):
     def __init__(
         self, n_genes, fc1_dim, fc2_dim, enc_dim, scRNAseq_tech, dropout_prob, model
     ):
+        """initialization"""
         super().__init__()
         self.activation = nn.SELU()
         self.normalization_native_freq = hnormalization
@@ -186,7 +190,8 @@ class Decoder(nn.Module):
             self.dropout_activation = mytanh
 
     def forward(self, z):
-        # decode layers
+        """forward function"""
+        # decoder
         dec = self.fc4(z)
         dec = self.bn4(dec)
         dec = self.activation(dec)
