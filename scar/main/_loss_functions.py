@@ -1,25 +1,19 @@
 # -*- coding: utf-8 -*-
+"""Loss functions"""
 
-import torch.nn as nn
 import torch
-from torch.distributions import Normal, kl_divergence, Multinomial, Binomial, Poisson
+from torch.distributions import Normal, kl_divergence, Binomial, Poisson
 from pyro.distributions.zero_inflated import ZeroInflatedPoisson
 
-#########################################################################
-### Loss functions
-#########################################################################
-
-
 def kld(mu, var):
-
+    """KL divergence"""
     mean = torch.zeros_like(mu)
     scale = torch.ones_like(var)
     return kl_divergence(Normal(mu, torch.sqrt(var)), Normal(mean, scale)).sum(dim=1)
 
 
 def get_reconstruction_loss(x, dec_nr, dec_prob, amb_prob, dec_dp, model):
-    ### TODO: consider zero-inflated models
-
+    """reconstruction loss"""
     tot_count = x.sum(dim=1).view(-1, 1)
     prob_tot = dec_prob * (1 - dec_nr) + amb_prob * dec_nr
 
@@ -59,12 +53,12 @@ def loss_fn(
     dec_dp=None,
     model="binomial",
 ):
+    """loss function"""
 
     recon_loss = get_reconstruction_loss(
         x, dec_nr, dec_prob, amb_prob, dec_dp=dec_dp, model=model
     )
     kld_loss = kld(mu, var).sum()
-
     total_loss = recon_loss * reconstruction_weight + kld_loss * kld_weight
 
     return recon_loss, kld_loss, total_loss
