@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+"""class to generate synthetic scrnaseq datasets with ambient contamination"""
 
 import numpy as np
 from numpy import random
-import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -37,28 +37,21 @@ class scrnaseq_synthetic:
         self.n_features = n_features
         self.n_total_molecules = n_total_molecules
         self.capture_rate = capture_rate
-        self.obs_count = None,
-        self.ambient_profile = None,
-        self.cell_identity = None,
-        self.noise_ratio = None,
-        self.celltype = None,
-        self.ambient_signals = None,
-        self.native_signals = None,
-        self.native_profile = None,
-        self.total_counts = None,
+        self.obs_count = (None,)
+        self.ambient_profile = (None,)
+        self.cell_identity = (None,)
+        self.noise_ratio = (None,)
+        self.celltype = (None,)
+        self.ambient_signals = (None,)
+        self.native_signals = (None,)
+        self.native_profile = (None,)
+        self.total_counts = (None,)
         self.empty_droplets = None
 
 
 # Synthetic citeseq datasets
 class citeseq(scrnaseq_synthetic):
     """class to generate citeseq data"""
-    def __init__(
-        self, n_cells, n_celltypes, n_features, n_total_molecules=8000, capture_rate=0.7
-    ):  
-        """initilization"""
-        super().__init__(
-            n_cells, n_celltypes, n_features, n_total_molecules, capture_rate
-        )
 
     def generate(self):
         """generation"""
@@ -200,6 +193,7 @@ class cropseq(scrnaseq_synthetic):
         self.missing_rate = missing_rate
         self.noise_ratio = noise_ratio
         self.average_counts_per_cell = average_counts_per_cell
+        self.sgrna_freq = None
 
     # generate a pool of sgrnas
     def set_sgrna_frequency(self):
@@ -230,7 +224,8 @@ class cropseq(scrnaseq_synthetic):
         # Doublets
         n_doublets = int(self.n_cells * self.doublet_rate)
 
-        # total number of single sgrnas which are integrated into cells (cells with double sgrnas will be counted twice)
+        # total number of single sgrnas which are integrated into cells
+        # (cells with double sgrnas will be counted twice)
         n_cells_integrated = self.n_cells - n_cells_miss + n_doublets
 
         # create cells with sgrnas based on sgrna frequencies

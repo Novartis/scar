@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+"""command line of scar"""
 
-import argparse, os
+import argparse
+import os
 import pandas as pd
 from ._scar import model
 from .__version__ import __version__
@@ -8,18 +10,15 @@ from .__version__ import __version__
 
 def main():
 
-    ##########################################################################################
-    ## argument parser
-    ##########################################################################################
+    """Argument parser"""
 
     parser = argparse.ArgumentParser(
-        description="scAR (single cell Ambient Remover): denoising drop-based single-cell omics data",
+        description="scAR (single cell Ambient Remover): \
+        denoising drop-based single-cell omics data",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "--version",
-        action="version",
-        version="%(prog)s {version}".format(version=__version__),
+        "--version", action="version", version=f"%(prog)s version: {__version__}",
     )
     parser.add_argument(
         "count_matrix",
@@ -92,7 +91,7 @@ def main():
         help="""Only used  for calculating Bayesfactors to improve performance,
         'micro' -- adjust the estimated native counts per cell. Default.
         'global' -- adjust the estimated native counts globally.
-        False -- no adjustment, use the model-returned native counts."""
+        False -- no adjustment, use the model-returned native counts.""",
     )
     parser.add_argument(
         "-ft",
@@ -115,7 +114,7 @@ def main():
         default=None,
         help="Multiplicity of Infection. If assigned, it will allow optimized thresholding, \
         which tests a series of cutoffs to find the best one based on distributions of infections under given MOI. \
-        See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development."
+        See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development.",
     )
 
     args = parser.parse_args()
@@ -152,7 +151,7 @@ def main():
         os.makedirs(output_dir)
 
     # Run model
-    scarObj = model(
+    scar_model = model(
         raw_count=count_matrix_path,
         empty_profile=empty_profile_path,
         NN_layer1=NN_layer1,
@@ -162,17 +161,17 @@ def main():
         model=count_model,
     )
 
-    scarObj.train(
+    scar_model.train(
         batch_size=batch_size,
         epochs=epochs,
         TensorBoard=TensorBoard,
         save_model=save_model,
     )
 
-    scarObj.inference(adjust=adjust)
+    scar_model.inference(adjust=adjust)
 
     if scRNAseq_tech.lower() == "cropseq":
-        scarObj.assignment(feature_type=feature_type, cutoff=cutoff, MOI=MOI)
+        scar_model.assignment(feature_type=feature_type, cutoff=cutoff, MOI=MOI)
 
     print("===========================================\n  Saving results...")
     output_path01, output_path02, output_path03, output_path04 = (
@@ -184,18 +183,18 @@ def main():
 
     # save results
     pd.DataFrame(
-        scarObj.native_counts, index=count_matrix.index, columns=count_matrix.columns
+        scar_model.native_counts, index=count_matrix.index, columns=count_matrix.columns
     ).to_pickle(output_path01)
     pd.DataFrame(
-        scarObj.bayesfactor, index=count_matrix.index, columns=count_matrix.columns
+        scar_model.bayesfactor, index=count_matrix.index, columns=count_matrix.columns
     ).to_pickle(output_path02)
     pd.DataFrame(
-        scarObj.native_frequencies,
+        scar_model.native_frequencies,
         index=count_matrix.index,
         columns=count_matrix.columns,
     ).to_pickle(output_path03)
     pd.DataFrame(
-        scarObj.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]
+        scar_model.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]
     ).to_pickle(output_path04)
 
     print("...denoised counts saved in: ", output_path01)
@@ -205,7 +204,7 @@ def main():
 
     if scRNAseq_tech.lower() == "cropseq":
         output_path05 = os.path.join(output_dir, "assignment.pickle")
-        scarObj.feature_assignment.to_pickle(output_path05)
+        scar_model.feature_assignment.to_pickle(output_path05)
         print("...assignment saved in: ", output_path05)
 
     print("===========================================\n  Done!!!")
@@ -213,4 +212,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
