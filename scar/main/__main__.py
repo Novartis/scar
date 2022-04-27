@@ -95,13 +95,7 @@ def main():
         'global' -- adjust the estimated native counts globally.
         False -- no adjustment, use the model-returned native counts.""",
     )
-    parser.add_argument(
-        "-ft",
-        "--feature_type",
-        type=str,
-        default="sgRNAs",
-        help="Feature types (string), e.g., 'sgRNAs', 'CMOs', 'Tags', and etc..",
-    )
+
     parser.add_argument(
         "-cutoff",
         "--cutoff",
@@ -135,7 +129,6 @@ def main():
     save_model = args.save_model
     batch_size = args.batchsize
     adjust = args.adjust
-    feature_type = args.feature_type
     cutoff = args.cutoff
     moi = args.moi
     count_matrix = pd.read_pickle(count_matrix_path)
@@ -203,7 +196,7 @@ def main():
     print("...expected native frequencies saved in: ", output_path03)
     print("...expected noise ratio saved in: ", output_path04)
 
-    if feature_type.lower() == "cropseq":
+    if feature_type.lower() in ["sgrna", "tag"]:
         output_path05 = os.path.join(output_dir, "assignment.pickle")
         scar_model.feature_assignment.to_pickle(output_path05)
         print("...assignment saved in: ", output_path05)
