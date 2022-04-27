@@ -10,13 +10,13 @@ class ScarIntegration(unittest.TestCase):
 
     def test_scar(self):
         raw_count = pd.read_pickle("scar/test/raw_counts.pickle")
-        empty_profile = pd.read_pickle("scar/test/ambient_profile.pickle")
+        ambient_profile = pd.read_pickle("scar/test/ambient_profile.pickle")
         expected_output = pd.read_pickle("scar/test/output_assignment.pickle")
 
         scarObj = model(
             raw_count=raw_count.values,
-            empty_profile=empty_profile,
-            scRNAseq_tech="CROPseq",
+            ambient_profile=ambient_profile,
+            feature_type="sgRNA",
         )
 
         scarObj.train(epochs=40, batch_size=64)

@@ -18,7 +18,9 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "--version", action="version", version=f"%(prog)s version: {__version__}",
+        "--version",
+        action="version",
+        version=f"%(prog)s version: {__version__}",
     )
     parser.add_argument(
         "count_matrix",
@@ -28,17 +30,17 @@ def main():
     )
     parser.add_argument(
         "-e",
-        "--empty_profile",
+        "--ambient_profile",
         type=str,
         default=None,
         help="the file of empty profile obtained from empty droplets, 1D array",
     )
     parser.add_argument(
-        "-t",
-        "--technology",
+        "-ft",
+        "--feature_type",
         type=str,
-        default="scRNAseq",
-        help="scRNAseq technology, e.g. scRNAseq, CROPseq, CITEseq, ... etc.",
+        default="mRNA",
+        help="the feature types, e.g. mRNA, sgRNA, ADT and tag",
     )
     parser.add_argument(
         "-o", "--output", type=str, default=None, help="output directory"
@@ -65,7 +67,7 @@ def main():
     )
     parser.add_argument(
         "-ls",
-        "--latent_space",
+        "--latent_dim",
         type=int,
         default=None,
         help="dimension of latent space",
@@ -108,43 +110,43 @@ def main():
         help="Cutoff for Bayesfactors. Default: 3. See https://doi.org/10.1007/s42113-019-00070-x.",
     )
     parser.add_argument(
-        "-MOI",
-        "--MOI",
+        "-moi",
+        "--moi",
         type=float,
         default=None,
         help="Multiplicity of Infection. If assigned, it will allow optimized thresholding, \
-        which tests a series of cutoffs to find the best one based on distributions of infections under given MOI. \
+        which tests a series of cutoffs to find the best one based on distributions of infections under given moi. \
         See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development.",
     )
 
     args = parser.parse_args()
     count_matrix_path = args.count_matrix[0]
-    empty_profile_path = args.empty_profile
-    scRNAseq_tech = args.technology
+    ambient_profile_path = args.ambient_profile
+    feature_type = args.feature_type
     output_dir = (
         os.getcwd() if not args.output else args.output
     )  # if None, output to current directory
     count_model = args.count_model
     TensorBoard = args.TensorBoard
-    NN_layer1 = args.hidden_layer1
-    NN_layer2 = args.hidden_layer2
-    latent_space = args.latent_space
+    nn_layer1 = args.hidden_layer1
+    nn_layer2 = args.hidden_layer2
+    latent_dim = args.latent_dim
     epochs = args.epochs
     save_model = args.save_model
     batch_size = args.batchsize
     adjust = args.adjust
     feature_type = args.feature_type
     cutoff = args.cutoff
-    MOI = args.MOI
+    moi = args.moi
 
     count_matrix = pd.read_pickle(count_matrix_path)
 
     print("===========================================")
-    print("scRNAseq_tech: ", scRNAseq_tech)
+    print("feature_type: ", feature_type)
     print("count_model: ", count_model)
     print("output_dir: ", output_dir)
     print("count_matrix_path: ", count_matrix_path)
-    print("empty_profile_path: ", empty_profile_path)
+    print("ambient_profile_path: ", ambient_profile_path)
     print("TensorBoard path: ", TensorBoard)
 
     if not os.path.isdir(output_dir):
@@ -153,12 +155,12 @@ def main():
     # Run model
     scar_model = model(
         raw_count=count_matrix_path,
-        empty_profile=empty_profile_path,
-        NN_layer1=NN_layer1,
-        NN_layer2=NN_layer2,
-        latent_space=latent_space,
-        scRNAseq_tech=scRNAseq_tech,
-        model=count_model,
+        ambient_profile=ambient_profile_path,
+        nn_layer1=nn_layer1,
+        nn_layer2=nn_layer2,
+        latent_dim=latent_dim,
+        feature_type=feature_type,
+        count_model=count_model,
     )
 
     scar_model.train(
@@ -170,8 +172,8 @@ def main():
 
     scar_model.inference(adjust=adjust)
 
-    if scRNAseq_tech.lower() == "cropseq":
-        scar_model.assignment(feature_type=feature_type, cutoff=cutoff, MOI=MOI)
+    if feature_type.lower() in ["sgrna", "tag"]:
+        scar_model.assignment(cutoff=cutoff, moi=moi)
 
     print("===========================================\n  Saving results...")
     output_path01, output_path02, output_path03, output_path04 = (
@@ -202,7 +204,7 @@ def main():
     print("...expected native frequencies saved in: ", output_path03)
     print("...expected noise ratio saved in: ", output_path04)
 
-    if scRNAseq_tech.lower() == "cropseq":
+    if feature_type.lower() == "cropseq":
         output_path05 = os.path.join(output_dir, "assignment.pickle")
         scar_model.feature_assignment.to_pickle(output_path05)
         print("...assignment saved in: ", output_path05)
