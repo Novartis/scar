@@ -3,114 +3,20 @@
 [![scAR](https://anaconda.org/bioconda/scar/badges/version.svg)](https://anaconda.org/bioconda/scar)
 [![Stars](https://img.shields.io/github/stars/Novartis/scar?logo=GitHub&color=red)](https://github.com/Novartis/scAR)
 [![Downloads](https://anaconda.org/bioconda/scar/badges/downloads.svg)](https://anaconda.org/bioconda/scar/files)
+[![Documentation Status](https://readthedocs.org/projects/scar-tutorials/badge/?version=latest)](https://scar-tutorials.readthedocs.io/en/latest/?badge=latest)
+[![Python Package using Conda](https://github.com/Novartis/scAR/actions/workflows/python-conda-build.yaml/badge.svg)](https://github.com/Novartis/scAR/actions/workflows/python-conda-build.yaml)
 
-**scAR** (single cell Ambient Remover) is a package for denoising multiple single cell omics data. It can be used for multiple tasks, such as, **sgRNA assignment** for scCRISPRseq, **identity barcode assignment** for cell indexing, **protein denoising** for CITE-seq, **mRNA denoising** for scRNAseq, and etc... It is built using probabilistic deep learning, illustrated as follows:
-
-<img src='docs/img/overview_scAR.png' width="1200">
-
+**scAR** (<u>s</u>ingle-<u>c</u>ell <u>A</u>mbient <u>R</u>emover) is a tool for denoising the ambient signals in droplet-based single cell omics. It can be used for multiple tasks, such as, **sgRNA assignment** for scCRISPRseq, **identity barcode assignment** for cell indexing, **protein denoising** for CITE-seq, **mRNA denoising** for scRNAseq, and etc..
 
 # Table of Contents
 
 - [Installation](#Installation)
-- [Usage](#Usage)
 - [Dependencies](#Dependencies)
 - [Resources](#Resources)
 - [License](#License)
 - [Reference](#Reference)
 
-## Installation
-
-#### Conda
-1, Install [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)  
-2, Create conda environment
-```sh
-$ conda create -n scAR_env
-```
-
-3, Activate conda environment
-```sh
-$ conda activate scAR_env
-```  
-
-4, Install scar
-```sh
-$ conda install -c bioconda scar
-```
-
-#### Git+pip
-Alternatively, clone this repository,
-
-```sh
-$ git clone https://github.com/Novartis/scAR.git
-```
-
-Enter the cloned directory:
-
-```sh
-$ cd scAR
-```
-
-
-To install the dependencies, create a conda environment:
-
-> Please use `scAR-gpu` if you have an nvidia graphis card and the corresponging driver installed.
-```sh
-$ conda env create -f scAR-gpu.yml
-```
-
-or 
-
-> Please use `scAR-cpu` if you don't have a graphis card availalble.
-```sh
-$ conda env create -f scAR-cpu.yml
-```
-
-To activate the scAR conda environment run:
-```sh
-$ conda activate scAR
-```
-
-## Usage
-
-There are two ways to run scAR.
-
-1) Use scAR API if you are Python users
-
-```sh
->>> from scar import model
->>> scarObj = model(adata.X.to_df(), empty_profile)
->>> scarObj.train()
->>> scarObj.inference()
->>> adata.layers["X_scAR_denoised"] = scarObj.native_counts
->>> adata.obsm["X_scAR_assignment"] = scarObj.feature_assignment  # feature assignment, e.g., sgRNAs, tags, and etc.. Only available in 'cropseq' mode
-```
-
-See the [tutorials](#Resources)
-
-
-2) Run scAR from the command line
-```sh
-$ scar raw_count_matrix.pickle -t technology -e empty_profile.pickle -o output
-```
-
-`raw_count_matrix.pickle`, a pickle-formatted raw count matrix (MxN) with cells in rows and features in columns  
-`empty_profile.pickle`, a pickle-formatted feature frequencies (Nx1) in empty droplets  
-`technology`, a string, either 'scRNAseq' or 'CROPseq' or 'CITEseq'
-
-Use `scar --help` command to see other optional arguments and parameters.
-
-
-The output folder contains four (or five) files:   
-
-	output
-	├── denoised_counts.pickle		# denoised count matrix
-	├── expected_noise_ratio.pickle	# estimated noise ratio
-	├── BayesFactor.pickle			# bayesian factor of ambient contamination
-	├── expected_native_freq.pickle	# estimated native frequencies
-	└── assignment.pickle			# feature assignment, e.g., sgRNAs, tags, and etc.. Gernerated under 'cropseq' mode
-
-
-
+## [Installation](https://scar-tutorials.readthedocs.io/en/latest/Installation.html)
 ## Dependencies
 
 [![PyTorch 1.8](https://img.shields.io/badge/PyTorch-1.8.0-greeen.svg)](https://pytorch.org/)
@@ -121,10 +27,7 @@ The output folder contains four (or five) files:
 
 ## Resources
 
-- Tutorials:
-    - [sgRNA Assignment single-cell CRISPR screens](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_sgRNA_assignment.ipynb)
-    - [Denoising protein data for CITE-seq](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_denoising_CITEseq.ipynb)
-    - [Denoising mRNA data for scRNAseq](https://github.com/CaibinSh/scAR-reproducibility/blob/main/reproducibility/scAR_tutorial_mRNA_denoising.ipynb)
+- Installation, Tutorials, and API can be found in the [documentation](https://scar-tutorials.readthedocs.io/en/latest/).
 - If you'd like to contribute, please contact Caibin (caibin.sheng@novartis.com).
 - Please use the [issues](https://github.com/Novartis/scAR/issues) to submit bug reports.
 

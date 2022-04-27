@@ -19,21 +19,21 @@ jobs:
           echo $CONDA/bin >> $GITHUB_PATH
       - name: Install dependencies
         run: |
-          conda env create -f scAR-cpu.yml
+          conda env create -f scar-cpu.yml
       - name: Run binary
         run: |
           export PATH="$GITHUB_PATH:$PATH"
-          source activate scAR
+          source activate scar
           scar --help
       - name: Run pylint
         run: |
           export PATH="$GITHUB_PATH:$PATH"
-          source activate scAR
+          source activate scar
           conda install pylint
-          pylint scAR --fail-under 0.5
+          pylint scar --fail-under 6
       - name: Run unit tests
         run: |
           export PATH="$GITHUB_PATH:$PATH"
-          source activate scAR
+          source activate scar
           conda install pytest
-          pytest scAR
+          pytest scar
