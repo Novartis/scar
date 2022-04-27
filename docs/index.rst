@@ -22,5 +22,5 @@ scAR
    Release notes
    Contacts
    License
-   Citation
+   Citation <https://doi.org/10.1101/2022.01.14.476312>
    GitHub <https://github.com/Novartis/scAR>

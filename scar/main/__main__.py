@@ -29,7 +29,7 @@ def main():
         help="the file of observed count matrix, 2D array (cells x genes)",
     )
     parser.add_argument(
-        "-e",
+        "-ap",
         "--ambient_profile",
         type=str,
         default=None,

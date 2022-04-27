@@ -1,3 +1,4 @@
-.. include:: tutorials/Tutorials.rst
+Documentation
+===============
 
-.. include:: release/Release notes.rst
+See detailed `documentation <https://scar-tutorials.readthedocs.io/en/latest/>`__.
