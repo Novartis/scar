@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import os, sys, time
+import sys, time
+from tabnanny import verbose
 import torch
 import contextlib
 import pandas as pd
@@ -29,7 +30,7 @@ def std_out_err_redirect_tqdm():
 
 
 # scar class
-class model:
+class model(VAE):
 
     """
     scar class, Single cell Ambient Remover [Sheng2022].
@@ -40,18 +41,19 @@ class model:
         Raw count matrix (nd.array, pd.DataFrame, or a path).
     empty_profile
         Empty profile (a vector or matrix, nd.array, pd.DataFrame, or a path). Default: None, averaging raw counts to estimate the ambinet profile.
-    NN_layer1
+    nn_layer1
         Neuron number of the first hidden layer (int). Default: 150.
-    NN_layer2
+    nn_layer2
         Neuron number of the second hidden layer (int). Default: 100.
-    latent_space
+    latent_dim
         Neuron number of the latent space (int). Default: 15.
-    scRNAseq_tech
+    count_type
         One of the following:
-            'scRNAseq' -- any mRNA counts, including mRNA counts in single cell CRISPR screens and CITE-seq experiments. Default.
-            'CITEseq' -- protein counts for CITEseq
-            'CROPseq' -- sgRNA/identity barcode counts, or any data types of super high sparsity. E.g., in cell indexing experiments, we would expect a single true signal (1) and many negative signals (0) for each cell,
-    model
+            'mRNA' -- any mRNA counts, including mRNA counts in single cell CRISPR screens and CITE-seq experiments. Default.
+            'ADT' -- protein counts for CITEseq
+            'sgRNA' -- sgRNA counts for scCRISPRseq, inc. CROP-seq, CRISP-seq, and Perturb-seq
+            'tag' -- identity barcode counts, or any data types of super high sparsity. E.g., in cell indexing experiments, we would expect a single true signal (1) and many negative signals (0) for each cell,
+    count_model
         Count model, one of the following:
             'binomial' -- binomial model. Defualt.
             'poisson' -- poisson model
@@ -72,27 +74,16 @@ class model:
         self,
         raw_count: Union[str, np.ndarray, pd.DataFrame],
         empty_profile: Optional[Union[str, np.ndarray, pd.DataFrame]] = None,
-        NN_layer1: int = 150,
-        NN_layer2: int = 100,
-        latent_space: int = 15,
-        scRNAseq_tech: str = "scRNAseq",
-        model: str = "binomial",
-        cellID: Optional[Union[str, list]] = None,
-        feature_names: str = None,
-        num_input_feature: int = 100,
-        device: str = None,
-        n_batch_train: int = None,
-        n_batch_val: int = None,
-        batch_size: int = None,
-        runtime: int = None,
-        trained_model = None,
-        native_counts = None,
-        bayesfactor = None,
-        native_frequencies = None,
-        noise_ratio = None,
-        feature_assignment = None
+        nn_layer1: int = 150,
+        nn_layer2: int = 100,
+        latent_dim: int = 15,
+        dropout_prob: float = 0,
+        count_type: str = "mRNA",
+        count_model: str = "binomial",
     ):
         """initialize object"""
+
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         if isinstance(raw_count, str):
             raw_count = pd.read_pickle(raw_count)
@@ -111,6 +102,12 @@ class model:
                 )
             )
         raw_count = raw_count.fillna(0)  # missing vals -> zeros
+
+        # Loading numpy to tensor on GPU
+        self.raw_count = torch.from_numpy(raw_count.values).int().to(self.device)
+        self.n_features = raw_count.shape[1]
+        self.cellID = list(raw_count.index)
+        self.feature_names = list(raw_count.columns)
 
         if isinstance(empty_profile, str):
             empty_profile = pd.read_pickle(empty_profile)
@@ -136,20 +133,28 @@ class model:
                 .reshape(1, -1)
                 .repeat(raw_count.shape[0], axis=0)
             )
-
-        self.cellID = list(raw_count.index)
-        self.feature_names = list(raw_count.columns)
-        self.num_input_feature = raw_count.shape[1]
-        self.NN_layer1 = NN_layer1
-        self.NN_layer2 = NN_layer2
-        self.latent_space = latent_space
-        self.scRNAseq_tech = scRNAseq_tech
-        self.model = model
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-
-        # Loading numpy to tensor on GPU
-        self.raw_count = torch.from_numpy(raw_count.values).int().to(self.device)
         self.empty_profile = torch.from_numpy(empty_profile).float().to(self.device)
+
+        super().__init__(
+            self.n_features,
+            nn_layer1,
+            nn_layer2,
+            latent_dim,
+            dropout_prob,
+            count_type,
+            count_model,
+        )
+
+        # self.n_batch_train = None
+        # self.n_batch_val: int = None
+        # self.batch_size: int = None
+        # self.runtime: int = None
+        # self.trained_model = None
+        self.native_counts = None
+        self.bayesfactor = None
+        self.native_frequencies = None
+        self.noise_ratio = None
+        self.feature_assignment = None
 
     def train(
         self,
@@ -164,7 +169,8 @@ class model:
         reconstruction_weight: float = 1,
         dropout_prob: float = 0,
         TensorBoard: bool = False,
-        save_model: bool = False
+        save_model: bool = False,
+        verbose: bool = True,
     ):
 
         """
@@ -235,20 +241,21 @@ class model:
             writer = SummaryWriter(TensorBoard)
             writer.add_text(
                 "Experiment description",
-                f"NN_layer1={self.NN_layer1}, NN_layer2={self.NN_layer2}, latent_space={self.latent_space}, kld_weight={kld_weight}, lr={lr}, epochs={epochs}, reconstruction_weight={reconstruction_weight}, dropout_prob={dropout_prob}",
+                f"nn_layer1={self.nn_layer1}, nn_layer2={self.nn_layer2}, latent_dim={self.latent_dim}, kld_weight={kld_weight}, lr={lr}, epochs={epochs}, reconstruction_weight={reconstruction_weight}, dropout_prob={dropout_prob}",
                 0,
             )
 
         # Define model
-        VAE_model = VAE(
-            self.num_input_feature,
-            self.NN_layer1,
-            self.NN_layer2,
-            self.latent_space,
-            self.scRNAseq_tech,
-            dropout_prob,
-            model=self.model,
-        ).to(self.device)
+        # VAE_model = VAE(
+        #     self.n_features,
+        #     self.nn_layer1,
+        #     self.nn_layer2,
+        #     self.latent_dim,
+        #     self.count_type,
+        #     dropout_prob,
+        #     count_model=self.count_model,
+        # ).to(self.device)
+        VAE_model = self.to(self.device)
 
         # Define optimizer
         optim = torch.optim.Adam(VAE_model.parameters(), lr=lr)
@@ -256,10 +263,11 @@ class model:
             optim, step_size=lr_step_size, gamma=lr_gamma
         )
 
-        print("......kld_weight: ", kld_weight)
-        print("......lr: ", lr)
-        print("......lr_step_size: ", lr_step_size)
-        print("......lr_gamma: ", lr_gamma)
+        if verbose:
+            print("......kld_weight: ", kld_weight)
+            print("......lr: ", lr)
+            print("......lr_step_size: ", lr_step_size)
+            print("......lr_gamma: ", lr_gamma)
 
         # Run training
         print("===========================================\n  Training.....")
@@ -281,7 +289,7 @@ class model:
                 for x_batch, ambient_freq in training_generator:
 
                     optim.zero_grad()
-                    z, dec_nr, dec_prob, mu, var, dec_dp = VAE_model(x_batch)
+                    _, dec_nr, dec_prob, mu, var, dec_dp = VAE_model(x_batch)
                     recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(
                         x_batch,
                         dec_nr,
@@ -292,7 +300,7 @@ class model:
                         reconstruction_weight=reconstruction_weight,
                         kld_weight=kld_weight,
                         dec_dp=dec_dp,
-                        model=self.model,
+                        count_model=self.count_model,
                     )
                     loss_minibatch.backward()
                     optim.step()
@@ -349,7 +357,7 @@ class model:
                             reconstruction_weight=reconstruction_weight,
                             kld_weight=kld_weight,
                             dec_dp=dec_dp_val,
-                            model=self.model,
+                            count_model=self.count_model,
                         )
                         val_tot_loss += loss_minibatch.detach().item()
                         val_recon_loss += recon_loss_minibatch.detach().item()
@@ -369,9 +377,9 @@ class model:
             writer.add_hparams(
                 {
                     "lr": lr,
-                    "NN_layer1": self.NN_layer1,
-                    "NN_layer2": self.NN_layer2,
-                    "latent_space": self.latent_space,
+                    "nn_layer1": self.nn_layer1,
+                    "nn_layer2": self.nn_layer2,
+                    "latent_dim": self.latent_dim,
                     "reconstruction_weight": reconstruction_weight,
                     "kld_weight": kld_weight,
                     "epochs": epochs,
@@ -387,7 +395,7 @@ class model:
     def inference(
         self,
         batch_size=None,
-        model="poisson",
+        count_model="poisson",
         adjust="micro",
         feature_type="sgRNAs",
         cutoff=3,
@@ -399,7 +407,7 @@ class model:
         ----------
         batch_size
             Batch_size (int). Set a value upon GPU memory issue. Default: None.
-        model
+        count_model
             Inference model for evaluation of ambient presence (str). Default: poisson.
         adjust
             Only used for calculating Bayesfactors to improve performance. One of the following:
@@ -430,11 +438,11 @@ class model:
 
         print("===========================================\n  Inferring .....")
         total_set = UMIDataset(self.raw_count, self.empty_profile)
-        num_input_feature = self.num_input_feature
+        n_features = self.n_features
         sample_size = self.raw_count.shape[0]
-        self.native_counts = np.empty([sample_size, num_input_feature])
-        self.bayesfactor = np.empty([sample_size, num_input_feature])
-        self.native_frequencies = np.empty([sample_size, num_input_feature])
+        self.native_counts = np.empty([sample_size, n_features])
+        self.bayesfactor = np.empty([sample_size, n_features])
+        self.native_frequencies = np.empty([sample_size, n_features])
         self.noise_ratio = np.empty([sample_size, 1])
 
         if not batch_size:
@@ -456,7 +464,10 @@ class model:
                 native_frequencies_batch,
                 noise_ratio_batch,
             ) = self.trained_model.inference(
-                x_batch_tot, ambient_freq_tot[0, :], model=model, adjust=adjust
+                x_batch_tot,
+                ambient_freq_tot[0, :],
+                count_model=count_model,
+                adjust=adjust,
             )
             self.native_counts[
                 i * batch_size : i * batch_size + minibatch_size, :
@@ -472,7 +483,7 @@ class model:
             ] = noise_ratio_batch
             i += 1
 
-        if self.scRNAseq_tech.lower() == "cropseq":
+        if self.count_type.lower() == "cropseq":
             self.assignment(feature_type=feature_type, cutoff=cutoff, MOI=MOI)
         else:
             self.feature_assignment = None
@@ -528,4 +539,3 @@ class UMIDataset(torch.utils.data.Dataset):
         X1 = self.raw_count[ID, :]
         X2 = self.empty_profile[ID, :]
         return X1, X2
-    
