@@ -17,7 +17,6 @@
 - [Reference](#Reference)
 
 ## [Installation](https://scar-tutorials.readthedocs.io/en/latest/Installation.html)
-
 ## Dependencies
 
 [![PyTorch 1.8](https://img.shields.io/badge/PyTorch-1.8.0-greeen.svg)](https://pytorch.org/)
