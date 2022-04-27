@@ -30,7 +30,7 @@ class VAE(nn.Module):
     ):
         """initialization"""
         super().__init__()
-        assert feature_type.lower() in ["mrna", "sgrna", "ADT", "tag"]
+        assert feature_type.lower() in ["mrna", "mrnas", "sgrna", "sgrnas", "adt", "adts", "tag", "tags"]
         assert count_model.lower() in ["binomial", "poisson", "zeroinflatedpoisson"]
         # self.feature_type = feature_type
         # self.count_model = count_model

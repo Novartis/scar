@@ -412,7 +412,7 @@ class model:
     # Inference
     @torch.no_grad()
     def inference(
-        self, batch_size=None, count_model="poisson", adjust="micro", cutoff=3, moi=None
+        self, batch_size=None, count_model_inf="poisson", adjust="micro", cutoff=3, moi=None
     ):
         """
         Infering the expected native signals, noise ratios, Bayesfactors, \
@@ -421,7 +421,7 @@ class model:
         ----------
         batch_size
             Batch_size (int). Set a value upon GPU memory issue. Default: None.
-        count_model
+        count_model_inf
             Inference model for evaluation of ambient presence (str). Default: poisson.
         adjust
             Only used for calculating Bayesfactors to improve performance. One of the following:
@@ -485,7 +485,7 @@ class model:
             ) = self.trained_model.inference(
                 x_batch_tot,
                 ambient_freq_tot[0, :],
-                count_model=count_model,
+                count_model_inf=count_model_inf,
                 adjust=adjust,
             )
             self.native_counts[
