@@ -16,7 +16,7 @@ class ScarIntegration(unittest.TestCase):
         scarObj = model(
             raw_count=raw_count.values,
             ambient_profile=ambient_profile,
-            feature_type="sgRNA",
+            feature_type="sgRNAs",
         )
 
         scarObj.train(epochs=40, batch_size=64)
