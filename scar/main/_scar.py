@@ -502,7 +502,7 @@ class model:
             ] = noise_ratio_batch
             i += 1
 
-        if self.feature_type.lower() in ["sgrna", "tag"]:
+        if self.feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
             self.assignment(cutoff=cutoff, moi=moi)
         else:
             self.feature_assignment = None

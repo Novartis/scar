@@ -164,7 +164,7 @@ def main():
 
     scar_model.inference(adjust=adjust)
 
-    if feature_type.lower() in ["sgrna", "tag", "sgrnas", "tags"]:
+    if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
         scar_model.assignment(cutoff=cutoff, moi=moi)
 
     print("===========================================\n  Saving results...")
@@ -196,7 +196,7 @@ def main():
     print("...expected native frequencies saved in: ", output_path03)
     print("...expected noise ratio saved in: ", output_path04)
 
-    if feature_type.lower() in ["sgrna", "tag", "sgrnas", "tags"]:
+    if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
         output_path05 = os.path.join(output_dir, "assignment.pickle")
         scar_model.feature_assignment.to_pickle(output_path05)
         print("...assignment saved in: ", output_path05)

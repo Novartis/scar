@@ -30,7 +30,16 @@ class VAE(nn.Module):
     ):
         """initialization"""
         super().__init__()
-        assert feature_type.lower() in ["mrna", "mrnas", "sgrna", "sgrnas", "adt", "adts", "tag", "tags"]
+        assert feature_type.lower() in [
+            "mrna",
+            "mrnas",
+            "sgrna",
+            "sgrnas",
+            "adt",
+            "adts",
+            "tag",
+            "tags",
+        ]
         assert count_model.lower() in ["binomial", "poisson", "zeroinflatedpoisson"]
         # self.feature_type = feature_type
         # self.count_model = count_model
@@ -201,7 +210,7 @@ class Decoder(nn.Module):
         self.fc5 = nn.Linear(nn_layer2, nn_layer1)
         self.bn5 = nn.BatchNorm1d(nn_layer1, momentum=0.01, eps=0.001)
         self.dp5 = nn.Dropout(p=dropout_prob)
-        
+
         self.noise_fc = nn.Linear(nn_layer1, 1)
         self.out_fc = nn.Linear(nn_layer1, n_features)
         self.count_model = count_model
