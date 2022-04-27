@@ -138,7 +138,6 @@ def main():
     feature_type = args.feature_type
     cutoff = args.cutoff
     moi = args.moi
-
     count_matrix = pd.read_pickle(count_matrix_path)
 
     print("===========================================")

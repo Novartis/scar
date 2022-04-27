@@ -10,6 +10,9 @@ import numpy as np
 import pandas as pd
 
 import torch
+import contextlib
+import pandas as pd
+import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
@@ -17,7 +20,6 @@ from tqdm.contrib import DummyTqdmFile
 
 from ._vae import VAE
 from ._loss_functions import loss_fn
-
 
 @contextlib.contextmanager
 def std_out_err_redirect_tqdm():
@@ -235,7 +237,7 @@ class model:
         training_generator = torch.utils.data.DataLoader(
             training_set, batch_size=batch_size, shuffle=shuffle
         )
-
+        
         val_set = UMIDataset(self.raw_count, self.ambient_profile, test_ids)
         val_generator = torch.utils.data.DataLoader(
             val_set, batch_size=batch_size, shuffle=shuffle
@@ -278,7 +280,7 @@ class model:
         scheduler = torch.optim.lr_scheduler.StepLR(
             optim, step_size=lr_step_size, gamma=lr_gamma
         )
-
+        
         if verbose:
             print("......kld_weight: ", kld_weight)
             print("......lr: ", lr)
@@ -357,7 +359,9 @@ class model:
                             mu_val,
                             var_val,
                             dec_dp_val,
+                          
                         ) = vae_nets(x_batch_val)
+
                         (
                             recon_loss_minibatch,
                             kld_loss_minibatch,
@@ -537,7 +541,6 @@ class model:
         if moi:
             raise NotImplementedError
 
-
 class UMIDataset(torch.utils.data.Dataset):
     """Characterizes dataset for PyTorch"""
 
@@ -561,3 +564,4 @@ class UMIDataset(torch.utils.data.Dataset):
         sc_count = self.raw_count[sc_id, :]
         sc_ambient = self.ambient_profile[sc_id, :]
         return sc_count, sc_ambient
+      

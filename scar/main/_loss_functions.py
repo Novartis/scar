@@ -5,7 +5,6 @@ import torch
 from torch.distributions import Normal, kl_divergence, Binomial, Poisson
 from pyro.distributions.zero_inflated import ZeroInflatedPoisson
 
-
 def kld(means, var):
     """KL divergence"""
     mean = torch.zeros_like(means)
