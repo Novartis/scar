@@ -17,10 +17,10 @@ scAR
    
    Introduction
    Installation
-   Tutorials
+   tutorials/Tutorials
    API
    Release notes
-   Contacts
+   Reference
    License
-   Citation <https://doi.org/10.1101/2022.01.14.476312>
+   Contacts
    GitHub <https://github.com/Novartis/scAR>
