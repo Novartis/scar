@@ -3,3 +3,4 @@ myst-parser
 nbsphinx
 sphinx-gallery
 sphinx-disqus
+numpy
