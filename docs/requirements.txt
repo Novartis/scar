@@ -3,4 +3,4 @@ myst-parser
 nbsphinx
 sphinx-gallery
 sphinx-disqus
-numpy
+git+https://github.com/Novartis/scAR.git
