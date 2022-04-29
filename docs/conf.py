@@ -10,9 +10,11 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, os.path.abspath(".."))
 # sys.path.insert(0, os.path.abspath('tutorials'))
 
 
@@ -38,10 +40,14 @@ extensions = [
     "nbsphinx",
     "sphinx_gallery.load_style",
     "sphinx_disqus.disqus",
-]  # sphinxcontrib.osexample
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.napoleon",
+]
 
 nbsphinx_execute = "never"
 nbsphinx_allow_errors = True
+autosummary_generate = True
 # Add type of source files
 
 # source_suffix = ['.rst', '.md'] #, '.ipynb'
@@ -50,7 +56,7 @@ nb_custom_formats = {
 }
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["tutorials"]
+# templates_path = ["tutorials"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -71,3 +77,5 @@ html_theme = "sphinx_rtd_theme"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = []
+
+autodoc_mock_imports = ["django"]

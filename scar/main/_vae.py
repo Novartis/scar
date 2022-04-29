@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Variational autoencoder"""
+"""
+The variational autoencoder
+"""
 
 import numpy as np
 from scipy import stats
@@ -15,7 +17,22 @@ from ._activation_functions import mytanh, hnormalization
 
 
 class VAE(nn.Module):
-    """A class of variational autoencoder"""
+    """A class of variational autoencoder
+
+    Args:
+        n_features (int): number of features (e.g. mRNA, sgRNA, ADT, tag, ...)
+        nn_layer1 (int): number of neurons in the 1st layer. Default: 150
+        nn_layer2 (int): number of neurons in the 2nd layer. Default: 100
+        latent_dim (int): number of neurons in the bottleneck layer. Default: 15
+        feature_type (str): the feature to be denoised, \
+            either of 'mRNA', 'sgRNA', 'ADT', 'tag'. Default: 'mRNA'
+        count_model (str): the model to generate the UMI count, \
+            either of "binomial", "poisson", "zeroinflatedpoisson". Default: 'binomial'
+        verbose (bool): whether to print the details of neural networks
+
+    Returns:
+        Object: a class object
+    """
 
     def __init__(
         self,
@@ -28,7 +45,7 @@ class VAE(nn.Module):
         count_model="binomial",
         verbose=True,
     ):
-        """initialization"""
+
         super().__init__()
         assert feature_type.lower() in [
             "mrna",
