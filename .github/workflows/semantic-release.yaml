@@ -1,14 +1,15 @@
 name: Semantic Release
 
 on:
-  push:
-#    types:
-#      - opened
+  pull_request_target:
+   types:
+     - closed
     branches:
-      - 'feature-semantic-release'
+      - 'main'
 
 jobs:
-  release:
+  if_merged:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     concurrency: release
 

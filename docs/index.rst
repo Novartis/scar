@@ -19,7 +19,8 @@ scAR
    Installation
    tutorials/Tutorials
    API
-   Release notes
+   Release_notes
+   RN
    Reference
    License
    Contacts
