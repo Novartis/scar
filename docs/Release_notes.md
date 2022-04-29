@@ -16,7 +16,6 @@
 * additions of docstring, autodocs, reference (#30) ([d93970a](https://github.com/Novartis/scAR/commit/d93970a)), closes [#30](https://github.com/Novartis/scAR/issues/30)
 * Black github action (#17) ([7a61e7f](https://github.com/Novartis/scAR/commit/7a61e7f)), closes [#17](https://github.com/Novartis/scAR/issues/17)
 * Black_formatting (#24) ([d6e8b73](https://github.com/Novartis/scAR/commit/d6e8b73)), closes [#24](https://github.com/Novartis/scAR/issues/24)
-
 * bump version to 0.3.0 ([20ab02e](https://github.com/Novartis/scAR/commit/20ab02e))
 * conf for autodocs ([711689d](https://github.com/Novartis/scAR/commit/711689d))
 * Documentation with readthedocs (#22) ([c4832ba](https://github.com/Novartis/scAR/commit/c4832ba)), closes [#22](https://github.com/Novartis/scAR/issues/22)
