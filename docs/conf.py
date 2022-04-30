@@ -25,7 +25,7 @@ copyright = "2022, Novartis Institute for BioMedical Research"
 author = "Caibin Sheng"
 
 # The full version, including alpha/beta/rc tags
-exec(open("../scar/main/__version__.py").read())
+from ..scar.main.__version__ import __version__
 release = __version__
 
 
