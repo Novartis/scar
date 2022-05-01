@@ -16,16 +16,16 @@ import sys
 sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath(".."))
 # sys.path.insert(0, os.path.abspath('tutorials'))
-
+from scar.main.__version__ import __version__, _copyright
 
 # -- Project information -----------------------------------------------------
 
+
 project = "scAR"
-copyright = "2022, Novartis Institute for BioMedical Research"
+copyright = _copyright
 author = "Caibin Sheng"
 
 # The full version, including alpha/beta/rc tags
-exec(open("../scar/main/__version__.py").read())
 release = __version__
 
 
@@ -40,9 +40,11 @@ extensions = [
     "nbsphinx",
     "sphinx_gallery.load_style",
     "sphinx_disqus.disqus",
+    "sphinxarg.ext",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
+    "autodocsumm",
 ]
 
 nbsphinx_execute = "never"
@@ -79,3 +81,6 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = []
 
 autodoc_mock_imports = ["django"]
+autodoc_default_options = {
+    "autosummary": True,
+}

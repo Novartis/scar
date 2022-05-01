@@ -40,33 +40,74 @@ def std_out_err_redirect_tqdm():
 class model:
     """scAR class object
 
-    Args:
-        raw_count (Union[str, np.ndarray, pd.DataFrame]): Raw count matrix.
-        ambient_profile (Optional[Union[str, np.ndarray, pd.DataFrame]], optional): \
-            the probability of occurrence of each ambient transcript. Defaults to None.\
-                If None, averaging cells to estimate the ambient profile
-        nn_layer1 (int, optional): number of neurons of the 1st layer. Defaults to 150.
-        nn_layer2 (int, optional): number of neurons of the 2nd layer. Defaults to 100.
-        latent_dim (int, optional): number of neurons of the bottleneck layer. Defaults to 15.
-        dropout_prob (float, optional): dropout probability of neurons. Defaults to 0.
-        feature_type (str, optional): the feature to be denoised. One of the following:
+        Parameters
+        ----------
+        raw_count : Union[str, np.ndarray, pd.DataFrame]
+            Raw count matrix.
+        ambient_profile : Optional[Union[str, np.ndarray, pd.DataFrame]], optional
+            the probability of occurrence of each ambient transcript.\
+                If None, averaging cells to estimate the ambient profile, by default None
+        nn_layer1 : int, optional
+            number of neurons of the 1st layer, by default 150
+        nn_layer2 : int, optional
+            number of neurons of the 2nd layer, by default 100
+        latent_dim : int, optional
+            number of neurons of the bottleneck layer, by default 15
+        dropout_prob : float, optional
+            dropout probability of neurons, by default 0
+        feature_type : str, optional
+            the feature to be denoised. One of the following:
             'mRNA' -- transcriptome.
             'ADT' -- protein counts in CITE-seq
             'sgRNA' -- sgRNA counts for scCRISPRseq
             'tag' -- identity barcodes or any data types of super high sparsity. \
                 E.g., in cell indexing experiments, we would expect a single true signal \
-                    (1) and many negative signals (0) for each cell. Defaults to "mRNA".
-        count_model (str, optional): the model to generate the UMI count. One of the following:
-            'binomial' -- binomial model. Defaults to "binomial".
-            'poisson' -- poisson model
-            'zeroinflatedpoisson' -- zeroinflatedpoisson model
-    Examples:
-        >>> # import package
-        >>> import scanpy as sc
-        >>> from scar import model
-        >>> adata = sc.read("...")  # load an anndata object
-        >>> scarObj = model(adata.X.to_df(), ambient_profile)  # initialize scar model
-        >>> # see the following method for training and inference
+                    (1) and many negative signals (0) for each cell, by default "mRNA"
+        count_model : str, optional
+            the model to generate the UMI count. One of the following:
+            'binomial' -- binomial model,
+            'poisson' -- poisson model,
+            'zeroinflatedpoisson' -- zeroinflatedpoisson model, by default "binomial"
+
+        Attributes
+        ----------
+        raw_count : np.ndarray, raw count matrix.
+        ambient_profile : np.ndarray, the probability of occurrence of each ambient transcript.
+        nn_layer1 : int, number of neurons of the 1st layer.
+        nn_layer2 : int, number of neurons of the 2nd layer.
+        latent_dim : int, number of neurons of the bottleneck layer.
+        dropout_prob : float, dropout probability of neurons.
+        feature_type : str,
+            the feature to be denoised. One of the following:
+            'mRNA' -- transcriptome.
+            'ADT' -- protein counts in CITE-seq
+            'sgRNA' -- sgRNA counts for scCRISPRseq
+            'tag' -- identity barcodes or any data types of super high sparsity. \
+                E.g., in cell indexing experiments, we would expect a single true signal \
+                    (1) and many negative signals (0) for each cell, by default "mRNA"
+        count_model : str,
+            the model to generate the UMI count. One of the following:
+            'binomial' -- binomial model,
+            'poisson' -- poisson model,
+            'zeroinflatedpoisson' -- zeroinflatedpoisson model, by default "binomial"
+        trained_model : nn.Module object, added after training
+
+
+        Raises
+        ------
+        TypeError
+            if raw_count is not str or np.ndarray or pd.DataFrame
+        TypeError
+            if ambient_profile is not str or np.ndarray or pd.DataFrame or None
+
+        Examples
+        --------
+            >>> # import package
+            >>> import scanpy as sc
+            >>> from scar import model
+            >>> adata = sc.read("...")  # load an anndata object
+            >>> scarObj = model(adata.X.to_df(), ambient_profile)  # initialize scar model
+            >>> # see the following method for training and inference
 
     """
 
@@ -165,30 +206,44 @@ class model:
         save_model: bool = False,
         verbose: bool = True,
     ):
-        """Method for training scar model
+        """train training scar model
 
-        Args:
-            batch_size (int, optional): batch size. Defaults to 64.
-            train_size (float, optional): the size of training samples. Defaults to 0.998.
-            shuffle (bool, optional): whether to shuffle the data. Defaults to True.
-            kld_weight (float, optional): weight of KL loss. Defaults to 1e-5.
-            lr (float, optional): initial learning rate. Defaults to 1e-3.
-            lr_step_size (int, optional): period of learning rate decay,
-                see https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html.
-                Defaults to 5.
-            lr_gamma (float, optional): multiplicative factor of learning rate decay.
-                Defaults to 0.97.
-            epochs (int, optional): training iterations. Defaults to 800.
-            reconstruction_weight (float, optional): weight on reconstruction error. Defaults to 1.
-            dropout_prob (float, optional): dropout probability of neurons. Defaults to 0.
-            TensorBoard (bool, optional): Whether output training details through Tensorboard
-                (under development). Defaults to False.
-            save_model (bool, optional): whether to save trained models(under development).
-                Defaults to False.
-            verbose (bool, optional): whether to print the details. Defaults to True.
-        Returns:
-            After training, a trained_model attribute will be added.
-        Examples:
+        Parameters
+        ----------
+        batch_size : int, optional
+            batch size, by default 64
+        train_size : float, optional
+            the size of training samples, by default 0.998
+        shuffle : bool, optional
+            whether to shuffle the data, by default True
+        kld_weight : float, optional
+            weight of KL loss, by default 1e-5
+        lr : float, optional
+            initial learning rate, by default 1e-3
+        lr_step_size : int, optional
+            `period of learning rate decay, \
+                <https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html/>`_,\
+                    by default 5
+        lr_gamma : float, optional
+            multiplicative factor of learning rate decay, by default 0.97
+        epochs : int, optional
+            training iterations, by default 800
+        reconstruction_weight : float, optional
+            weight on reconstruction error, by default 1
+        dropout_prob : float, optional
+            dropout probability of neurons, by default 0
+        TensorBoard : bool, optional
+            whether to output training details through Tensorboard \
+                (under development), by default False
+        save_model : bool, optional
+            whether to save trained models(under development), by default False
+        verbose : bool, optional
+            whether to print the details, by default True       
+        Returns
+        -------
+            After training, a trained_model attribute will be added.       
+        Examples
+        --------
             >>> # import package
             >>> import scanpy as sc
             >>> from scar import model
@@ -241,7 +296,6 @@ class model:
             count_model=self.count_model,
             verbose=verbose,
         ).to(self.device)
-
         # Define optimizer
         optim = torch.optim.Adam(vae_nets.parameters(), lr=lr)
         scheduler = torch.optim.lr_scheduler.StepLR(optim, step_size=lr_step_size, gamma=lr_gamma)        
@@ -377,28 +431,37 @@ class model:
     def inference(
         self, batch_size=None, count_model_inf="poisson", adjust="micro", cutoff=3, moi=None
     ):
-        """Infering the expected native signals, noise ratios, Bayesfactors and expected native frequencies
+        """inference infering the expected native signals, noise ratios, Bayesfactors and expected native frequencies
 
-        Args:
-            batch_size (_type_, optional): batch size, set a small value upon GPU memory issue.
-                Defaults to None.
-            count_model_inf (str, optional): Inference model for evaluation of ambient presence.
-                Defaults to "poisson".
-            adjust (str, optional): Only used for calculating Bayesfactors to improve performance.
-                One of the following: 
+        Parameters
+        ----------
+        batch_size : _type_, optional
+            batch size, set a small value upon GPU memory issue, by default None
+        count_model_inf : str, optional
+            inference model for evaluation of ambient presence, by default "poisson"
+        adjust : str, optional
+            Only used for calculating Bayesfactors to improve performance. \
+                One of the following: \
                     'micro' -- adjust the estimated native counts per cell. \
-                    This can overcome the issue of over- or under-estimation of noise. Default.
+                    This can overcome the issue of over- or under-estimation of noise. \
                     'global' -- adjust the estimated native counts globally.\
-                    This can overcome the issue of over- or under-estimation of noise.
-                    False -- no adjustment, use the model-returned native counts. Defaults to "micro".
-            cutoff (int, optional): cutoff for Bayesfactors. Defaults to 3.
-            moi (float, optional): multiplicity of infection. If assigned, it will allow optimized thresholding, 
-                which tests a series of cutoffs to find the best one based on distributions of infections under given moi.
-                    See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development. Defaults to None.
-        Returns:
+                    This can overcome the issue of over- or under-estimation of noise. \
+                        False -- no adjustment, use the model-returned native counts. \
+                        Defaults to "micro", by default "micro"
+        cutoff : int, optional
+            cutoff for Bayesfactors, by default 3
+        moi : _type_, optional (under development) \
+            multiplicity of infection. If assigned, it will allow optimized thresholding, \
+                which tests a series of cutoffs to find the best one \
+                    based on distributions of infections under given moi.\
+                        See http://dx.doi.org/10.1016/j.cell.2016.11.038, by default None
+        Returns
+        -------
             After inferring, several attributes will be added, inc. native_counts, bayesfactor,\
-            native_frequencies, and noise_ratio. A feature_assignment will be added in 'sgRNA' or 'tag' feature type.
-        Examples:
+            native_frequencies, and noise_ratio. \
+                A feature_assignment will be added in 'sgRNA' or 'tag' feature type.       
+        Examples
+        --------
             >>> # import package
             >>> import scanpy as sc
             >>> from scar import model
@@ -410,7 +473,6 @@ class model:
             >>> adata.obsm["X_scar_assignment"] = scarObj.feature_assignment   #'sgRNA' or 'tag' feature type
 
         """
-
         print("===========================================\n  Inferring .....")
         total_set = UMIDataset(self.raw_count, self.ambient_profile)
         n_features = self.n_features
@@ -464,16 +526,26 @@ class model:
             self.feature_assignment = None
 
     def assignment(self, cutoff=3, moi=None):
-        """assignment of feature barcodes
+        """assignment assignment of feature barcodes. Re-run it can test different cutoffs for your experiments.
 
-        Args:
-            cutoff (int, optional): cutoff for Bayesfactors. Defaults to 3.
-            moi (float, optional): multiplicity of infection. If assigned, it will allow optimized thresholding, 
-                which tests a series of cutoffs to find the best one based on distributions of infections under given moi.
-                    See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development. Defaults to None.
-
-        Raises:
-            NotImplementedError: if moi is not None
+        Parameters
+        ----------
+        cutoff : int, optional
+            cutoff for Bayesfactors, by default 3
+        moi : float, optional
+            multiplicity of infection. (under development)\
+            If assigned, it will allow optimized thresholding,\
+                which tests a series of cutoffs to find the best one \
+                    based on distributions of infections under given moi.\
+                        See http://dx.doi.org/10.1016/j.cell.2016.11.038, by default None
+        Returns
+        -------
+            After running, a attribute 'feature_assignment' will be added,\
+                in 'sgRNA' or 'tag' feature type.       
+        Raises
+        ------
+        NotImplementedError
+            if moi is not None
         """
 
         feature_assignment = pd.DataFrame(

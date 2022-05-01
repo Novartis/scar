@@ -17,10 +17,9 @@ scAR
    
    Introduction
    Installation
+   usages/index
    tutorials/Tutorials
-   API
    Release_notes
-   RN
    Reference
    License
    Contacts
