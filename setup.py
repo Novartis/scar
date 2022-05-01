@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
-from scar.main.__version__ import __version__
+
+exec(open("scar/main/__version__.py").read())
 
 setup(
     name="scar",
