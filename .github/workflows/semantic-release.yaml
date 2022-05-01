@@ -8,8 +8,7 @@ on:
       - 'main'
 
 jobs:
-  if_merged:
-    if: github.event.pull_request.merged == true
+  release:
     runs-on: ubuntu-latest
     concurrency: release
 
