@@ -1,8 +1,5 @@
 from setuptools import setup, find_packages
-from glob import glob
-
-# Set __version__
-exec(open("scar/main/__version__.py").read())
+from scar.main.__version__ import __version__
 
 setup(
     name="scar",
