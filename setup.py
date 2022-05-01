@@ -1,6 +1,5 @@
 from setuptools import setup, find_packages
-from glob import glob
-from .scar.main.__version__ import __version__
+from scar.main.__version__ import __version__
 
 setup(
     name="scar",

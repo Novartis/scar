@@ -2,6 +2,8 @@
 """command line of scar"""
 
 import argparse
+
+# from distutils.command.config import config
 import os
 import pandas as pd
 from ._scar import model
@@ -9,7 +11,113 @@ from .__version__ import __version__
 
 
 def main():
+    """main function for command line interface"""
+    args = Config()
+    count_matrix_path = args.count_matrix[0]
+    ambient_profile_path = args.ambient_profile
+    feature_type = args.feature_type
+    output_dir = (
+        os.getcwd() if not args.output else args.output
+    )  # if None, output to current directory
+    count_model = args.count_model
+    TensorBoard = args.TensorBoard
+    nn_layer1 = args.hidden_layer1
+    nn_layer2 = args.hidden_layer2
+    latent_dim = args.latent_dim
+    epochs = args.epochs
+    save_model = args.save_model
+    batch_size = args.batchsize
+    adjust = args.adjust
+    cutoff = args.cutoff
+    moi = args.moi
+    count_matrix = pd.read_pickle(count_matrix_path)
 
+    print("===========================================")
+    print("feature_type: ", feature_type)
+    print("count_model: ", count_model)
+    print("output_dir: ", output_dir)
+    print("count_matrix_path: ", count_matrix_path)
+    print("ambient_profile_path: ", ambient_profile_path)
+    print("TensorBoard path: ", TensorBoard)
+
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+
+    # Run model
+    scar_model = model(
+        raw_count=count_matrix_path,
+        ambient_profile=ambient_profile_path,
+        nn_layer1=nn_layer1,
+        nn_layer2=nn_layer2,
+        latent_dim=latent_dim,
+        feature_type=feature_type,
+        count_model=count_model,
+    )
+
+    scar_model.train(
+        batch_size=batch_size,
+        epochs=epochs,
+        TensorBoard=TensorBoard,
+        save_model=save_model,
+    )
+
+    scar_model.inference(adjust=adjust)
+
+    if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
+        scar_model.assignment(cutoff=cutoff, moi=moi)
+
+    print("===========================================\n  Saving results...")
+    output_path01, output_path02, output_path03, output_path04 = (
+        os.path.join(output_dir, "denoised_counts.pickle"),
+        os.path.join(output_dir, "BayesFactor.pickle"),
+        os.path.join(output_dir, "native_frequency.pickle"),
+        os.path.join(output_dir, "noise_ratio.pickle"),
+    )
+
+    # save results
+    pd.DataFrame(
+        scar_model.native_counts, index=count_matrix.index, columns=count_matrix.columns
+    ).to_pickle(output_path01)
+    pd.DataFrame(
+        scar_model.bayesfactor, index=count_matrix.index, columns=count_matrix.columns
+    ).to_pickle(output_path02)
+    pd.DataFrame(
+        scar_model.native_frequencies,
+        index=count_matrix.index,
+        columns=count_matrix.columns,
+    ).to_pickle(output_path03)
+    pd.DataFrame(
+        scar_model.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]
+    ).to_pickle(output_path04)
+
+    print("...denoised counts saved in: ", output_path01)
+    print("...BayesFactor matrix saved in: ", output_path02)
+    print("...expected native frequencies saved in: ", output_path03)
+    print("...expected noise ratio saved in: ", output_path04)
+
+    if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
+        output_path05 = os.path.join(output_dir, "assignment.pickle")
+        scar_model.feature_assignment.to_pickle(output_path05)
+        print("...assignment saved in: ", output_path05)
+
+    print("===========================================\n  Done!!!")
+
+
+class Config:
+    """
+    The configuration options. Options can be specified as command-line arguments.
+    """
+
+    def __init__(self) -> None:
+        """Initialize configuration values."""
+        self.parser = scar_parser()
+        self.namespace = vars(self.parser.parse_args())
+
+    def __getattr__(self, option):
+        return self.namespace[option]
+
+
+def scar_parser():
     """Argument parser"""
 
     parser = argparse.ArgumentParser(
@@ -101,107 +209,18 @@ def main():
         "--cutoff",
         type=float,
         default=3,
-        help="Cutoff for Bayesfactors. Default: 3. See https://doi.org/10.1007/s42113-019-00070-x.",
+        help="cutoff for Bayesfactors. See https://doi.org/10.1007/s42113-019-00070-x.",
     )
     parser.add_argument(
         "-moi",
         "--moi",
         type=float,
         default=None,
-        help="Multiplicity of Infection. If assigned, it will allow optimized thresholding, \
+        help="multiplicity of Infection. If assigned, it will allow optimized thresholding, \
         which tests a series of cutoffs to find the best one based on distributions of infections under given moi. \
         See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development.",
     )
-
-    args = parser.parse_args()
-    count_matrix_path = args.count_matrix[0]
-    ambient_profile_path = args.ambient_profile
-    feature_type = args.feature_type
-    output_dir = (
-        os.getcwd() if not args.output else args.output
-    )  # if None, output to current directory
-    count_model = args.count_model
-    TensorBoard = args.TensorBoard
-    nn_layer1 = args.hidden_layer1
-    nn_layer2 = args.hidden_layer2
-    latent_dim = args.latent_dim
-    epochs = args.epochs
-    save_model = args.save_model
-    batch_size = args.batchsize
-    adjust = args.adjust
-    cutoff = args.cutoff
-    moi = args.moi
-    count_matrix = pd.read_pickle(count_matrix_path)
-
-    print("===========================================")
-    print("feature_type: ", feature_type)
-    print("count_model: ", count_model)
-    print("output_dir: ", output_dir)
-    print("count_matrix_path: ", count_matrix_path)
-    print("ambient_profile_path: ", ambient_profile_path)
-    print("TensorBoard path: ", TensorBoard)
-
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
-
-    # Run model
-    scar_model = model(
-        raw_count=count_matrix_path,
-        ambient_profile=ambient_profile_path,
-        nn_layer1=nn_layer1,
-        nn_layer2=nn_layer2,
-        latent_dim=latent_dim,
-        feature_type=feature_type,
-        count_model=count_model,
-    )
-
-    scar_model.train(
-        batch_size=batch_size,
-        epochs=epochs,
-        TensorBoard=TensorBoard,
-        save_model=save_model,
-    )
-
-    scar_model.inference(adjust=adjust)
-
-    if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
-        scar_model.assignment(cutoff=cutoff, moi=moi)
-
-    print("===========================================\n  Saving results...")
-    output_path01, output_path02, output_path03, output_path04 = (
-        os.path.join(output_dir, "denoised_counts.pickle"),
-        os.path.join(output_dir, "BayesFactor.pickle"),
-        os.path.join(output_dir, "native_frequency.pickle"),
-        os.path.join(output_dir, "noise_ratio.pickle"),
-    )
-
-    # save results
-    pd.DataFrame(
-        scar_model.native_counts, index=count_matrix.index, columns=count_matrix.columns
-    ).to_pickle(output_path01)
-    pd.DataFrame(
-        scar_model.bayesfactor, index=count_matrix.index, columns=count_matrix.columns
-    ).to_pickle(output_path02)
-    pd.DataFrame(
-        scar_model.native_frequencies,
-        index=count_matrix.index,
-        columns=count_matrix.columns,
-    ).to_pickle(output_path03)
-    pd.DataFrame(
-        scar_model.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]
-    ).to_pickle(output_path04)
-
-    print("...denoised counts saved in: ", output_path01)
-    print("...BayesFactor matrix saved in: ", output_path02)
-    print("...expected native frequencies saved in: ", output_path03)
-    print("...expected noise ratio saved in: ", output_path04)
-
-    if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
-        output_path05 = os.path.join(output_dir, "assignment.pickle")
-        scar_model.feature_assignment.to_pickle(output_path05)
-        print("...assignment saved in: ", output_path05)
-
-    print("===========================================\n  Done!!!")
+    return parser
 
 
 if __name__ == "__main__":

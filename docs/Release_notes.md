@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.3 (2022-05-01)
+### Fix
+* ***:** Changelog ([`b9171a3`](https://github.com/Novartis/scAR/commit/b9171a3015350ac37b0bc44cdb00e4c7aa3c2a67))
+* ***:** Changelog ([`44a4409`](https://github.com/Novartis/scAR/commit/44a4409fadf8d124d9b5177cf15f53f00e4524ff))
+
+### Documentation
+* Autodoc command line interface ([`0efae6c`](https://github.com/Novartis/scAR/commit/0efae6c26a409553bb8caad5de03c2f38842c139))
+
 
 ## [0.3.2](https://github.com/Novartis/scAR/compare/v0.3.0...v0.3.2) (2022-04-29)
 
