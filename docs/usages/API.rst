@@ -1,6 +1,9 @@
-Python API
-===============
-.. autoclass:: scar.main._scar.model
-    :members: train, inference, assignment
-    :member-order: bysource
-    :autosummary:
+Python API 
+================
+
+.. toctree::
+   :maxdepth: 1
+
+   processing
+   synthetic_dataset
+  

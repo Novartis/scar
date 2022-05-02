@@ -84,3 +84,4 @@ autodoc_mock_imports = ["django"]
 autodoc_default_options = {
     "autosummary": True,
 }
+numpydoc_show_class_members = False

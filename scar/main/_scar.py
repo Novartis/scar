@@ -69,30 +69,6 @@ class model:
             'poisson' -- poisson model,
             'zeroinflatedpoisson' -- zeroinflatedpoisson model, by default "binomial"
 
-        Attributes
-        ----------
-        raw_count : np.ndarray, raw count matrix.
-        ambient_profile : np.ndarray, the probability of occurrence of each ambient transcript.
-        nn_layer1 : int, number of neurons of the 1st layer.
-        nn_layer2 : int, number of neurons of the 2nd layer.
-        latent_dim : int, number of neurons of the bottleneck layer.
-        dropout_prob : float, dropout probability of neurons.
-        feature_type : str,
-            the feature to be denoised. One of the following:
-            'mRNA' -- transcriptome.
-            'ADT' -- protein counts in CITE-seq
-            'sgRNA' -- sgRNA counts for scCRISPRseq
-            'tag' -- identity barcodes or any data types of super high sparsity. \
-                E.g., in cell indexing experiments, we would expect a single true signal \
-                    (1) and many negative signals (0) for each cell, by default "mRNA"
-        count_model : str,
-            the model to generate the UMI count. One of the following:
-            'binomial' -- binomial model,
-            'poisson' -- poisson model,
-            'zeroinflatedpoisson' -- zeroinflatedpoisson model, by default "binomial"
-        trained_model : nn.Module object, added after training
-
-
         Raises
         ------
         TypeError
@@ -107,7 +83,10 @@ class model:
             >>> from scar import model
             >>> adata = sc.read("...")  # load an anndata object
             >>> scarObj = model(adata.X.to_df(), ambient_profile)  # initialize scar model
-            >>> # see the following method for training and inference
+            >>> scarObj.train()  # start training
+            >>> scarObj.inference()  # inference
+            >>> adata.layers["X_scar_denoised"] = scarObj.native_counts   # results are saved in scarObj
+            >>> adata.obsm["X_scar_assignment"] = scarObj.feature_assignment   #'sgRNA' or 'tag' feature type
 
     """
 
@@ -125,12 +104,35 @@ class model:
         """initialize object"""
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        """str, "cuda" if gpu is available
+        """        
         self.nn_layer1 = nn_layer1
+        """int, number of neurons of the 1st layer.
+        """        
         self.nn_layer2 = nn_layer2
+        """int, number of neurons of the 2nd layer.
+        """        
         self.latent_dim = latent_dim
+        """int, number of neurons of the bottleneck layer.
+        """
         self.dropout_prob = dropout_prob
+        """float, dropout probability of neurons.
+        """
         self.feature_type = feature_type
+        """str, the feature to be denoised. One of the following:
+            'mRNA' -- transcriptome.
+            'ADT' -- protein counts in CITE-seq
+            'sgRNA' -- sgRNA counts for scCRISPRseq
+            'tag' -- identity barcodes or any data types of super high sparsity. \
+                E.g., in cell indexing experiments, we would expect a single true signal \
+                    (1) and many negative signals (0) for each cell, by default "mRNA"
+        """
         self.count_model = count_model
+        """str, the model to generate the UMI count. One of the following:
+            'binomial' -- binomial model,
+            'poisson' -- poisson model,
+            'zeroinflatedpoisson' -- zeroinflatedpoisson model.
+        """
 
         if isinstance(raw_count, str):
             raw_count = pd.read_pickle(raw_count)
@@ -151,7 +153,10 @@ class model:
 
         # Loading numpy to tensor on GPU
         self.raw_count = torch.from_numpy(raw_count.values).int().to(self.device)
+        """raw_count : np.ndarray, raw count matrix.
+        """
         self.n_features = raw_count.shape[1]
+
         self.cell_id = list(raw_count.index)
         self.feature_names = list(raw_count.columns)
 
@@ -178,17 +183,33 @@ class model:
                 .repeat(raw_count.shape[0], axis=0)
             )
         self.ambient_profile = torch.from_numpy(ambient_profile).float().to(self.device)
-
-        self.n_batch_train = None
-        self.n_batch_val = None
-        self.batch_size = None
+        """ambient_profile : np.ndarray, the probability of occurrence of each ambient transcript.
+        """
+        
+        # self.n_batch_train = None
+        # self.n_batch_val = None
+        # self.batch_size = None
         self.runtime = None
+        """int, runtime in seconds.
+        """
         self.trained_model = None
+        """nn.Module object, added after training.
+        """
         self.native_counts = None
+        """np.ndarray, denoised counts, added after inference
+        """
         self.bayesfactor = None
+        """np.ndarray, bayesian factor of whether native signals are present, added after inference
+        """
         self.native_frequencies = None
+        """np.ndarray, probability of native transcripts (normalized denoised counts), added after inference
+        """
         self.noise_ratio = None
+        """np.ndarray, noise ratio per cell, added after inference
+        """
         self.feature_assignment = None
+        """pd.DataFrame, assignment of sgRNA or tag or other feature barcodes, added after inference or assignment
+        """
 
     def train(
         self,
@@ -242,15 +263,6 @@ class model:
         Returns
         -------
             After training, a trained_model attribute will be added.       
-        Examples
-        --------
-            >>> # import package
-            >>> import scanpy as sc
-            >>> from scar import model
-            >>> adata = sc.read("...")  # load an anndata object
-            >>> scarObj = model(adata.X.to_df(), ambient_profile)  # initialize scar model
-            >>> scarObj.train()  # start training
-            >>> # all parameter should converge, we need next step to estimate the noise and etc.
         """
 
         list_ids = list(range(self.raw_count.shape[0]))
@@ -265,9 +277,9 @@ class model:
             val_set, batch_size=batch_size, shuffle=shuffle
         )
 
-        self.n_batch_train = len(training_generator)
-        self.n_batch_val = len(val_generator)
-        self.batch_size = batch_size
+        # self.n_batch_train = len(training_generator)
+        # self.n_batch_val = len(val_generator)
+        # self.batch_size = batch_size
 
         # TensorBoard writer
         if TensorBoard:
@@ -460,18 +472,6 @@ class model:
             After inferring, several attributes will be added, inc. native_counts, bayesfactor,\
             native_frequencies, and noise_ratio. \
                 A feature_assignment will be added in 'sgRNA' or 'tag' feature type.       
-        Examples
-        --------
-            >>> # import package
-            >>> import scanpy as sc
-            >>> from scar import model
-            >>> adata = sc.read("...")  # load an anndata object
-            >>> scarObj = model(adata.X.to_df(), ambient_profile)  # initialize scar model
-            >>> scarObj.train()  # start training
-            >>> scarObj.inference()  # inference
-            >>> adata.layers["X_scar_denoised"] = scarObj.native_counts   # results are saved in scarObj
-            >>> adata.obsm["X_scar_assignment"] = scarObj.feature_assignment   #'sgRNA' or 'tag' feature type
-
         """
         print("===========================================\n  Inferring .....")
         total_set = UMIDataset(self.raw_count, self.ambient_profile)
