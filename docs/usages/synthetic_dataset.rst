@@ -1,7 +1,7 @@
 synthetic_dataset
-=================================
-
+==================
 .. automodule:: scar.main._data_generater
-    :members: scrnaseq_synthetic, citeseq, cropseq
+    :members:
+    :inherited-members:
     :member-order: bysource
-    :autosummary:
+    

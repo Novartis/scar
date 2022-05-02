@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Class of synthetic scrnaseq datasets
-class scrnaseq_synthetic:
+class scrnaseq:
     """
     Class to generate synthetic scrnaseq/CITE-seq/scCRISPRseq data, which contain ambient signals.
 
@@ -50,7 +50,7 @@ class scrnaseq_synthetic:
 
 
 # Synthetic citeseq datasets
-class citeseq(scrnaseq_synthetic):
+class citeseq(scrnaseq):
     """class to generate citeseq data"""
 
     def generate(self):
@@ -169,7 +169,7 @@ class citeseq(scrnaseq_synthetic):
 
 
 # Synthetic cropseq datasets
-class cropseq(scrnaseq_synthetic):
+class cropseq(scrnaseq):
     """
     Create synthetic data of cropseq
     """

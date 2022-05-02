@@ -18,6 +18,7 @@ scAR
    Introduction
    Installation
    usages/index
+   usages/Command_Line_Interface
    tutorials/Tutorials
    Release_notes
    Reference
