@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.5 (2022-05-03)
+### Documentation
+* Delete API.rst ([`497b080`](https://github.com/Novartis/scAR/commit/497b080eff15143a34c4d75649ba2e130e1d3006))
+* Update documentations ([`5ad9986`](https://github.com/Novartis/scAR/commit/5ad998607ec41b91a318ef4bc2c46694ad034dcc))
+* Update documentations ([`11fa2b8`](https://github.com/Novartis/scAR/commit/11fa2b858ae2162052dd6906d237b16a4f3955de))
+
 ## v0.3.3 (2022-05-01)
 ### Fix
 * ***:** Changelog ([`b9171a3`](https://github.com/Novartis/scAR/commit/b9171a3015350ac37b0bc44cdb00e4c7aa3c2a67))
