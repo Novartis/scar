@@ -560,6 +560,7 @@ class cropseq(scrnaseq):
     # function to generate counts per cell
     def generate(
         self,
+        dirichlet_concentration_hyper=None,
         library_pattern="pyramid",
         noise_ratio=0.96,
         average_counts_per_cell=2000,
