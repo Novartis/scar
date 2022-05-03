@@ -100,6 +100,7 @@ class model:
         dropout_prob: float = 0,
         feature_type: str = "mRNA",
         count_model: str = "binomial",
+        sparsity: float = 0.5
     ):
         """initialize object"""
 
@@ -132,6 +133,9 @@ class model:
             'binomial' -- binomial model,
             'poisson' -- poisson model,
             'zeroinflatedpoisson' -- zeroinflatedpoisson model.
+        """
+        self.sparsity = sparsity
+        """float, the sparsity of expected native data. [0, 1].
         """
 
         if isinstance(raw_count, str):
@@ -306,6 +310,7 @@ class model:
             dropout_prob=dropout_prob,
             feature_type=self.feature_type,
             count_model=self.count_model,
+            sparsity=self.sparsity,
             verbose=verbose,
         ).to(self.device)
         # Define optimizer

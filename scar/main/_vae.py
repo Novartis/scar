@@ -9,7 +9,7 @@ from scipy import stats
 import torch
 from torch import nn
 
-from ._activation_functions import mytanh, hnormalization
+from ._activation_functions import mytanh, hnormalization, MySoftplus
 
 #########################################################################
 ## Variational autoencoder
@@ -43,6 +43,7 @@ class VAE(nn.Module):
         dropout_prob=0,
         feature_type="mRNA",
         count_model="binomial",
+        sparsity=0.5,
         verbose=True,
     ):
 
@@ -64,7 +65,14 @@ class VAE(nn.Module):
             n_features, nn_layer1, nn_layer2, latent_dim, dropout_prob
         )
         self.decoder = Decoder(
-            n_features, nn_layer1, nn_layer2, latent_dim, dropout_prob, count_model
+            n_features,
+            nn_layer1,
+            nn_layer2,
+            latent_dim,
+            dropout_prob,
+            feature_type,
+            count_model,
+            sparsity,
         )
 
         if verbose:
@@ -213,14 +221,25 @@ class Decoder(nn.Module):
     """
 
     def __init__(
-        self, n_features, nn_layer1, nn_layer2, latent_dim, dropout_prob, count_model
+        self,
+        n_features,
+        nn_layer1,
+        nn_layer2,
+        latent_dim,
+        dropout_prob,
+        feature_type,
+        count_model,
+        sparsity,
     ):
         """initialization"""
         super().__init__()
         self.activation = nn.SELU()
-        self.normalization_native_freq = hnormalization
-        self.noise_activation = mytanh
-        self.activation_native_freq = nn.ReLU()
+        self.normalization_native_freq = hnormalization()
+        self.noise_activation = mytanh()
+        if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
+            self.activation_native_freq = nn.ReLU()
+        elif feature_type.lower() in ["mrna", "mrnas", "adt", "adts"]:
+            self.activation_native_freq = MySoftplus(sparsity)
         self.fc4 = nn.Linear(latent_dim, nn_layer2)
         self.bn4 = nn.BatchNorm1d(nn_layer2, momentum=0.01, eps=0.001)
         self.dp4 = nn.Dropout(p=dropout_prob)
@@ -233,7 +252,7 @@ class Decoder(nn.Module):
         self.count_model = count_model
         if count_model.lower() == "zeroinflatedpoisson":
             self.dropoutprob = nn.Linear(nn_layer1, 1)
-            self.dropout_activation = mytanh
+            self.dropout_activation = mytanh()
 
     def forward(self, sampling):
         """forward function"""
