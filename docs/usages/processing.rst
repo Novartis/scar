@@ -1,5 +1,3 @@
-processing
-===============
 .. automodule:: scar.main._scar
 
 .. autoclass:: model
