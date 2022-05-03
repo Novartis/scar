@@ -30,7 +30,7 @@ jobs:
           export PATH="$GITHUB_PATH:$PATH"
           source activate scar
           conda install pylint
-          pylint scar --fail-under 6
+          pylint scar --fail-under 6 --disable=R,C
       - name: Run unit tests
         run: |
           export PATH="$GITHUB_PATH:$PATH"

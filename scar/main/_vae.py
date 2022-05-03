@@ -7,7 +7,7 @@ import numpy as np
 from scipy import stats
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ._activation_functions import mytanh, hnormalization
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""class to generate synthetic datasets with ambient contamination"""
+"""Module to generate synthetic datasets with ambient contamination"""
 
 import numpy as np
 from numpy import random

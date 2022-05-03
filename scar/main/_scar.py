@@ -38,7 +38,7 @@ def std_out_err_redirect_tqdm():
 
 # scar class
 class model:
-    """scAR class object
+    """The scar model
 
         Parameters
         ----------
