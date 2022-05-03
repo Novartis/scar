@@ -31,8 +31,8 @@ class scrnaseq:
     .. plot::
         :context: close-figs
 
-        from scar import data_generator
         import numpy as np
+        from scar import data_generator
 
         n_features = 1000  # 1000 genes, bad visualization with too big number
         n_cells = 6000  # cells
@@ -264,8 +264,8 @@ class citeseq(scrnaseq):
     .. plot::
         :context: close-figs
 
-        from scar import data_generator
         import numpy as np
+        from scar import data_generator
 
         n_features = 50  # 50 ADTs
         n_cells = 6000  # 6000 cells
@@ -479,9 +479,9 @@ class cropseq(scrnaseq):
     
     .. plot::
         :context: close-figs
-
-        from scar import data_generator
+        
         import numpy as np
+        from scar import data_generator
         
         n_features = 100  # 100 sgRNAs in the libraries
         n_cells = 6000  # 6000 cells
