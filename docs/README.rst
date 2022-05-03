@@ -1,4 +1,4 @@
 Documentation
-===============
+=============
 
-See detailed `documentation <https://scar-tutorials.readthedocs.io/en/latest/>`__.
+This folder contains all documentations of scar. See details in the `documentation <https://scar-tutorials.readthedocs.io/en/latest/>`__.

@@ -1,8 +1,10 @@
 Python API
 ===============
 
-processing
-*****************
+Processing
+----------------------
+The core module of scar.
+
 .. currentmodule:: scar.main._scar
 
 .. autosummary::
@@ -10,8 +12,10 @@ processing
 
    model
 
-synthetic_dataset
-*****************
+Synthetic_dataset
+--------------------------------------
+Generate synthetic datasets (scRNAseq, CITE-seq, scCRISPRseq) with ambient contamination
+
 .. currentmodule:: scar.main._data_generater
 
 .. autosummary::
@@ -20,3 +24,11 @@ synthetic_dataset
    scrnaseq
    citeseq
    cropseq
+
+Plotting
+--------------------------------------
+Plotting functions (under development).
+
+Reporting
+--------------------------------------
+Generate denoising reports (under development).
