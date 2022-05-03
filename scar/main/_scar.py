@@ -68,9 +68,12 @@ class model:
             'binomial' -- binomial model,
             'poisson' -- poisson model,
             'zeroinflatedpoisson' -- zeroinflatedpoisson model, by default "binomial"
-        sparsity : float, optional
-            the sparsity of expected native signals. (0, 1]. \
-            Forced to be one in the mode of "sgRNA(s)" and "tag(s)".
+        sparsity : float, range: [0, 1].
+            the sparsity of expected native signals. It varies between datasets, \
+                e.g. if one prefilters genes -- use only highly variable genes -- \
+                    the sparsity should be low; on the other hand, it should be set high \
+                        in the case of unflitered genes. \
+                        Forced to be one in the mode of "sgRNA(s)" and "tag(s)".
 
         Raises
         ------
