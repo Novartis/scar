@@ -41,8 +41,8 @@ class ActivationFunctionsTest(unittest.TestCase):
         self.assertTrue(
             torch.allclose(
                 mysoftplus()(
-                    torch.tensor(numpy.full((20, 8), 0.1), dtype=torch.float32)
+                    torch.tensor(numpy.full((20, 8), 0.01), dtype=torch.float32)
                 ).double(),
-                torch.tensor(numpy.full((20, 8), 0.4311)),
+                torch.tensor(numpy.full((20, 8), 0.3849)),
             )
         )
