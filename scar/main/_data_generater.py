@@ -28,22 +28,21 @@ class scrnaseq:
 
     Examples
     --------
-        >>> from scar import data_generator
-        >>> import numpy as np
+    .. plot::
+        :context: close-figs
 
-        >>> n_features = 1000  # 1000 genes, bad visualization with too big number
-        >>> n_cells = 6000  # cells
-        >>> n_total_molecules = 20000 # total mRNAs
-        >>> n_celltypes = 8  # cell types
+        from scar import data_generator
+        import numpy as np
 
-        >>> np.random.seed(8)
-        >>> scRNAseq = data_generator.scrnaseq(n_cells, n_celltypes, n_features, n_total_molecules=n_total_molecules)
-        >>> scRNAseq.generate(dirichlet_concentration_hyper=1)
-        >>> scRNAseq.heatmap(vmax=5)
+        n_features = 1000  # 1000 genes, bad visualization with too big number
+        n_cells = 6000  # cells
+        n_total_molecules = 20000 # total mRNAs
+        n_celltypes = 8  # cell types
 
-    .. figure:: /../docs/img/synthetic_scRNAseq.png
-       :width: 800
-       :align: center
+        np.random.seed(8)
+        scRNAseq = data_generator.scrnaseq(n_cells, n_celltypes, n_features, n_total_molecules=n_total_molecules)
+        scRNAseq.generate(dirichlet_concentration_hyper=1)
+        scRNAseq.heatmap(vmax=5)
 
     """
 
@@ -167,7 +166,7 @@ class scrnaseq:
         self.empty_droplets = ambient_signals_empty.astype(int)
 
     def heatmap(
-        self, feature_type="mRNA", return_obj=False, figsize=(15, 5), vmin=0, vmax=10
+        self, feature_type="mRNA", return_obj=False, figsize=(12, 4), vmin=0, vmax=10
     ):
         """Heatmap of synthetic data.
 
@@ -204,7 +203,7 @@ class scrnaseq:
             vmin=vmin,
             vmax=vmax,
             cmap="coolwarm",
-            center=2,
+            center=1,
             ax=axs[0],
             cbar_kws={"label": "log2(counts + 1)"},
         )
@@ -216,7 +215,7 @@ class scrnaseq:
             vmin=vmin,
             vmax=vmax,
             cmap="coolwarm",
-            center=2,
+            center=1,
             ax=axs[1],
             cbar_kws={"label": "log2(counts + 1)"},
         )
@@ -228,7 +227,7 @@ class scrnaseq:
             vmin=vmin,
             vmax=vmax,
             cmap="coolwarm",
-            center=2,
+            center=1,
             ax=axs[2],
             cbar_kws={"label": "log2(counts + 1)"},
         )
@@ -262,22 +261,21 @@ class citeseq(scrnaseq):
 
     Examples
     --------
-        >>> from scar import data_generator
-        >>> import numpy as np
+    .. plot::
+        :context: close-figs
 
-        >>> n_features = 50  # 50 ADTs
-        >>> n_cells = 6000  # 6000 cells
-        >>> n_celltypes = 6  # cell types
+        from scar import data_generator
+        import numpy as np
 
-        >>> # generate a synthetic ADT count dataset
-        >>> np.random.seed(8)
-        >>> citeseq = data_generator.citeseq(n_cells, n_celltypes, n_features)
-        >>> citeseq.generate()
-        >>> citeseq.heatmap()
+        n_features = 50  # 50 ADTs
+        n_cells = 6000  # 6000 cells
+        n_celltypes = 6  # cell types
 
-    .. figure:: /../docs/img/synthetic_CITEseq.png
-       :width: 800
-       :align: center
+        # generate a synthetic ADT count dataset
+        np.random.seed(8)
+        citeseq = data_generator.citeseq(n_cells, n_celltypes, n_features)
+        citeseq.generate()
+        citeseq.heatmap()
 
     """
 
@@ -371,7 +369,7 @@ class citeseq(scrnaseq):
         self.empty_droplets = ambient_signals_empty.astype(int)
 
     def heatmap(
-        self, feature_type="ADT", return_obj=False, figsize=(15, 5), vmin=0, vmax=10
+        self, feature_type="ADT", return_obj=False, figsize=(12, 4), vmin=0, vmax=10
     ):
         """Heatmap of synthetic data.
 
@@ -408,7 +406,7 @@ class citeseq(scrnaseq):
             vmin=vmin,
             vmax=vmax,
             cmap="coolwarm",
-            center=2,
+            center=1,
             ax=axs[0],
             cbar_kws={"label": "log2(counts + 1)"},
         )
@@ -420,7 +418,7 @@ class citeseq(scrnaseq):
             vmin=vmin,
             vmax=vmax,
             cmap="coolwarm",
-            center=2,
+            center=1,
             ax=axs[1],
             cbar_kws={"label": "log2(counts + 1)"},
         )
@@ -432,7 +430,7 @@ class citeseq(scrnaseq):
             vmin=vmin,
             vmax=vmax,
             cmap="coolwarm",
-            center=2,
+            center=1,
             ax=axs[2],
             cbar_kws={"label": "log2(counts + 1)"},
         )
@@ -478,23 +476,22 @@ class cropseq(scrnaseq):
 
     Examples
     --------
-        >>> from scar import data_generator
-        >>> import numpy as np
-        
-        >>> n_features = 100  # 100 sgRNAs in the libraries
-        >>> n_cells = 6000  # 6000 cells
-        >>> n_celltypes = 1  # single cell line
-        
-        >>> # generate a synthetic sgRNA count dataset
-        >>> np.random.seed(8)
-        >>> cropseq = data_generator.cropseq(n_cells, n_celltypes, n_features)
-        >>> cropseq.generate(noise_ratio=0.98)
-        >>> cropseq.heatmap(vmax=6)
+    
+    .. plot::
+        :context: close-figs
 
-    .. figure:: /../docs/img/synthetic_CROPseq.png
-       :width: 800
-       :align: center
-
+        from scar import data_generator
+        import numpy as np
+        
+        n_features = 100  # 100 sgRNAs in the libraries
+        n_cells = 6000  # 6000 cells
+        n_celltypes = 1  # single cell line
+        
+        # generate a synthetic sgRNA count dataset
+        np.random.seed(8)
+        cropseq = data_generator.cropseq(n_cells, n_celltypes, n_features)
+        cropseq.generate(noise_ratio=0.98)
+        cropseq.heatmap(vmax=6)
     """
 
     def __init__(
@@ -633,7 +630,7 @@ class cropseq(scrnaseq):
         self.ambient_signals = np.clip(obs - self.native_signals, 0, None)
 
     def heatmap(
-        self, feature_type="sgRNAs", return_obj=False, figsize=(15, 5), vmin=0, vmax=7
+        self, feature_type="sgRNAs", return_obj=False, figsize=(12, 4), vmin=0, vmax=7
     ):
         """Heatmap of synthetic data.
 
@@ -670,7 +667,7 @@ class cropseq(scrnaseq):
             vmin=vmin,
             vmax=vmax,
             cmap="coolwarm",
-            center=2,
+            center=1,
             ax=axs[0],
             cbar_kws={"label": "log2(counts + 1)"},
         )
@@ -682,7 +679,7 @@ class cropseq(scrnaseq):
             vmin=vmin,
             vmax=vmax,
             cmap="coolwarm",
-            center=2,
+            center=1,
             ax=axs[1],
             cbar_kws={"label": "log2(counts + 1)"},
         )
@@ -694,7 +691,7 @@ class cropseq(scrnaseq):
             vmin=vmin,
             vmax=vmax,
             cmap="coolwarm",
-            center=2,
+            center=1,
             ax=axs[2],
             cbar_kws={"label": "log2(counts + 1)"},
         )
