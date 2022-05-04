@@ -38,7 +38,7 @@ class ScarIntegration(unittest.TestCase):
 
         citeseq_raw_counts = pd.read_pickle("scar/test/citeseq_raw_counts.pickle")
 
-        self.assertTrue(np.equal(citeseq.obs_count, citeseq_raw_counts.values))
+        self.assertTrue(np.equal(citeseq.obs_count, citeseq_raw_counts.values).all())
 
     def test_scar_citeseq(self):
         """
