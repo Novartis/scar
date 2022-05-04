@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""The main function of scar"""
+"""The main module of scar"""
 
 import sys
 import time
@@ -68,7 +68,8 @@ class model:
             'binomial' -- binomial model,
             'poisson' -- poisson model,
             'zeroinflatedpoisson' -- zeroinflatedpoisson model, by default "binomial"
-        sparsity : float, range: [0, 1]. The sparsity of expected native signals. \
+        sparsity : float, optional
+            range: [0, 1]. The sparsity of expected native signals. \
             It varies between datasets, e.g. if one prefilters genes -- \
                 use only highly variable genes -- \
                     the sparsity should be low; on the other hand, it should be set high \
