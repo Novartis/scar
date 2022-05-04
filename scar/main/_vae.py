@@ -85,6 +85,7 @@ class VAE(nn.Module):
             print("......NN_layer2: ", nn_layer2)
             print("......latent_space: ", latent_dim)
             print("......dropout_prob: ", dropout_prob)
+            print("......expected data sparsity: ", sparsity)
 
     def forward(self, input_matrix):
         """forward function"""
