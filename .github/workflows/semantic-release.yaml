@@ -5,7 +5,7 @@ on:
     types:
       - opened
     branches:    
-      - 'main'
+      - 'develop'
 
 jobs:
   release:

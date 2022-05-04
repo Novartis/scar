@@ -1,5 +1,10 @@
 # Changelog
 
+## TODO
+* Multiple ambient profiles
+* Plotting
+* Reporting
+
 <!--next-version-placeholder-->
 
 ## v0.3.6_coming
@@ -55,11 +60,11 @@
 
 
 
-### [0.2.3](https://github.com/Novartis/scAR/compare/v0.2.2...v0.2.3) (2022-04-19)
+## [0.2.3](https://github.com/Novartis/scAR/compare/v0.2.2...v0.2.3) (2022-04-19)
 
 
 
-### [0.2.2](https://github.com/Novartis/scAR/compare/v0.2.1-beta...v0.2.2) (2022-04-04)
+## [0.2.2](https://github.com/Novartis/scAR/compare/v0.2.1-beta...v0.2.2) (2022-04-04)
 
 
 ## pre-release
@@ -96,7 +101,7 @@
 
 
 
-## [0.1.0-beta](https://github.com/Novartis/scAR/compare/460add0996eb49ec302fcde0e650f84df4f9e4c0...v0.1.0-beta) (2022-01-30)
+### [0.1.0-beta](https://github.com/Novartis/scAR/compare/460add0996eb49ec302fcde0e650f84df4f9e4c0...v0.1.0-beta) (2022-01-30)
 
 
 ### Reverts
