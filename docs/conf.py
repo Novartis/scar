@@ -45,6 +45,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "autodocsumm",
+    "matplotlib.sphinxext.plot_directive",
 ]
 
 nbsphinx_execute = "never"
@@ -85,3 +86,9 @@ autodoc_default_options = {
     "autosummary": True,
 }
 numpydoc_show_class_members = False
+
+# Options for plot examples
+plot_include_source = True
+plot_formats = [("png", 120)]
+plot_html_show_formats = False
+plot_html_show_source_link = False

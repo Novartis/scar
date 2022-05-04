@@ -7,9 +7,9 @@ import numpy as np
 from scipy import stats
 
 import torch
-import torch.nn as nn
+from torch import nn
 
-from ._activation_functions import mytanh, hnormalization
+from ._activation_functions import mytanh, hnormalization, mysoftplus
 
 #########################################################################
 ## Variational autoencoder
@@ -43,6 +43,7 @@ class VAE(nn.Module):
         dropout_prob=0,
         feature_type="mRNA",
         count_model="binomial",
+        sparsity=0.9,
         verbose=True,
     ):
 
@@ -58,13 +59,21 @@ class VAE(nn.Module):
             "tags",
         ]
         assert count_model.lower() in ["binomial", "poisson", "zeroinflatedpoisson"]
-        # self.feature_type = feature_type
-        # self.count_model = count_model
+        # force the sparsity to be one in the mode of "sgRNAs" and "tags"
+        if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
+            sparsity = 0.9
+
         self.encoder = Encoder(
             n_features, nn_layer1, nn_layer2, latent_dim, dropout_prob
         )
         self.decoder = Decoder(
-            n_features, nn_layer1, nn_layer2, latent_dim, dropout_prob, count_model
+            n_features,
+            nn_layer1,
+            nn_layer2,
+            latent_dim,
+            dropout_prob,
+            count_model,
+            sparsity,
         )
 
         if verbose:
@@ -76,6 +85,7 @@ class VAE(nn.Module):
             print("......NN_layer2: ", nn_layer2)
             print("......latent_space: ", latent_dim)
             print("......dropout_prob: ", dropout_prob)
+            print("......expected data sparsity: ", sparsity)
 
     def forward(self, input_matrix):
         """forward function"""
@@ -213,14 +223,21 @@ class Decoder(nn.Module):
     """
 
     def __init__(
-        self, n_features, nn_layer1, nn_layer2, latent_dim, dropout_prob, count_model
+        self,
+        n_features,
+        nn_layer1,
+        nn_layer2,
+        latent_dim,
+        dropout_prob,
+        count_model,
+        sparsity,
     ):
         """initialization"""
         super().__init__()
         self.activation = nn.SELU()
-        self.normalization_native_freq = hnormalization
-        self.noise_activation = mytanh
-        self.activation_native_freq = nn.ReLU()
+        self.normalization_native_freq = hnormalization()
+        self.noise_activation = mytanh()
+        self.activation_native_freq = mysoftplus(sparsity)
         self.fc4 = nn.Linear(latent_dim, nn_layer2)
         self.bn4 = nn.BatchNorm1d(nn_layer2, momentum=0.01, eps=0.001)
         self.dp4 = nn.Dropout(p=dropout_prob)
@@ -233,7 +250,7 @@ class Decoder(nn.Module):
         self.count_model = count_model
         if count_model.lower() == "zeroinflatedpoisson":
             self.dropoutprob = nn.Linear(nn_layer1, 1)
-            self.dropout_activation = mytanh
+            self.dropout_activation = mytanh()
 
     def forward(self, sampling):
         """forward function"""

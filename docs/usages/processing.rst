@@ -1,3 +1,5 @@
+Denoising model
+===============================
 .. automodule:: scar.main._scar
 
 .. autoclass:: model

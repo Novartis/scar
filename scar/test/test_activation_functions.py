@@ -17,7 +17,7 @@ class ActivationFunctionsTest(unittest.TestCase):
         Test mytanh().
         """
         self.assertEqual(
-            Decimal(mytanh(torch.tensor(1.0, dtype=torch.float32)).item()).quantize(
+            Decimal(mytanh()(torch.tensor(1.0, dtype=torch.float32)).item()).quantize(
                 decimal.Decimal(".01"), rounding=decimal.ROUND_DOWN
             ),
             Decimal(0.88).quantize(decimal.Decimal(".01"), rounding=decimal.ROUND_DOWN),
@@ -29,7 +29,7 @@ class ActivationFunctionsTest(unittest.TestCase):
         """
         self.assertTrue(
             torch.allclose(
-                hnormalization(torch.tensor(numpy.full((20, 8), 1))).double(),
+                hnormalization()(torch.tensor(numpy.full((20, 8), 1))).double(),
                 torch.tensor(numpy.full((20, 8), 0.1250)),
             )
         )
@@ -40,7 +40,9 @@ class ActivationFunctionsTest(unittest.TestCase):
         """
         self.assertTrue(
             torch.allclose(
-                mysoftplus(torch.tensor(numpy.full((20, 8), 0.1), dtype=torch.float32)).double(),
-                torch.tensor(numpy.full((20, 8), 0.7444)),
+                mysoftplus()(
+                    torch.tensor(numpy.full((20, 8), 0.01), dtype=torch.float32)
+                ).double(),
+                torch.tensor(numpy.full((20, 8), 0.3849)),
             )
         )
