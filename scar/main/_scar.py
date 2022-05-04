@@ -68,6 +68,13 @@ class model:
             'binomial' -- binomial model,
             'poisson' -- poisson model,
             'zeroinflatedpoisson' -- zeroinflatedpoisson model, by default "binomial"
+        sparsity : float, range: [0, 1]. The sparsity of expected native signals. \
+            It varies between datasets, e.g. if one prefilters genes -- \
+                use only highly variable genes -- \
+                    the sparsity should be low; on the other hand, it should be set high \
+                        in the case of unflitered genes. \
+                        Forced to be one in the mode of "sgRNA(s)" and "tag(s)". \
+                            Thank Will Macnair very much for the valuable feedback.
 
         Raises
         ------
@@ -78,7 +85,7 @@ class model:
 
         Examples
         --------
-            >>> # import package
+            >>> # Real data
             >>> import scanpy as sc
             >>> from scar import model
             >>> adata = sc.read("...")  # load an anndata object
@@ -88,6 +95,81 @@ class model:
             >>> adata.layers["X_scar_denoised"] = scarObj.native_counts   # results are saved in scarObj
             >>> adata.obsm["X_scar_assignment"] = scarObj.feature_assignment   #'sgRNA' or 'tag' feature type
 
+        Examples
+        -------------------------
+        .. plot::
+            :context: close-figs
+
+            # Synthetic data
+            import numpy as np
+            import seaborn as sns
+            import matplotlib.pyplot as plt
+            from scar import data_generator, model
+
+            # Generate a synthetic ADT count dataset
+            np.random.seed(8)
+            n_features = 50  # 50 ADTs
+            n_cells = 6000  # 6000 cells
+            n_celltypes = 6  # cell types
+            citeseq = data_generator.citeseq(n_cells, n_celltypes, n_features)
+            citeseq.generate()
+            
+            # Train scAR
+            citeseq_denoised = model(citeseq.obs_count, citeseq.ambient_profile, feature_type="ADT", sparsity=0.6)  # initialize scar model
+            citeseq_denoised.train(epochs=100, verbose=False)  # start training
+            citeseq_denoised.inference()  # inference
+
+            # Visualization
+            sorted_noisy_counts = citeseq.obs_count[citeseq.celltype.argsort()][
+                        :, citeseq.ambient_profile.argsort()
+                    ]  # noisy observation
+            sorted_native_counts = citeseq.native_signals[citeseq.celltype.argsort()][
+                        :, citeseq.ambient_profile.argsort()
+                    ]  # native counts
+            sorted_denoised_counts = citeseq_denoised.native_counts[citeseq.celltype.argsort()][
+                        :, citeseq.ambient_profile.argsort()
+                    ]  # denoised counts
+
+            fig, axs = plt.subplots(ncols=3, figsize=(12,4))
+            sns.heatmap(
+                        np.log2(sorted_noisy_counts + 1),
+                        yticklabels=False,
+                        vmin=0,
+                        vmax=10,
+                        cmap="coolwarm",
+                        center=1,
+                        ax=axs[0],
+                        cbar_kws={"label": "log2(counts + 1)"},
+                    )
+            axs[0].set_title("noisy observation")
+
+            sns.heatmap(
+                        np.log2(sorted_native_counts + 1),
+                        yticklabels=False,
+                        vmin=0,
+                        vmax=10,
+                        cmap="coolwarm",
+                        center=1,
+                        ax=axs[1],
+                        cbar_kws={"label": "log2(counts + 1)"},
+                    )
+            axs[1].set_title("native counts (ground truth)")
+
+            sns.heatmap(
+                        np.log2(sorted_denoised_counts + 1),
+                        yticklabels=False,
+                        vmin=0,
+                        vmax=10,
+                        cmap="coolwarm",
+                        center=1,
+                        ax=axs[2],
+                        cbar_kws={"label": "log2(counts + 1)"},
+                    )
+            axs[2].set_title("denoised counts (prediction)")
+            
+            fig.supxlabel("ADTs")
+            fig.supylabel("cells")
+            plt.tight_layout()
     """
 
     def __init__(
@@ -100,7 +182,7 @@ class model:
         dropout_prob: float = 0,
         feature_type: str = "mRNA",
         count_model: str = "binomial",
-        sparsity: float = 0.5
+        sparsity: float = .9
     ):
         """initialize object"""
 
@@ -109,7 +191,7 @@ class model:
         """        
         self.nn_layer1 = nn_layer1
         """int, number of neurons of the 1st layer.
-        """        
+        """
         self.nn_layer2 = nn_layer2
         """int, number of neurons of the 2nd layer.
         """        
@@ -135,7 +217,8 @@ class model:
             'zeroinflatedpoisson' -- zeroinflatedpoisson model.
         """
         self.sparsity = sparsity
-        """float, the sparsity of expected native data. [0, 1].
+        """float, the sparsity of expected native signals. (0, 1]. \
+            Forced to be one in the mode of "sgRNA(s)" and "tag(s)".
         """
 
         if isinstance(raw_count, str):

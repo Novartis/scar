@@ -25,6 +25,7 @@ def main():
     nn_layer2 = args.hidden_layer2
     latent_dim = args.latent_dim
     epochs = args.epochs
+    sparsity = args.sparsity
     save_model = args.save_model
     batch_size = args.batchsize
     adjust = args.adjust
@@ -38,6 +39,7 @@ def main():
     print("output_dir: ", output_dir)
     print("count_matrix_path: ", count_matrix_path)
     print("ambient_profile_path: ", ambient_profile_path)
+    print("expected data sparsity: ", sparsity)
     print("TensorBoard path: ", TensorBoard)
 
     if not os.path.isdir(output_dir):
@@ -52,6 +54,7 @@ def main():
         latent_dim=latent_dim,
         feature_type=feature_type,
         count_model=count_model,
+        sparsity=sparsity,
     )
 
     scar_model.train(
@@ -155,6 +158,13 @@ def scar_parser():
     )
     parser.add_argument(
         "-m", "--count_model", type=str, default="binomial", help="count model"
+    )
+    parser.add_argument(
+        "-sp",
+        "--sparsity",
+        type=float,
+        default=0.9,
+        help="the sparsity of expected native signals",
     )
     parser.add_argument(
         "-tb", "--TensorBoard", type=str, default=False, help="Tensorboard directory"

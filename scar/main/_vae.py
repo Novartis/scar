@@ -9,7 +9,7 @@ from scipy import stats
 import torch
 from torch import nn
 
-from ._activation_functions import mytanh, hnormalization, MySoftplus
+from ._activation_functions import mytanh, hnormalization, mysoftplus
 
 #########################################################################
 ## Variational autoencoder
@@ -43,7 +43,7 @@ class VAE(nn.Module):
         dropout_prob=0,
         feature_type="mRNA",
         count_model="binomial",
-        sparsity=0.5,
+        sparsity=0.9,
         verbose=True,
     ):
 
@@ -59,8 +59,10 @@ class VAE(nn.Module):
             "tags",
         ]
         assert count_model.lower() in ["binomial", "poisson", "zeroinflatedpoisson"]
-        # self.feature_type = feature_type
-        # self.count_model = count_model
+        # force the sparsity to be one in the mode of "sgRNAs" and "tags"
+        if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
+            sparsity = 0.9
+
         self.encoder = Encoder(
             n_features, nn_layer1, nn_layer2, latent_dim, dropout_prob
         )
@@ -70,7 +72,6 @@ class VAE(nn.Module):
             nn_layer2,
             latent_dim,
             dropout_prob,
-            feature_type,
             count_model,
             sparsity,
         )
@@ -84,6 +85,7 @@ class VAE(nn.Module):
             print("......NN_layer2: ", nn_layer2)
             print("......latent_space: ", latent_dim)
             print("......dropout_prob: ", dropout_prob)
+            print("......expected data sparsity: ", sparsity)
 
     def forward(self, input_matrix):
         """forward function"""
@@ -227,7 +229,6 @@ class Decoder(nn.Module):
         nn_layer2,
         latent_dim,
         dropout_prob,
-        feature_type,
         count_model,
         sparsity,
     ):
@@ -236,10 +237,7 @@ class Decoder(nn.Module):
         self.activation = nn.SELU()
         self.normalization_native_freq = hnormalization()
         self.noise_activation = mytanh()
-        if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
-            self.activation_native_freq = nn.ReLU()
-        elif feature_type.lower() in ["mrna", "mrnas", "adt", "adts"]:
-            self.activation_native_freq = MySoftplus(sparsity)
+        self.activation_native_freq = mysoftplus(sparsity)
         self.fc4 = nn.Linear(latent_dim, nn_layer2)
         self.bn4 = nn.BatchNorm1d(nn_layer2, momentum=0.01, eps=0.001)
         self.dp4 = nn.Dropout(p=dropout_prob)
