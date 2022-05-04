@@ -12,7 +12,7 @@ scAR
 |
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :caption: Table of Contents
    
    Introduction
