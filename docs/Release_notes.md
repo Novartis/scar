@@ -13,17 +13,11 @@
 
 ## v0.4.0 (2022-05-05)
 ### Feature
-* **scar.model:** Addition of a sparsity parameter ([#44](https://github.com/Novartis/scAR/issues/44)) ([`0c30046`](https://github.com/Novartis/scAR/commit/0c30046aa8d20be88f516b8756789d9fab515b10))
-* **scar.main:** Introduce a sparsity parameter ([`cd33fdd`](https://github.com/Novartis/scAR/commit/cd33fddbd6d7117f459e12b57a936148cde0563f))
+* _scar.py: add a sparsity parameter to control data sparsity ([#44](https://github.com/Novartis/scAR/issues/44)) ([`0c30046`](https://github.com/Novartis/scAR/commit/0c30046aa8d20be88f516b8756789d9fab515b10)) ([`cd33fdd`](https://github.com/Novartis/scAR/commit/cd33fddbd6d7117f459e12b57a936148cde0563f))
+* _activation_functions.py: rewrite activation functions ([`f19faa5`](https://github.com/Novartis/scAR/commit/cd33fddbd6d7117f459e12b57a936148cde0563f))
 
 ### Documentation
 * Modify Changlog.md ([`deb920c`](https://github.com/Novartis/scAR/commit/deb920cdaa3b81a7d6dbccc85231bfa87236cee6))
-
--------------------------------------
-## v0.3.6_coming
-### Feature
-* _scar.py: add a sparsity parameter to control data sparsity ([`f19faa5`](https://github.com/Novartis/scAR/commit/cd33fddbd6d7117f459e12b57a936148cde0563f))
-* _activation_functions.py: rewrite activation functions ([`f19faa5`](https://github.com/Novartis/scAR/commit/cd33fddbd6d7117f459e12b57a936148cde0563f))
 
 ### Chore
 * Pylint: disable R and C message classes ([`9eaaa76`](https://github.com/Novartis/scAR/commit/59707026dc14b6f04ec5e6a8c3a9c992fad3e358))
