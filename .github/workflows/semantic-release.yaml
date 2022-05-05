@@ -1,17 +1,16 @@
 name: Semantic Release
 
 on:
-  pull_request_target:
+  pull_request:
     types:
-      - opened
-    branches:    
-      - 'develop'
+      - labeled
+    branches:
+      - 'main'
 
 jobs:
   release:
+    if: ${{ github.event.label.name == 'semantic versioning' }}
     runs-on: ubuntu-latest
-    concurrency: release
-
     steps:
     - uses: actions/checkout@v2
       with:

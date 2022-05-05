@@ -58,7 +58,7 @@ class ScarIntegration(unittest.TestCase):
             feature_type="ADTs",
         )
 
-        citeseq_scar.train(epochs=50, batch_size=64, verbose=False)
+        citeseq_scar.train(epochs=200, batch_size=64, verbose=False)
         citeseq_scar.inference()
 
         dist = euclidean_distances(
