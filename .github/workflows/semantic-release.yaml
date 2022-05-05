@@ -10,6 +10,7 @@ on:
 jobs:
   release:
 #  if: contains(github.event.pull_request.labels.*.name, 'semantic versioning')
+    if: ${{ github.event.label.name == 'semantic versioning' }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -17,7 +18,7 @@ jobs:
         fetch-depth: 0
     - name: Python Semantic Release
   #    uses: relekang/python-semantic-release@master
-      run: echo $github.event.pull_request.labels.*.name
+      run: echo Done!
       # with:
       #   github_token: ${{ secrets.GITHUB_TOKEN }}
       #   repository_username: __token__
