@@ -24,4 +24,4 @@
 
 * Please contact me @caibin.sheng@novartis.com
 
-Caibin
+Thanks, Caibin
