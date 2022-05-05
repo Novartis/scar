@@ -5,19 +5,18 @@ on:
     types:
       - labeled
     branches:
-      - 'develop'
+      - 'main'
 
 jobs:
-  approved:
-    if: github.event.review.state == 'approved'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Python Semantic Release
-      uses: relekang/python-semantic-release@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        repository_username: __token__
-        repository_password: ${{ secrets.PYPI_TOKEN }}
+  if: contains( github.event.pull_request.labels.*.name, 'semantic versioning')
+  runs-on: ubuntu-latest
+  steps:
+  - uses: actions/checkout@v2
+    with:
+      fetch-depth: 0
+  - name: Python Semantic Release
+    uses: relekang/python-semantic-release@master
+    with:
+      github_token: ${{ secrets.GITHUB_TOKEN }}
+      repository_username: __token__
+      repository_password: ${{ secrets.PYPI_TOKEN }}
