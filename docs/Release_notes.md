@@ -1,12 +1,17 @@
 # Changelog
 
-## TODO
+## TODO List
 * Multiple ambient profiles
-* Plotting
-* Reporting
+* Plotting functionality
+* Reporting functionality
+* Transfer learning
+* Early stopping
+
+-------------------------------------
 
 <!--next-version-placeholder-->
 
+-------------------------------------
 ## v0.3.6_coming
 ### Feature
 * _scar.py: add a sparsity parameter to control data sparsity ([`f19faa5`](https://github.com/Novartis/scAR/commit/cd33fddbd6d7117f459e12b57a936148cde0563f))
@@ -17,6 +22,7 @@
 * Pylint: enable pylint to recognize torch members ([`5970702`](https://github.com/Novartis/scAR/commit/927b4b69bd6f30c23ce4a68d0bf215b35167dd21))
 * _scar.py: use plot directive in docstring ([`927b4b6`](https://github.com/Novartis/scAR/commit/f19faa5ecbb782ab292ed246c85d3d2cad3c64fa))
 * _data_generator.py: use plot directive in docstring ([`927b4b6`](https://github.com/Novartis/scAR/commit/f19faa5ecbb782ab292ed246c85d3d2cad3c64fa))
+---------------------------------------
 
 ## v0.3.5 (2022-05-03)
 ### Documentation
@@ -39,20 +45,24 @@
 
 
 ## v0.3.3 (2022-05-01)
-### Fix
-* ***:** Changelog ([`b9171a3`](https://github.com/Novartis/scAR/commit/b9171a3015350ac37b0bc44cdb00e4c7aa3c2a67))
-* ***:** Changelog ([`44a4409`](https://github.com/Novartis/scAR/commit/44a4409fadf8d124d9b5177cf15f53f00e4524ff))
 
 ### Documentation
+
+* Update documentation ([`b9171a3`](https://github.com/Novartis/scAR/commit/b9171a3015350ac37b0bc44cdb00e4c7aa3c2a67))
+* Update documentation ([`44a4409`](https://github.com/Novartis/scAR/commit/44a4409fadf8d124d9b5177cf15f53f00e4524ff))
 * Autodoc command line interface ([`0efae6c`](https://github.com/Novartis/scAR/commit/0efae6c26a409553bb8caad5de03c2f38842c139))
 
 
 ## [0.3.2](https://github.com/Novartis/scAR/compare/v0.3.0...v0.3.2) (2022-04-29)
 
 
-### Bug Fixes
+### Feature
 
-* semantic release bugs ([#36](https://github.com/Novartis/scAR/issues/36)) ([e794242](https://github.com/Novartis/scAR/commit/e79424205022c94b525b10e6cf0672ceb8b63d20)), closes [#30](https://github.com/Novartis/scAR/issues/30) [#31](https://github.com/Novartis/scAR/issues/31)
+* GitHub Action: Add python semantic release ([#36](https://github.com/Novartis/scAR/issues/36)) ([e794242](https://github.com/Novartis/scAR/commit/e79424205022c94b525b10e6cf0672ceb8b63d20))
+
+### Documentation
+
+* Release notes are added to the documentation ([#36](https://github.com/Novartis/scAR/issues/36)) ([e794242](https://github.com/Novartis/scAR/commit/e79424205022c94b525b10e6cf0672ceb8b63d20)), closes [#30](https://github.com/Novartis/scAR/issues/30) [#31](https://github.com/Novartis/scAR/issues/31)
 
 
 
