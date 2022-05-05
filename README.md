@@ -29,8 +29,8 @@
 
 ## Resources
 
-- Installation, Tutorials, and API can be found in the [documentation](https://scar-tutorials.readthedocs.io/en/latest/).
-- If you'd like to contribute, please contact Caibin (caibin.sheng@novartis.com).
+- Installation, Usages and Tutorials can be found in the [documentation](https://scar-tutorials.readthedocs.io/en/latest/).
+- If you'd like to contribute, please read [contributing guidelines](https://github.com/Novartis/scAR/blob/main/.github/CONTRIBUTING.md).
 - Please use the [issues](https://github.com/Novartis/scAR/issues) to submit bug reports.
 
 ## License
