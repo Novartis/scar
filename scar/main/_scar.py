@@ -187,7 +187,7 @@ class model:
     ):
         """initialize object"""
 
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         """str, "cuda" if gpu is available
         """        
         self.nn_layer1 = nn_layer1
