@@ -38,7 +38,7 @@ class ScarIntegration(unittest.TestCase):
 
         citeseq_raw_counts = pd.read_pickle("scar/test/citeseq_raw_counts.pickle")
 
-        self.assertTrue(np.equal(citeseq.obs_count, citeseq_raw_counts.values).all())
+        self.assertTrue(np.array_equal(citeseq.obs_count, citeseq_raw_counts.values, equal_nan=True))
 
     def test_scar_citeseq(self):
         """
@@ -66,4 +66,4 @@ class ScarIntegration(unittest.TestCase):
         )
         mean_dist = (np.eye(dist.shape[0]) * dist).sum() / dist.shape[0]
 
-        self.assertTrue(mean_dist < 50)
+        self.assertLess(mean_dist, 50, "Funtional test of scAR fails")
