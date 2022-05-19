@@ -11,6 +11,21 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.1 (2022-05-19)
+### Feature
+* inference: add a round_to_int parameter to round the counts (float) for easy interpretation and better integration into other methods ([#47](https://github.com/Novartis/scar/issues/47)) ([`902a2b9`](https://github.com/Novartis/scar/commit/8694239b1efb4afd24871943e97ad006fab355f8)) ([`8694239`](https://github.com/Novartis/scar/commit/04d30678d29e28ceadd71622c9748edaa7ca8769))
+
+### Build
+* setup: replace setup.py with setup.cfg and pyproject.toml ([#51](https://github.com/Novartis/scar/pull/51)) ([`3dc999a`](https://github.com/Novartis/scar/pull/51/commits/c30f4f0270c4a6263bf23c5c3f3619f4436f2890))
+
+### Chore
+* unittest: refactor unittest ([#51](https://github.com/Novartis/scar/pull/51)) ([`a597c5f`](https://github.com/Novartis/scar/commit/c34f362697ce88a3604bc8b476b7038165699fe4))
+* main: refactor device ([#51](https://github.com/Novartis/scar/pull/51)) ([`d807404`](https://github.com/Novartis/scar/commit/a597c5fd57a79cec921daf2133423ec8a8926019699fe4))
+
+### Documentation
+* readthedocs: add scAR_logo image ([#51](https://github.com/Novartis/scar/pull/51)) ([`c34f362`](https://github.com/Novartis/scar/commit/902a2b9cefffd8f883963450712825e939869569))
+* tutorials: add ci=None to speed up plotting ([#51](https://github.com/Novartis/scar/pull/51)) ([`902a2b9`](https://github.com/Novartis/scar/commit/3dc999a7d475d08446663bd780d943ba4dffe56c))
+
 ## v0.4.0 (2022-05-05)
 ### Feature
 * _scar.py: add a sparsity parameter to control data sparsity ([#44](https://github.com/Novartis/scAR/issues/44)) ([`0c30046`](https://github.com/Novartis/scAR/commit/0c30046aa8d20be88f516b8756789d9fab515b10)) ([`cd33fdd`](https://github.com/Novartis/scAR/commit/cd33fddbd6d7117f459e12b57a936148cde0563f))
