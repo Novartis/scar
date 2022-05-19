@@ -31,6 +31,7 @@ def main():
     adjust = args.adjust
     cutoff = args.cutoff
     moi = args.moi
+    round_to_int = args.round
     count_matrix = pd.read_pickle(count_matrix_path)
 
     print("===========================================")
@@ -64,7 +65,7 @@ def main():
         save_model=save_model,
     )
 
-    scar_model.inference(adjust=adjust)
+    scar_model.inference(adjust=adjust, round_to_int=round_to_int)
 
     if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
         scar_model.assignment(cutoff=cutoff, moi=moi)
@@ -213,13 +214,19 @@ def scar_parser():
         'global' -- adjust the estimated native counts globally.
         False -- no adjustment, use the model-returned native counts.""",
     )
-
     parser.add_argument(
         "-cutoff",
         "--cutoff",
         type=float,
         default=3,
         help="cutoff for Bayesfactors. See https://doi.org/10.1007/s42113-019-00070-x.",
+    )
+    parser.add_argument(
+        "-round",
+        "--round2int",
+        type=str,
+        default="stochastic_rounding",
+        help="whether to round the counts",
     )
     parser.add_argument(
         "-moi",

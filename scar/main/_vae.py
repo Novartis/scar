@@ -95,8 +95,12 @@ class VAE(nn.Module):
 
     @torch.no_grad()
     def inference(
-        self, input_matrix, amb_prob, count_model_inf="poisson", adjust="micro",
-        round_to_int=False
+        self,
+        input_matrix,
+        amb_prob,
+        count_model_inf="poisson",
+        adjust="micro",
+        round_to_int="stochastic_rounding"
     ):
         """
         Inference of presence of native signals
@@ -115,10 +119,29 @@ class VAE(nn.Module):
 
         total_count_per_cell = input_matrix_np.sum(axis=1).reshape(-1, 1)
         expected_native_counts = total_count_per_cell * (1 - noise_ratio) * nat_prob
-        if round_to_int:
-            expected_native_counts = (np.floor(expected_native_counts) + np.random.binomial(1, expected_native_counts - np.floor(expected_native_counts), expected_native_counts.shape)).astype(int)
         expected_amb_counts = total_count_per_cell * noise_ratio * amb_prob
         tot_amb = expected_amb_counts.sum(axis=1).reshape(-1, 1)
+
+        if round_to_int.lower() == "stochastic_rounding":
+            expected_native_counts = (
+                np.floor(expected_native_counts)
+                + np.random.binomial(
+                    1,
+                    expected_native_counts - np.floor(expected_native_counts),
+                    expected_native_counts.shape,
+                )
+            ).astype(int)
+
+            expected_amb_counts = (
+                np.floor(expected_amb_counts)
+                + np.random.binomial(
+                    1,
+                    expected_amb_counts - np.floor(expected_amb_counts),
+                    expected_amb_counts.shape,
+                )
+            ).astype(int)
+        elif round_to_int is None:
+            pass
 
         if not adjust:
             adjust = 0
