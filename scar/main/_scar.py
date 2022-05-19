@@ -187,7 +187,7 @@ class model:
     ):
         """initialize object"""
 
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         """str, "cuda" if gpu is available
         """        
         self.nn_layer1 = nn_layer1
@@ -530,13 +530,13 @@ class model:
     # Inference
     @torch.no_grad()
     def inference(
-        self, batch_size=None, count_model_inf="poisson", adjust="micro", cutoff=3, moi=None
+        self, batch_size=None, count_model_inf="poisson", adjust="micro", cutoff=3, round_to_int="stochastic_rounding", moi=None
     ):
         """inference infering the expected native signals, noise ratios, Bayesfactors and expected native frequencies
 
         Parameters
         ----------
-        batch_size : _type_, optional
+        batch_size : int, optional
             batch size, set a small value upon GPU memory issue, by default None
         count_model_inf : str, optional
             inference model for evaluation of ambient presence, by default "poisson"
@@ -551,7 +551,9 @@ class model:
                         Defaults to "micro", by default "micro"
         cutoff : int, optional
             cutoff for Bayesfactors, by default 3
-        moi : _type_, optional (under development) \
+        round_to_int : str, optional
+            whether to round the counts, by default "stochastic_rounding"
+        moi : int, optional (under development) \
             multiplicity of infection. If assigned, it will allow optimized thresholding, \
                 which tests a series of cutoffs to find the best one \
                     based on distributions of infections under given moi.\
@@ -594,6 +596,7 @@ class model:
                 ambient_freq_tot[0, :],
                 count_model_inf=count_model_inf,
                 adjust=adjust,
+                round_to_int=round_to_int
             )
             self.native_counts[
                 i * batch_size : i * batch_size + minibatch_size, :

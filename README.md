@@ -36,7 +36,7 @@
 
 ## License
 
-This project is licensed under the terms of [License](LICENSE.txt).  
+This project is licensed under the terms of [License](docs/License.rst).  
 Copyright 2022 Novartis International AG.
 
 ## Reference
