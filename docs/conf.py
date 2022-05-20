@@ -79,7 +79,7 @@ html_theme = "sphinx_rtd_theme"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_logo = "img/scAR_logo2.png"
+html_logo = "img/scAR_logo_transparent.png"
 html_theme_options = {
     "logo_only": True,
     "display_version": True,
