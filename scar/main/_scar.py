@@ -652,7 +652,7 @@ class model:
             bayesfactor_max = row[row == row.max()]
             if row.max() == 0:
                 feature_assignment.loc[cell, f"n_{self.feature_type}"] = 0
-                feature_assignment.loc[cell, self.feature_type] = np.nan
+                feature_assignment.loc[cell, self.feature_type] = ""
             elif len(bayesfactor_max) == 1:
                 feature_assignment.loc[cell, f"n_{self.feature_type}"] = 1
                 feature_assignment.loc[cell, self.feature_type] = bayesfactor_max.index[
