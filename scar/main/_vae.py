@@ -61,7 +61,7 @@ class VAE(nn.Module):
         assert count_model.lower() in ["binomial", "poisson", "zeroinflatedpoisson"]
         # force the sparsity to be one in the mode of "sgRNAs" and "tags"
         if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
-            sparsity = 0.9
+            sparsity = 1
 
         self.encoder = Encoder(
             n_features, nn_layer1, nn_layer2, latent_dim, dropout_prob
