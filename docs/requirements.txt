@@ -7,4 +7,6 @@ sphinx-argparse
 sphinx-disqus
 autodocsumm
 ipykernel
+protobuf==3.20.*
+anndata
 git+https://github.com/Novartis/scAR.git

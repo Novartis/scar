@@ -11,6 +11,19 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.2 (2022-06-07)
+### Documentation
+* Update dependencies ([`784ea63`](https://github.com/Novartis/scar/commit/784ea63a1a55b98592dc69be79d15b3f0c22317c))
+* Update dependencies ([`cbf1fc6`](https://github.com/Novartis/scar/commit/cbf1fc6614bd1e559e3b80054f99bd7c05fd3958))
+* Change background of logo ([`de267ed`](https://github.com/Novartis/scar/commit/de267ed6546fd9e1aba50594223bbddc57199f56))
+* Update readme ([`e97dbf1`](https://github.com/Novartis/scar/commit/e97dbf1f14a9c3fc75fbdbf46c11e22630ddd362))
+* Modify scAR_logo ([`1f6e890`](https://github.com/Novartis/scar/commit/1f6e890b662e105e810cda5b4354e0ec3476d8a9))
+* Update logo ([`18b51e7`](https://github.com/Novartis/scar/commit/18b51e789d1d2a9bb4a078dff71d93dfb854c640))
+
+### Performance
+* Add a setup_anndata method ([#54](https://github.com/Novartis/scar/issues/54)) ([`923b1e5`](https://github.com/Novartis/scar/commit/923b1e5f267f50a6aba765f0c2966080dc375a0f))
+* Change sparsity to 1 for scCRISPR-seq and cell indexing ([`d4b2c3d`](https://github.com/Novartis/scar/commit/d4b2c3d4083c9619a205d1c66e361d634ebcb13b))
+
 ## v0.4.1 (2022-05-19)
 ### Feature
 * inference: add a round_to_int parameter to round the counts (float) for easy interpretation and better integration into other methods ([#47](https://github.com/Novartis/scar/issues/47)) ([`902a2b9`](https://github.com/Novartis/scar/commit/8694239b1efb4afd24871943e97ad006fab355f8)) ([`8694239`](https://github.com/Novartis/scar/commit/04d30678d29e28ceadd71622c9748edaa7ca8769))

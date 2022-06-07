@@ -75,7 +75,7 @@ class model:
                     the sparsity should be low; on the other hand, it should be set high \
                         in the case of unflitered genes. \
                         Forced to be one in the mode of "sgRNA(s)" and "tag(s)". \
-                            Thank Will Macnair very much for the valuable feedback.
+                            Thank Will Macnair for the valuable feedback.
 
         Raises
         ------
@@ -553,11 +553,11 @@ class model:
             cutoff for Bayesfactors, by default 3
         round_to_int : str, optional
             whether to round the counts, by default "stochastic_rounding"
-        moi : int, optional (under development) \
+        moi : int, optional (under development)
             multiplicity of infection. If assigned, it will allow optimized thresholding, \
                 which tests a series of cutoffs to find the best one \
                     based on distributions of infections under given moi.\
-                        See http://dx.doi.org/10.1016/j.cell.2016.11.038, by default None
+                        See Perturb-seq [Dixit2016]_ for details, by default None
         Returns
         -------
             After inferring, several attributes will be added, inc. native_counts, bayesfactor,\
@@ -629,7 +629,7 @@ class model:
             If assigned, it will allow optimized thresholding,\
                 which tests a series of cutoffs to find the best one \
                     based on distributions of infections under given moi.\
-                        See http://dx.doi.org/10.1016/j.cell.2016.11.038, by default None
+                        See  Perturb-seq [Dixit2016]_, by default None
         Returns
         -------
             After running, a attribute 'feature_assignment' will be added,\
@@ -652,7 +652,7 @@ class model:
             bayesfactor_max = row[row == row.max()]
             if row.max() == 0:
                 feature_assignment.loc[cell, f"n_{self.feature_type}"] = 0
-                feature_assignment.loc[cell, self.feature_type] = np.nan
+                feature_assignment.loc[cell, self.feature_type] = ""
             elif len(bayesfactor_max) == 1:
                 feature_assignment.loc[cell, f"n_{self.feature_type}"] = 1
                 feature_assignment.loc[cell, self.feature_type] = bayesfactor_max.index[
