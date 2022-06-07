@@ -1,7 +1,7 @@
-Denoising model
-===============================
-.. automodule:: scar.main._scar
+Setup anndata
+==============
+Calculate ambient profile for relevant feature types
 
-.. autoclass:: model
-    :members:
-    :member-order: bysource
+.. automodule:: scar.main._setup
+
+.. autofunction:: setup_anndata
