@@ -3,7 +3,19 @@ Python API
 
 Processing
 ----------------------
-The core module of scar.
+Calculate ambient profile
+
+.. currentmodule:: scar.main._setup
+
+.. autosummary::
+   :nosignatures:
+
+   setup_anndata
+
+
+Training
+----------------------
+The core module of scar
 
 .. currentmodule:: scar.main._scar
 
