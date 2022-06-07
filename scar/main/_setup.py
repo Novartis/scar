@@ -2,7 +2,6 @@ from typing import Union
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from pyro import sample
 import seaborn as sns
 from anndata import AnnData
 import torch
@@ -100,18 +99,18 @@ def setup_anndata(
 
     if verbose:
         print("Estimating ambient profile for ", feature_type, "...")
-    iter = 0
-    while iter < iterations:
+    i = 0
+    while i < iterations:
 
         # calculate joint probability (log) of being cell-free droplets for each droplet
 
         log_prob = []
         batches = np.array_split(raw_count, n_batch)
         for b in range(n_batch):
-            sample = batches[b]
+            count_batch = batches[b]
             log_prob_batch = Multinomial(
                 probs=torch.tensor(ambient_prof), validate_args=False
-            ).log_prob(torch.Tensor(sample))
+            ).log_prob(torch.Tensor(count_batch))
             log_prob.append(log_prob_batch)
 
         log_prob = np.concatenate(log_prob, axis=0)
@@ -130,10 +129,10 @@ def setup_anndata(
 
         ambient_prof = emptydrops.X.sum(axis=0) / emptydrops.X.sum()
 
-        iter += 1
+        i += 1
 
         if verbose:
-            print("iteration: ", iter)
+            print("iteration: ", i)
 
     # update ambient profile
     for ft in feature_type:
