@@ -31,7 +31,7 @@ def main():
     adjust = args.adjust
     cutoff = args.cutoff
     moi = args.moi
-    round_to_int = args.round
+    round_to_int = args.round2int
     count_matrix = pd.read_pickle(count_matrix_path)
 
     print("===========================================")
@@ -174,21 +174,21 @@ def scar_parser():
         "-hl1",
         "--hidden_layer1",
         type=int,
-        default=None,
+        default=150,
         help="number of neurons in the first layer",
     )
     parser.add_argument(
         "-hl2",
         "--hidden_layer2",
         type=int,
-        default=None,
+        default=100,
         help="number of neurons in the second layer",
     )
     parser.add_argument(
         "-ls",
         "--latent_dim",
         type=int,
-        default=None,
+        default=15,
         help="dimension of latent space",
     )
     parser.add_argument(
@@ -222,7 +222,7 @@ def scar_parser():
         help="cutoff for Bayesfactors. See https://doi.org/10.1007/s42113-019-00070-x.",
     )
     parser.add_argument(
-        "-round",
+        "-round2int",
         "--round2int",
         type=str,
         default="stochastic_rounding",

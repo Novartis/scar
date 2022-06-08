@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from typing import Union
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,7 +16,7 @@ def setup_anndata(
     min_raw_counts: int = 2,
     iterations: int = 3,
     n_batch: int = 1,
-    sample: Optional[int] = None,
+    sample: int = 50000,
     kneeplot: bool = True,
     verbose: bool = True,
     figsize: tuple = (6, 6),
@@ -42,6 +42,8 @@ def setup_anndata(
         Total iterations, by default 3
     n_batch : int, optional
         Total number of batches, set it to a bigger number when out of memory issue occurs, by default 1
+    sample : int, optional
+        Randomly sample droplets to test, by default 50000
     kneeplot : bool, optional
         Kneeplot to show subpopulations of droplets, by default True
     verbose : bool, optional
@@ -96,14 +98,15 @@ def setup_anndata(
 
     raw_adata.obs["total_counts"] = raw_adata.X.sum(axis=1)
 
-    if sample:
-        sample = int(sample)
-        idx = np.random.choice(raw_adata.shape[0], size=sample, replace=False)
-        raw_adata = raw_adata[idx]
-        if verbose:
-            print(
-                "Randomly sample ", sample, " droplets to calculate the ambient profile."
-            )
+    sample = int(sample)
+    idx = np.random.choice(raw_adata.shape[0], size=sample, replace=False)
+    raw_adata = raw_adata[idx]
+    if verbose:
+        print(
+            "Randomly sample ",
+            sample,
+            " droplets to calculate the ambient profile.",
+        )
     # initial estimation of ambient profile, will be update
     ambient_prof = raw_adata.X.sum(axis=0) / raw_adata.X.sum()
 
@@ -114,7 +117,6 @@ def setup_anndata(
     while i < iterations:
 
         # calculate joint probability (log) of being cell-free droplets for each droplet
-
         log_prob = []
         batch_idx = np.floor(
             np.array(range(raw_adata.shape[0])) / raw_adata.shape[0] * n_batch
