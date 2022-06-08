@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,6 +16,7 @@ def setup_anndata(
     min_raw_counts: int = 2,
     iterations: int = 3,
     n_batch: int = 1,
+    sample: Optional[int] = None,
     kneeplot: bool = True,
     verbose: bool = True,
     figsize: tuple = (6, 6),
@@ -88,16 +89,27 @@ def setup_anndata(
         feature_type = [feature_type]
 
     # take subset genes to save memory
-    raw_adata._inplace_subset_var(raw_adata.var_names.isin(adata.var_names))
-    raw_adata._inplace_subset_obs(raw_adata.X.sum(axis=1) >= min_raw_counts)
+    # raw_adata._inplace_subset_var(raw_adata.var_names.isin(adata.var_names))
+    # raw_adata._inplace_subset_obs(raw_adata.X.sum(axis=1) >= min_raw_counts)
+    raw_adata = raw_adata[:, raw_adata.var_names.isin(adata.var_names)]
+    raw_adata = raw_adata[raw_adata.X.sum(axis=1) >= min_raw_counts]
 
     raw_adata.obs["total_counts"] = raw_adata.X.sum(axis=1)
 
+    if sample:
+        sample = int(sample)
+        idx = np.random.choice(raw_adata.shape[0], size=sample, replace=False)
+        raw_adata = raw_adata[idx]
+        if verbose:
+            print(
+                "Randomly sample ", sample, " droplets to calculate the ambient profile."
+            )
     # initial estimation of ambient profile, will be update
     ambient_prof = raw_adata.X.sum(axis=0) / raw_adata.X.sum()
 
     if verbose:
         print("Estimating ambient profile for ", feature_type, "...")
+
     i = 0
     while i < iterations:
 
@@ -107,8 +119,6 @@ def setup_anndata(
         batch_idx = np.floor(
             np.array(range(raw_adata.shape[0])) / raw_adata.shape[0] * n_batch
         )
-
-        # batches = np.array_split(raw_count, n_batch)
         for b in range(n_batch):
             try:
                 count_batch = raw_adata[batch_idx == b].X.astype(int).A
@@ -124,7 +134,9 @@ def setup_anndata(
         raw_adata.obs["droplets"] = "other droplets"
 
         # cell-containing droplets
-        raw_adata.obs.loc[adata.obs_names, "droplets"] = "cells"
+        raw_adata.obs.loc[
+            raw_adata.obs_names.isin(adata.obs_names), "droplets"
+        ] = "cells"
 
         # identify cell-free droplets
         raw_adata.obs["droplets"] = raw_adata.obs["droplets"].mask(
