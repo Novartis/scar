@@ -16,6 +16,7 @@ def setup_anndata(
     min_raw_counts: int = 2,
     iterations: int = 3,
     n_batch: int = 1,
+    sample: int = 50000,
     kneeplot: bool = True,
     verbose: bool = True,
     figsize: tuple = (6, 6),
@@ -41,6 +42,8 @@ def setup_anndata(
         Total iterations, by default 3
     n_batch : int, optional
         Total number of batches, set it to a bigger number when out of memory issue occurs, by default 1
+    sample : int, optional
+        Randomly sample droplets to test, by default 50000
     kneeplot : bool, optional
         Kneeplot to show subpopulations of droplets, by default True
     verbose : bool, optional
@@ -88,26 +91,41 @@ def setup_anndata(
         feature_type = [feature_type]
 
     # take subset genes to save memory
-    raw_adata._inplace_subset_var(raw_adata.var_names.isin(adata.var_names))
-    raw_adata._inplace_subset_obs(raw_adata.X.sum(axis=1) >= min_raw_counts)
+    # raw_adata._inplace_subset_var(raw_adata.var_names.isin(adata.var_names))
+    # raw_adata._inplace_subset_obs(raw_adata.X.sum(axis=1) >= min_raw_counts)
+    raw_adata = raw_adata[:, raw_adata.var_names.isin(adata.var_names)]
+    raw_adata = raw_adata[raw_adata.X.sum(axis=1) >= min_raw_counts]
 
     raw_adata.obs["total_counts"] = raw_adata.X.sum(axis=1)
-    raw_count = raw_adata.X.astype(int).A
 
+    sample = int(sample)
+    idx = np.random.choice(raw_adata.shape[0], size=sample, replace=False)
+    raw_adata = raw_adata[idx]
+    if verbose:
+        print(
+            "Randomly sample ",
+            sample,
+            " droplets to calculate the ambient profile.",
+        )
     # initial estimation of ambient profile, will be update
     ambient_prof = raw_adata.X.sum(axis=0) / raw_adata.X.sum()
 
     if verbose:
         print("Estimating ambient profile for ", feature_type, "...")
+
     i = 0
     while i < iterations:
 
         # calculate joint probability (log) of being cell-free droplets for each droplet
-
         log_prob = []
-        batches = np.array_split(raw_count, n_batch)
+        batch_idx = np.floor(
+            np.array(range(raw_adata.shape[0])) / raw_adata.shape[0] * n_batch
+        )
         for b in range(n_batch):
-            count_batch = batches[b]
+            try:
+                count_batch = raw_adata[batch_idx == b].X.astype(int).A
+            except MemoryError:
+                raise MemoryError("use more batches by setting a higher n_batch")
             log_prob_batch = Multinomial(
                 probs=torch.tensor(ambient_prof), validate_args=False
             ).log_prob(torch.Tensor(count_batch))
@@ -118,7 +136,9 @@ def setup_anndata(
         raw_adata.obs["droplets"] = "other droplets"
 
         # cell-containing droplets
-        raw_adata.obs.loc[adata.obs_names, "droplets"] = "cells"
+        raw_adata.obs.loc[
+            raw_adata.obs_names.isin(adata.obs_names), "droplets"
+        ] = "cells"
 
         # identify cell-free droplets
         raw_adata.obs["droplets"] = raw_adata.obs["droplets"].mask(
