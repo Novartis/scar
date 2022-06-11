@@ -28,6 +28,7 @@ def main():
     sparsity = args.sparsity
     save_model = args.save_model
     batch_size = args.batchsize
+    batch_size_infer = args.batchsize_infer
     adjust = args.adjust
     cutoff = args.cutoff
     moi = args.moi
@@ -65,7 +66,9 @@ def main():
         save_model=save_model,
     )
 
-    scar_model.inference(adjust=adjust, round_to_int=round_to_int)
+    scar_model.inference(
+        adjust=adjust, round_to_int=round_to_int, batch_size=batch_size_infer
+    )
 
     if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
         scar_model.assignment(cutoff=cutoff, moi=moi)
@@ -199,10 +202,21 @@ def scar_parser():
         "--save_model",
         type=int,
         default=False,
-        help="whether save the trained model",
+        help="Save the trained model",
     )
     parser.add_argument(
-        "-batchsize", "--batchsize", type=int, default=64, help="batch size"
+        "-batchsize",
+        "--batchsize",
+        type=int,
+        default=64,
+        help="Batch size for training, set a small value upon out of memory error",
+    )
+    parser.add_argument(
+        "-batchsize_infer",
+        "--batchsize_infer",
+        type=int,
+        default=None,
+        help="Batch size for inference, set a small value upon out of memory error",
     )
     parser.add_argument(
         "-adjust",
@@ -219,14 +233,14 @@ def scar_parser():
         "--cutoff",
         type=float,
         default=3,
-        help="cutoff for Bayesfactors. See https://doi.org/10.1007/s42113-019-00070-x.",
+        help="Cutoff for Bayesfactors. See [Ly2020]_",
     )
     parser.add_argument(
         "-round2int",
         "--round2int",
         type=str,
         default="stochastic_rounding",
-        help="whether to round the counts",
+        help="Round the counts",
     )
     parser.add_argument(
         "-moi",
@@ -235,7 +249,7 @@ def scar_parser():
         default=None,
         help="multiplicity of Infection. If assigned, it will allow optimized thresholding, \
         which tests a series of cutoffs to find the best one based on distributions of infections under given moi. \
-        See http://dx.doi.org/10.1016/j.cell.2016.11.038. Under development.",
+        See [Dixit2016]_ for details. Under development.",
     )
     return parser
 

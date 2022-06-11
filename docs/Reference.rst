@@ -12,3 +12,7 @@ Reference
 .. [Sheng2022] Sheng *et al.* (2022),
    `Probabilistic machine learning ensures accurate ambient denoising in droplet-based single-cell omics <https://www.biorxiv.org/content/early/2022/03/24/2022.01.14.476312>`__,
    bioRxiv.
+
+.. [Ly2020] Ly *et al.* (2020),
+    `The Bayesian Methodology of Sir Harold Jeffreys as a Practical Alternative to the P Value Hypothesis Test <https://doi.org/10.1007/s42113-019-00070-x>`__,
+    Computational Brain & Behavior.
