@@ -9,4 +9,5 @@ autodocsumm
 ipykernel
 protobuf==3.20.*
 anndata
+scanpy
 git+https://github.com/Novartis/scAR.git
