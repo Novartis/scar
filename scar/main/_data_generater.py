@@ -188,13 +188,17 @@ class scrnaseq:
         fig object
             if return_obj, return a fig object
         """
-        native_signals = self.native_signals[self.celltype.argsort()][
+        sort_cell_idx = []
+        for f in self.ambient_profile.argsort():
+            sort_cell_idx += list(np.where(self.celltype == f)[0])
+
+        native_signals = self.native_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        ambient_signals = self.ambient_signals[self.celltype.argsort()][
+        ambient_signals = self.ambient_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        obs = self.obs_count[self.celltype.argsort()][:, self.ambient_profile.argsort()]
+        obs = self.obs_count[sort_cell_idx][:, self.ambient_profile.argsort()]
 
         fig, axs = plt.subplots(ncols=3, figsize=figsize)
         sns.heatmap(
@@ -205,6 +209,7 @@ class scrnaseq:
             cmap="coolwarm",
             center=1,
             ax=axs[0],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[0].set_title("noisy observation")
@@ -217,6 +222,7 @@ class scrnaseq:
             cmap="coolwarm",
             center=1,
             ax=axs[1],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[1].set_title("ambient signals")
@@ -229,6 +235,7 @@ class scrnaseq:
             cmap="coolwarm",
             center=1,
             ax=axs[2],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[2].set_title("native signals")
@@ -391,13 +398,17 @@ class citeseq(scrnaseq):
         fig object
             if return_obj, return a fig object
         """
-        native_signals = self.native_signals[self.celltype.argsort()][
+        sort_cell_idx = []
+        for f in self.ambient_profile.argsort():
+            sort_cell_idx += list(np.where(self.celltype == f)[0])
+
+        native_signals = self.native_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        ambient_signals = self.ambient_signals[self.celltype.argsort()][
+        ambient_signals = self.ambient_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        obs = self.obs_count[self.celltype.argsort()][:, self.ambient_profile.argsort()]
+        obs = self.obs_count[sort_cell_idx][:, self.ambient_profile.argsort()]
 
         fig, axs = plt.subplots(ncols=3, figsize=figsize)
         sns.heatmap(
@@ -408,6 +419,7 @@ class citeseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[0],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[0].set_title("noisy observation")
@@ -420,6 +432,7 @@ class citeseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[1],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[1].set_title("ambient signals")
@@ -432,6 +445,7 @@ class citeseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[2],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[2].set_title("native signals")
@@ -653,13 +667,17 @@ class cropseq(scrnaseq):
         fig object
             if return_obj, return a fig object
         """
-        native_signals = self.native_signals[self.celltype.argsort()][
+        sort_cell_idx = []
+        for f in self.ambient_profile.argsort():
+            sort_cell_idx += list(np.where(self.celltype == f)[0])
+
+        native_signals = self.native_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        ambient_signals = self.ambient_signals[self.celltype.argsort()][
+        ambient_signals = self.ambient_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        obs = self.obs_count[self.celltype.argsort()][:, self.ambient_profile.argsort()]
+        obs = self.obs_count[sort_cell_idx][:, self.ambient_profile.argsort()]
 
         fig, axs = plt.subplots(ncols=3, figsize=figsize)
         sns.heatmap(
@@ -670,6 +688,7 @@ class cropseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[0],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[0].set_title("noisy observation")
@@ -682,6 +701,7 @@ class cropseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[1],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[1].set_title("ambient signals")
@@ -694,6 +714,7 @@ class cropseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[2],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[2].set_title("native signals")
