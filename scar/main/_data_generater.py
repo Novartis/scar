@@ -205,6 +205,7 @@ class scrnaseq:
             cmap="coolwarm",
             center=1,
             ax=axs[0],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[0].set_title("noisy observation")
@@ -217,6 +218,7 @@ class scrnaseq:
             cmap="coolwarm",
             center=1,
             ax=axs[1],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[1].set_title("ambient signals")
@@ -229,6 +231,7 @@ class scrnaseq:
             cmap="coolwarm",
             center=1,
             ax=axs[2],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[2].set_title("native signals")
@@ -408,6 +411,7 @@ class citeseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[0],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[0].set_title("noisy observation")
@@ -420,6 +424,7 @@ class citeseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[1],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[1].set_title("ambient signals")
@@ -432,6 +437,7 @@ class citeseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[2],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[2].set_title("native signals")
@@ -670,6 +676,7 @@ class cropseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[0],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[0].set_title("noisy observation")
@@ -682,6 +689,7 @@ class cropseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[1],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[1].set_title("ambient signals")
@@ -694,6 +702,7 @@ class cropseq(scrnaseq):
             cmap="coolwarm",
             center=1,
             ax=axs[2],
+            rasterized=True,
             cbar_kws={"label": "log2(counts + 1)"},
         )
         axs[2].set_title("native signals")
