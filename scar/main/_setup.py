@@ -43,7 +43,7 @@ def setup_anndata(
     n_batch : int, optional
         Total number of batches, set it to a bigger number when out of memory issue occurs, by default 1
     sample : int, optional
-        Randomly sample droplets to test, by default 50000
+        Randomly sample droplets to test, if greater than total droplets, use all droplets, by default 50000
     kneeplot : bool, optional
         Kneeplot to show subpopulations of droplets, by default True
     verbose : bool, optional
@@ -99,7 +99,9 @@ def setup_anndata(
     raw_adata.obs["total_counts"] = raw_adata.X.sum(axis=1)
 
     sample = int(sample)
-    idx = np.random.choice(raw_adata.shape[0], size=sample, replace=False)
+    idx = np.random.choice(
+        raw_adata.shape[0], size=min(raw_adata.shape[0], sample), replace=False
+    )
     raw_adata = raw_adata[idx]
     if verbose:
         print(

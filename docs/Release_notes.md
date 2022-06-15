@@ -11,6 +11,19 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.3 (2022-06-15)
+### Fix
+* **setup:** Fix a bug to allow sample reasonable numbers of droplets ([`ef6f7e4`](https://github.com/Novartis/scar/commit/ef6f7e4e58fcb1ce8cf463bed3697883f561eba9))
+* **main:** Fix a bug in main to set default NN number ([`794ff17`](https://github.com/Novartis/scar/commit/794ff17ac349148aaae24ca9c9927d0179ccd3f4))
+
+### Documentation
+* **main:** Add scanpy as dependency ([`252a492`](https://github.com/Novartis/scar/commit/252a492a4d545ed485e9acb208f8e18a25886206))
+
+### Performance
+* **main:** Set a separate batchsize_infer parameter for inference ([`8727f04`](https://github.com/Novartis/scar/commit/8727f04da3c934de9d1b14358bee434a972d7849))
+* **setup:** Add an option of random sampling droplets to speed up calculation ([`ce042dd`](https://github.com/Novartis/scar/commit/ce042dd120fbe592a089a48b4d584629e63797ca))
+* **setup:** Enable manupulate large-scale emptydroplets ([`15f1840`](https://github.com/Novartis/scar/commit/15f18408dcd2ef4bdb1de84b55a136da03fb6244))
+
 ## v0.4.2 (2022-06-07)
 ### Documentation
 * Update dependencies ([`784ea63`](https://github.com/Novartis/scar/commit/784ea63a1a55b98592dc69be79d15b3f0c22317c))

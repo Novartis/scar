@@ -663,7 +663,7 @@ class model:
                     bayesfactor_max
                 )
                 feature_assignment.loc[cell, self.feature_type] = (", ").join(
-                    bayesfactor_max.index
+                    bayesfactor_max.index.astype(str)
                 )
 
         self.feature_assignment = feature_assignment
