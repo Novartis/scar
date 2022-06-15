@@ -188,13 +188,17 @@ class scrnaseq:
         fig object
             if return_obj, return a fig object
         """
-        native_signals = self.native_signals[self.celltype.argsort()][
+        sort_cell_idx = []
+        for f in self.ambient_profile.argsort():
+            sort_cell_idx += list(np.where(self.celltype == f)[0])
+
+        native_signals = self.native_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        ambient_signals = self.ambient_signals[self.celltype.argsort()][
+        ambient_signals = self.ambient_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        obs = self.obs_count[self.celltype.argsort()][:, self.ambient_profile.argsort()]
+        obs = self.obs_count[sort_cell_idx][:, self.ambient_profile.argsort()]
 
         fig, axs = plt.subplots(ncols=3, figsize=figsize)
         sns.heatmap(
@@ -394,13 +398,17 @@ class citeseq(scrnaseq):
         fig object
             if return_obj, return a fig object
         """
-        native_signals = self.native_signals[self.celltype.argsort()][
+        sort_cell_idx = []
+        for f in self.ambient_profile.argsort():
+            sort_cell_idx += list(np.where(self.celltype == f)[0])
+
+        native_signals = self.native_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        ambient_signals = self.ambient_signals[self.celltype.argsort()][
+        ambient_signals = self.ambient_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        obs = self.obs_count[self.celltype.argsort()][:, self.ambient_profile.argsort()]
+        obs = self.obs_count[sort_cell_idx][:, self.ambient_profile.argsort()]
 
         fig, axs = plt.subplots(ncols=3, figsize=figsize)
         sns.heatmap(
@@ -659,13 +667,17 @@ class cropseq(scrnaseq):
         fig object
             if return_obj, return a fig object
         """
-        native_signals = self.native_signals[self.celltype.argsort()][
+        sort_cell_idx = []
+        for f in self.ambient_profile.argsort():
+            sort_cell_idx += list(np.where(self.celltype == f)[0])
+
+        native_signals = self.native_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        ambient_signals = self.ambient_signals[self.celltype.argsort()][
+        ambient_signals = self.ambient_signals[sort_cell_idx][
             :, self.ambient_profile.argsort()
         ]
-        obs = self.obs_count[self.celltype.argsort()][:, self.ambient_profile.argsort()]
+        obs = self.obs_count[sort_cell_idx][:, self.ambient_profile.argsort()]
 
         fig, axs = plt.subplots(ncols=3, figsize=figsize)
         sns.heatmap(
