@@ -53,7 +53,7 @@ def setup_anndata(
 
     Returns
     -------
-    The relevant ambient profile is added in adata.uns
+    The relevant ambient profile is added in `adata.uns`
 
     Examples
     ---------

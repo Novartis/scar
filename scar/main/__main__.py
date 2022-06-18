@@ -70,7 +70,7 @@ def main():
         adjust=adjust, round_to_int=round_to_int, batch_size=batch_size_infer
     )
 
-    if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
+    if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
         scar_model.assignment(cutoff=cutoff, moi=moi)
 
     print("===========================================\n  Saving results...")
@@ -102,7 +102,7 @@ def main():
     print("...expected native frequencies saved in: ", output_path03)
     print("...expected noise ratio saved in: ", output_path04)
 
-    if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
+    if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
         output_path05 = os.path.join(output_dir, "assignment.pickle")
         scar_model.feature_assignment.to_pickle(output_path05)
         print("...assignment saved in: ", output_path05)
@@ -141,34 +141,34 @@ def scar_parser():
         "count_matrix",
         type=str,
         nargs="+",
-        help="the file of observed count matrix, 2D array (cells x genes)",
+        help="The file of observed count matrix, 2D array (cells x genes)",
     )
     parser.add_argument(
         "-ap",
         "--ambient_profile",
         type=str,
         default=None,
-        help="the file of empty profile obtained from empty droplets, 1D array",
+        help="The file of empty profile obtained from empty droplets, 1D array",
     )
     parser.add_argument(
         "-ft",
         "--feature_type",
         type=str,
         default="mRNA",
-        help="the feature types, e.g. mRNA, sgRNA, ADT and tag",
+        help="The feature types, e.g. mRNA, sgRNA, ADT, tag and CMO",
     )
     parser.add_argument(
-        "-o", "--output", type=str, default=None, help="output directory"
+        "-o", "--output", type=str, default=None, help="Output directory"
     )
     parser.add_argument(
-        "-m", "--count_model", type=str, default="binomial", help="count model"
+        "-m", "--count_model", type=str, default="binomial", help="Count model"
     )
     parser.add_argument(
         "-sp",
         "--sparsity",
         type=float,
         default=0.9,
-        help="the sparsity of expected native signals",
+        help="The sparsity of expected native signals",
     )
     parser.add_argument(
         "-tb", "--TensorBoard", type=str, default=False, help="Tensorboard directory"
@@ -178,24 +178,24 @@ def scar_parser():
         "--hidden_layer1",
         type=int,
         default=150,
-        help="number of neurons in the first layer",
+        help="Number of neurons in the first layer",
     )
     parser.add_argument(
         "-hl2",
         "--hidden_layer2",
         type=int,
         default=100,
-        help="number of neurons in the second layer",
+        help="Number of neurons in the second layer",
     )
     parser.add_argument(
         "-ls",
         "--latent_dim",
         type=int,
         default=15,
-        help="dimension of latent space",
+        help="Dimension of latent space",
     )
     parser.add_argument(
-        "-epo", "--epochs", type=int, default=800, help="training epochs"
+        "-epo", "--epochs", type=int, default=800, help="Training epochs"
     )
     parser.add_argument(
         "-s",
@@ -223,10 +223,11 @@ def scar_parser():
         "--adjust",
         type=str,
         default="micro",
-        help="""Only used  for calculating Bayesfactors to improve performance,
-        'micro' -- adjust the estimated native counts per cell. Default.
-        'global' -- adjust the estimated native counts globally.
-        False -- no adjustment, use the model-returned native counts.""",
+        help="""Only used  for calculating Bayesfactors to improve performance,  
+
+                | 'micro' -- adjust the estimated native counts per cell. Default.
+                | 'global' -- adjust the estimated native counts globally.
+                | False -- no adjustment, use the model-returned native counts.""",
     )
     parser.add_argument(
         "-cutoff",
@@ -247,7 +248,7 @@ def scar_parser():
         "--moi",
         type=float,
         default=None,
-        help="multiplicity of Infection. If assigned, it will allow optimized thresholding, \
+        help="Multiplicity of Infection. If assigned, it will allow optimized thresholding, \
         which tests a series of cutoffs to find the best one based on distributions of infections under given moi. \
         See [Dixit2016]_ for details. Under development.",
     )
