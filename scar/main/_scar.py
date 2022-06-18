@@ -56,18 +56,22 @@ class model:
         dropout_prob : float, optional
             dropout probability of neurons, by default 0
         feature_type : str, optional
-            the feature to be denoised. One of the following:
-            'mRNA' -- transcriptome.
-            'ADT' -- protein counts in CITE-seq
-            'sgRNA' -- sgRNA counts for scCRISPRseq
-            'tag' -- identity barcodes or any data types of super high sparsity. \
-                E.g., in cell indexing experiments, we would expect a single true signal \
-                    (1) and many negative signals (0) for each cell, by default "mRNA"
+            the feature to be denoised. One of the following:  
+
+                | 'mRNA' -- transcriptome
+                | 'ADT' -- protein counts in CITE-seq
+                | 'sgRNA' -- sgRNA counts for scCRISPRseq
+                | 'tag' -- identity barcodes or any data types of super high sparsity. \
+                    E.g., in cell indexing experiments, we would expect a single true signal \
+                        (1) and many negative signals (0) for each cell
+                | 'CMO' -- Cell Multiplexing Oligo
+                | By default "mRNA"
         count_model : str, optional
-            the model to generate the UMI count. One of the following:
-            'binomial' -- binomial model,
-            'poisson' -- poisson model,
-            'zeroinflatedpoisson' -- zeroinflatedpoisson model, by default "binomial"
+            the model to generate the UMI count. One of the following:  
+
+                | 'binomial' -- binomial model,
+                | 'poisson' -- poisson model,
+                | 'zeroinflatedpoisson' -- zeroinflatedpoisson model, by default "binomial"
         sparsity : float, optional
             range: [0, 1]. The sparsity of expected native signals. \
             It varies between datasets, e.g. if one prefilters genes -- \
@@ -204,18 +208,22 @@ class model:
         """
         self.feature_type = feature_type
         """str, the feature to be denoised. One of the following:
-            'mRNA' -- transcriptome.
-            'ADT' -- protein counts in CITE-seq
-            'sgRNA' -- sgRNA counts for scCRISPRseq
-            'tag' -- identity barcodes or any data types of super high sparsity. \
+
+            | 'mRNA' -- transcriptome
+            | 'ADT' -- protein counts in CITE-seq
+            | 'sgRNA' -- sgRNA counts for scCRISPRseq
+            | 'tag' -- identity barcodes or any data types of super high sparsity. \
                 E.g., in cell indexing experiments, we would expect a single true signal \
-                    (1) and many negative signals (0) for each cell, by default "mRNA"
+                    (1) and many negative signals (0) for each cell.
+            | 'CMO' -- Cell Multiplexing Oligo
+            | By default "mRNA"
         """
         self.count_model = count_model
-        """str, the model to generate the UMI count. One of the following:
-            'binomial' -- binomial model,
-            'poisson' -- poisson model,
-            'zeroinflatedpoisson' -- zeroinflatedpoisson model.
+        """str, the model to generate the UMI count. One of the following:  
+
+            | 'binomial' -- binomial model,
+            | 'poisson' -- poisson model,
+            | 'zeroinflatedpoisson' -- zeroinflatedpoisson model.
         """
         self.sparsity = sparsity
         """float, the sparsity of expected native signals. (0, 1]. \
@@ -542,13 +550,14 @@ class model:
             inference model for evaluation of ambient presence, by default "poisson"
         adjust : str, optional
             Only used for calculating Bayesfactors to improve performance. \
-                One of the following: \
-                    'micro' -- adjust the estimated native counts per cell. \
-                    This can overcome the issue of over- or under-estimation of noise. \
-                    'global' -- adjust the estimated native counts globally.\
-                    This can overcome the issue of over- or under-estimation of noise. \
-                        False -- no adjustment, use the model-returned native counts. \
-                        Defaults to "micro", by default "micro"
+                One of the following:  
+
+                    | 'micro' -- adjust the estimated native counts per cell. \
+                    This can overcome the issue of over- or under-estimation of noise.
+                    | 'global' -- adjust the estimated native counts globally. \
+                    This can overcome the issue of over- or under-estimation of noise.
+                    | False -- no adjustment, use the model-returned native counts.
+                    | Defaults to "micro"
         cutoff : int, optional
             cutoff for Bayesfactors, by default 3
         round_to_int : str, optional
@@ -562,7 +571,7 @@ class model:
         -------
             After inferring, several attributes will be added, inc. native_counts, bayesfactor,\
             native_frequencies, and noise_ratio. \
-                A feature_assignment will be added in 'sgRNA' or 'tag' feature type.       
+                A feature_assignment will be added in 'sgRNA' or 'tag' or 'CMO' feature type.       
         """
         print("===========================================\n  Inferring .....")
         total_set = UMIDataset(self.raw_count, self.ambient_profile)
@@ -612,7 +621,7 @@ class model:
             ] = noise_ratio_batch
             i += 1
 
-        if self.feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
+        if self.feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
             self.assignment(cutoff=cutoff, moi=moi)
         else:
             self.feature_assignment = None
@@ -633,7 +642,7 @@ class model:
         Returns
         -------
             After running, a attribute 'feature_assignment' will be added,\
-                in 'sgRNA' or 'tag' feature type.       
+                in 'sgRNA' or 'tag' or 'CMO' feature type.       
         Raises
         ------
         NotImplementedError

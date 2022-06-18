@@ -55,7 +55,7 @@ class scrnaseq:
         self.n_celltypes = n_celltypes
         """int, number of cell types"""
         self.n_features = n_features
-        """int, number of features (mRNA, sgRNA, ADT, tag and etc.)"""
+        """int, number of features (mRNA, sgRNA, ADT, tag, CMO, and etc.)"""
         self.n_total_molecules = n_total_molecules
         """int, number of total molecules per cell"""
         self.capture_rate = capture_rate

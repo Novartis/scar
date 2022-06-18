@@ -19,19 +19,26 @@ from ._activation_functions import mytanh, hnormalization, mysoftplus
 class VAE(nn.Module):
     """A class of variational autoencoder
 
-    Args:
-        n_features (int): number of features (e.g. mRNA, sgRNA, ADT, tag, ...)
-        nn_layer1 (int): number of neurons in the 1st layer. Default: 150
-        nn_layer2 (int): number of neurons in the 2nd layer. Default: 100
-        latent_dim (int): number of neurons in the bottleneck layer. Default: 15
-        feature_type (str): the feature to be denoised, \
-            either of 'mRNA', 'sgRNA', 'ADT', 'tag'. Default: 'mRNA'
-        count_model (str): the model to generate the UMI count, \
-            either of "binomial", "poisson", "zeroinflatedpoisson". Default: 'binomial'
-        verbose (bool): whether to print the details of neural networks
-
-    Returns:
-        Object: a class object
+    Parameters
+    ----------
+    n_features : int
+        number of features (e.g. mRNA, sgRNA, ADT, tag, CMO, ...)
+    nn_layer1 : int, optional
+        number of neurons in the 1st layer, by default 150
+    nn_layer2 : int, optional
+        number of neurons in the 2nd layer, by default 100
+    latent_dim : int, optional
+        number of neurons in the bottleneck layer, by default 15
+    dropout_prob : int, optional
+        dropout probability, by default 0
+    feature_type : str, optional
+        the feature to be denoised,  either of 'mRNA', 'sgRNA', 'ADT', 'tag', 'CMO', by default "mRNA"
+    count_model : str, optional
+        the model to generate the UMI count, either of "binomial", "poisson", "zeroinflatedpoisson", by default "binomial"
+    sparsity : float, optional
+        the sparsity of expected data, by default 0.9
+    verbose : bool, optional
+        whether to display information, by default True
     """
 
     def __init__(
@@ -46,7 +53,6 @@ class VAE(nn.Module):
         sparsity=0.9,
         verbose=True,
     ):
-
         super().__init__()
         assert feature_type.lower() in [
             "mrna",
@@ -57,10 +63,12 @@ class VAE(nn.Module):
             "adts",
             "tag",
             "tags",
+            "cmo",
+            "cmos",
         ]
         assert count_model.lower() in ["binomial", "poisson", "zeroinflatedpoisson"]
         # force the sparsity to be one in the mode of "sgRNAs" and "tags"
-        if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags"]:
+        if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
             sparsity = 1
 
         self.encoder = Encoder(
@@ -100,7 +108,7 @@ class VAE(nn.Module):
         amb_prob,
         count_model_inf="poisson",
         adjust="micro",
-        round_to_int="stochastic_rounding"
+        round_to_int="stochastic_rounding",
     ):
         """
         Inference of presence of native signals
