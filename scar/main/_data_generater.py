@@ -474,11 +474,11 @@ class cropseq(scrnaseq):
     n_features : int
         number of dinstinct sgRNAs
     library_pattern : str, optional
-        the pattern of sgRNA libraries, three possibilities: \
-            "uniform" - each sgRNA has equal frequency in the libraries. \
-            "pyramid" - a few sgRNAs have significantly higher frequencies in the libraries. \
-            "reverse_pyramid" - a few sgRNAs have significantly lower frequencies in the libraries.\
-            by default "pyramid".
+        the pattern of sgRNA libraries, three possibilities:
+            | "uniform" - each sgRNA has equal frequency in the libraries
+            | "pyramid" - a few sgRNAs have significantly higher frequencies in the libraries
+            | "reverse_pyramid" - a few sgRNAs have significantly lower frequencies in the libraries
+            | By default "pyramid".
     noise_ratio : float, optional
         global contamination level, by default 0.005
     average_counts_per_cell : int, optional
@@ -490,17 +490,17 @@ class cropseq(scrnaseq):
 
     Examples
     --------
-    
+
     .. plot::
         :context: close-figs
-        
+
         import numpy as np
         from scar import data_generator
-        
+
         n_features = 100  # 100 sgRNAs in the libraries
         n_cells = 6000  # 6000 cells
         n_celltypes = 1  # single cell line
-        
+
         # generate a synthetic sgRNA count dataset
         np.random.seed(8)
         cropseq = data_generator.cropseq(n_cells, n_celltypes, n_features)
