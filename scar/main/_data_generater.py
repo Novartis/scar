@@ -86,7 +86,7 @@ class scrnaseq:
 
         Parameters
         ----------
-        dirichlet_concentration_hyper : None or real, optional, \
+        dirichlet_concentration_hyper : None or real, optional
             the concentration hyperparameters of dirichlet distribution. \
                 Determining the sparsity of native signals. \
                     If None, 1 / n_features, by default 0.005.
@@ -298,7 +298,7 @@ class citeseq(scrnaseq):
 
         Parameters
         ----------
-        dirichlet_concentration_hyper : None or real, optional \
+        dirichlet_concentration_hyper : None or real, optional
             the concentration hyperparameters of dirichlet distribution. \
                 If None, 1 / n_features, by default None
     
@@ -475,6 +475,7 @@ class cropseq(scrnaseq):
         number of dinstinct sgRNAs
     library_pattern : str, optional
         the pattern of sgRNA libraries, three possibilities:
+
             | "uniform" - each sgRNA has equal frequency in the libraries
             | "pyramid" - a few sgRNAs have significantly higher frequencies in the libraries
             | "reverse_pyramid" - a few sgRNAs have significantly lower frequencies in the libraries
