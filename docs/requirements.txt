@@ -12,4 +12,5 @@ anndata
 scanpy
 sphinx-design
 pydata-sphinx-theme
+sphinx_tabs
 git+https://github.com/Novartis/scAR.git
