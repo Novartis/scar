@@ -1,6 +1,6 @@
 
 <p align="left">
-  <img src="docs/img/scAR_logo_white.png" width="250" title="scAR">
+  <img src="docs/_static/scAR_logo_white.png" width="250" title="scAR">
 </p>
 
    

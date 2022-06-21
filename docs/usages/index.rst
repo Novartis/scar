@@ -1,8 +1,11 @@
-Python API
+API
 ===============
 
-Processing
+Python API
 ----------------------
+
+Processing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Calculate ambient profile
 
 .. currentmodule:: scar.main._setup
@@ -14,7 +17,7 @@ Calculate ambient profile
 
 
 Training
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The core module of scar
 
 .. currentmodule:: scar.main._scar
@@ -25,7 +28,7 @@ The core module of scar
    model
 
 Synthetic_dataset
---------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Generate synthetic datasets (scRNAseq, CITE-seq, scCRISPRseq) with ambient contamination
 
 .. currentmodule:: scar.main._data_generater
@@ -38,9 +41,17 @@ Generate synthetic datasets (scRNAseq, CITE-seq, scCRISPRseq) with ambient conta
    cropseq
 
 Plotting
---------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Plotting functions (under development).
 
 Reporting
---------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Generate denoising reports (under development).
+
+Command Line Interface
+-----------------------------------
+
+.. argparse:: 
+    :module: scar.main.__main__
+    :func: scar_parser
+    :prog: scar

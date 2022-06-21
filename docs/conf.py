@@ -9,23 +9,18 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
+
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath(".."))
-# sys.path.insert(0, os.path.abspath('tutorials'))
 from scar.main.__version__ import __version__, _copyright
 
 # -- Project information -----------------------------------------------------
-
-
 project = "scAR"
 copyright = _copyright
 author = "Caibin Sheng"
-
-# The full version, including alpha/beta/rc tags
 release = __version__
 
 
@@ -46,6 +41,8 @@ extensions = [
     "sphinx.ext.napoleon",
     "autodocsumm",
     "matplotlib.sphinxext.plot_directive",
+    "sphinx_design",
+    "sphinx_tabs.tabs",
 ]
 
 nbsphinx_execute = "never"
@@ -53,13 +50,11 @@ nbsphinx_allow_errors = True
 autosummary_generate = True
 # Add type of source files
 
-# source_suffix = ['.rst', '.md'] #, '.ipynb'
 nb_custom_formats = {
     ".md": ["jupytext.reads", {"fmt": "mystnb"}],
 }
 
 # Add any paths that contain templates here, relative to this directory.
-# templates_path = ["tutorials"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -74,16 +69,50 @@ disqus_shortname = "scar-discussion"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
+templates_path = ["_templates"]
+html_static_path = ["_static"]
+html_css_files = ["scar-styles.css"]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_logo = "img/scAR_logo_transparent.png"
+html_logo = "_static/scAR_logo_transparent.png"
 html_theme_options = {
-    "logo_only": True,
-    "display_version": True,
+    "logo": {
+        "image_light": "scAR_logo_white.png",
+        "image_dark": "scAR_logo_black.png",
+    },
+    "pygment_light_style": "tango",
+    "pygment_dark_style": "native",
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/Novartis/scar",
+            "icon": "fab fa-github-square",
+            "type": "fontawesome",
+        }
+    ],
+    "use_edit_page_button": True,
+    "favicons": [
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "href": "scAR_favicon.png",
+        }
+    ],
 }
+html_context = {
+    "github_user": "Novartis",
+    "github_repo": "scar",
+    "github_version": "develop",
+    "doc_path": "docs",
+}
+
+# html_sidebars = {
+#     "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"]
+# }
+
 autodoc_mock_imports = ["django"]
 autodoc_default_options = {
     "autosummary": True,

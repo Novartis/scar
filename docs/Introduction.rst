@@ -4,16 +4,16 @@ Introduction
 What is ambient signal?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. image:: img/ambient_signal_hypothesis.png
+.. image:: _static/ambient_signal_hypothesis.png
    :width: 500
    :align: center
 
-During the preparation of the single-cell solution, RNA or protein counts are released upon cell lysis and consequently encapsulated by droplets. These exogenous molecules are mixed with native ones and barcoded by the same 10x bead, resulting in overestimated count data.
+During the preparation of the single-cell solution, RNA or protein counts are released upon cell lysis and consequently encapsulated by droplets. These exogenous molecules are mixed with native ones and barcoded by the same 10x beads, resulting in overestimated count data. The ambient signal harms the downstream analysis and even introduces significant bias in some cases (e.g. scCRISPR-seq and Cell multiplexing).
 
 The design of scAR
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. image:: img/overview_scAR.png
+.. image:: _static/overview_scAR.png
    :width: 600
    :align: center
 
@@ -21,4 +21,4 @@ scAR uses a latent variable model to represent the biological and technical comp
 
 What types of data that scAR can process?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-We applied scAR to scRNAseq data for denoising mRNA, scCRISPRseq data for sgRNA assignment, and CITE-seq data for denoising protein counts (ADT). In theory, any droplet-based single-cell omics technology has the ambient signal contamination issue, and scAR can be a good consideration.
+We validated scAR on scRNAseq for denoising mRNA, scCRISPR-seq for sgRNA assignment, cell multiplexing for tag assignment and CITE-seq for denoising protein counts (ADT). It recovers great number (33% ~ 50%) of cells in scCRISPR-seq and cell multiplexing experiments and significantly improves data quality in scRNAseq and CITE-seq. In theory, any droplet-based single-cell omics technology may have the ambient contamination issue, especially for the complex experiments. scAR can also be a reasonable solution in these cases.

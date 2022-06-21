@@ -10,4 +10,6 @@ ipykernel
 protobuf==3.20.*
 anndata
 scanpy
+sphinx-design
+pydata-sphinx-theme
 git+https://github.com/Novartis/scAR.git

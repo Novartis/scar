@@ -282,9 +282,6 @@ class model:
         """ambient_profile : np.ndarray, the probability of occurrence of each ambient transcript.
         """
         
-        # self.n_batch_train = None
-        # self.n_batch_val = None
-        # self.batch_size = None
         self.runtime = None
         """int, runtime in seconds.
         """
@@ -339,7 +336,7 @@ class model:
             initial learning rate, by default 1e-3
         lr_step_size : int, optional
             `period of learning rate decay, \
-                <https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html/>`_,\
+                <https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html/>`_\
                     by default 5
         lr_gamma : float, optional
             multiplicative factor of learning rate decay, by default 0.97
