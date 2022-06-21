@@ -251,7 +251,7 @@ class scrnaseq:
 ######################################################################################
 # Synthetic citeseq datasets
 class citeseq(scrnaseq):
-    """Generate synthetic ADT count data for CITE-seq with ambient contamination.
+    """Generate synthetic ADT count data for CITE-seq with ambient contamination
 
     Parameters
     ----------

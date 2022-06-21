@@ -20,7 +20,7 @@ It is developed by Oncology Data Science, Novartis Institute for BioMedical Rese
    Introduction
    Installation
    usages/index
-   tutorials/Tutorials
+   tutorials/index
    Release_notes
    Reference
    License

@@ -228,6 +228,8 @@ class model:
         self.sparsity = sparsity
         """float, the sparsity of expected native signals. (0, 1]. \
             Forced to be one in the mode of "sgRNA(s)" and "tag(s)".
+
+        .. versionadded:: 0.4.0
         """
 
         if isinstance(raw_count, str):

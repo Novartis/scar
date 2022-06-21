@@ -33,7 +33,7 @@ extensions = [
     "myst_parser",
     "sphinx.ext.autosectionlabel",
     "nbsphinx",
-    "sphinx_gallery.load_style",
+    "sphinx_gallery.gen_gallery",
     "sphinx_disqus.disqus",
     "sphinxarg.ext",
     "sphinx.ext.autodoc",
@@ -98,7 +98,7 @@ html_theme_options = {
         {
             "rel": "icon",
             "sizes": "32x32",
-            "href": "scAR_favicon.png",
+            "href": "_static/scAR_favicon.png",
         }
     ],
 }
@@ -124,3 +124,8 @@ plot_include_source = True
 plot_formats = [("png", 120)]
 plot_html_show_formats = False
 plot_html_show_source_link = False
+
+sphinx_gallery_conf = {
+    "examples_dirs": "tutorials",  # path to your example scripts
+    "gallery_dirs": "_build/tutorial_gallery",  # path to where to save gallery generated output
+}
