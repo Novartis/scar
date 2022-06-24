@@ -175,6 +175,12 @@ class model:
             fig.supxlabel("ADTs")
             fig.supylabel("cells")
             plt.tight_layout()
+
+    .. versionadded:: 0.4.0
+        The *sparsity* parameter.
+
+    .. note::
+        scar takes the raw UMI counts as input. No size normalization or log transformation.
     """
 
     def __init__(
@@ -228,8 +234,6 @@ class model:
         self.sparsity = sparsity
         """float, the sparsity of expected native signals. (0, 1]. \
             Forced to be one in the mode of "sgRNA(s)" and "tag(s)".
-
-        .. versionadded:: 0.4.0
         """
 
         if isinstance(raw_count, str):
@@ -357,7 +361,10 @@ class model:
             whether to print the details, by default True       
         Returns
         -------
-            After training, a trained_model attribute will be added.       
+            After training, a trained_model attribute will be added.    
+
+        .. deprecated:: 0.4.5
+            The *TensorBoard* parameter will be removed since version 0.4.5   
         """
 
         list_ids = list(range(self.raw_count.shape[0]))
@@ -561,6 +568,7 @@ class model:
             cutoff for Bayesfactors, by default 3
         round_to_int : str, optional
             whether to round the counts, by default "stochastic_rounding"
+
         moi : int, optional (under development)
             multiplicity of infection. If assigned, it will allow optimized thresholding, \
                 which tests a series of cutoffs to find the best one \
@@ -570,7 +578,11 @@ class model:
         -------
             After inferring, several attributes will be added, inc. native_counts, bayesfactor,\
             native_frequencies, and noise_ratio. \
-                A feature_assignment will be added in 'sgRNA' or 'tag' or 'CMO' feature type.       
+                A feature_assignment will be added in 'sgRNA' or 'tag' or 'CMO' feature type.
+
+        .. versionadded:: 0.4.1
+            The *round_to_int* parameter.
+   
         """
         print("===========================================\n  Inferring .....")
         total_set = UMIDataset(self.raw_count, self.ambient_profile)

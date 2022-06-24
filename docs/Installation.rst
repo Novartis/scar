@@ -1,7 +1,7 @@
 Installation
 ================
 
-To use ``scAR``, first install it using conda install or Git+pip.
+To use ``scar``, first install it using conda install or Git+pip.
 
 Conda install
 -------------------------------
@@ -29,7 +29,7 @@ Git + pip
 
 1, Clone scar repository::
 
-    git clone https://github.com/Novartis/scAR.git
+    git clone https://github.com/Novartis/scar.git
     
 2, Enter the cloned directory::
 
