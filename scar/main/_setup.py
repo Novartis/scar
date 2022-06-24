@@ -149,6 +149,9 @@ def setup_anndata(
         )
         emptydrops = raw_adata[raw_adata.obs["droplets"] == "cell-free droplets"]
 
+        if emptydrops.shape[0] < 50:
+            raise Exception("Too few emptydroplets! Lower the prob parameter")
+
         ambient_prof = emptydrops.X.sum(axis=0) / emptydrops.X.sum()
 
         i += 1
