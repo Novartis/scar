@@ -573,7 +573,7 @@ class model:
             whether to round the counts, by default "stochastic_rounding"
 
             .. versionadded:: 0.4.1
-一套
+            
         moi : int, optional (under development)
             multiplicity of infection. If assigned, it will allow optimized thresholding, \
                 which tests a series of cutoffs to find the best one \
