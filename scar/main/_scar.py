@@ -44,6 +44,10 @@ class model:
         ----------
         raw_count : Union[str, np.ndarray, pd.DataFrame]
             Raw count matrix.
+
+            .. note::
+               scar takes the raw UMI counts as input. No size normalization or log transformation.
+
         ambient_profile : Optional[Union[str, np.ndarray, pd.DataFrame]], optional
             the probability of occurrence of each ambient transcript.\
                 If None, averaging cells to estimate the ambient profile, by default None
@@ -80,6 +84,8 @@ class model:
                         in the case of unflitered genes. \
                         Forced to be one in the mode of "sgRNA(s)" and "tag(s)". \
                             Thank Will Macnair for the valuable feedback.
+        
+            .. versionadded:: 0.4.0
 
         Raises
         ------
@@ -176,11 +182,6 @@ class model:
             fig.supylabel("cells")
             plt.tight_layout()
 
-    .. versionadded:: 0.4.0
-        The *sparsity* parameter.
-
-    .. note::
-        scar takes the raw UMI counts as input. No size normalization or log transformation.
     """
 
     def __init__(
@@ -355,16 +356,18 @@ class model:
         TensorBoard : bool, optional
             whether to output training details through Tensorboard \
                 (under development), by default False
+
+            .. deprecated:: 0.4.5
+               The *TensorBoard* parameter will be removed since version 0.4.5
+
         save_model : bool, optional
             whether to save trained models(under development), by default False
         verbose : bool, optional
             whether to print the details, by default True       
         Returns
         -------
-            After training, a trained_model attribute will be added.    
-
-        .. deprecated:: 0.4.5
-            The *TensorBoard* parameter will be removed since version 0.4.5   
+            After training, a trained_model attribute will be added.
+               
         """
 
         list_ids = list(range(self.raw_count.shape[0]))
@@ -569,6 +572,8 @@ class model:
         round_to_int : str, optional
             whether to round the counts, by default "stochastic_rounding"
 
+            .. versionadded:: 0.4.1
+一套
         moi : int, optional (under development)
             multiplicity of infection. If assigned, it will allow optimized thresholding, \
                 which tests a series of cutoffs to find the best one \
@@ -578,11 +583,7 @@ class model:
         -------
             After inferring, several attributes will be added, inc. native_counts, bayesfactor,\
             native_frequencies, and noise_ratio. \
-                A feature_assignment will be added in 'sgRNA' or 'tag' or 'CMO' feature type.
-
-        .. versionadded:: 0.4.1
-            The *round_to_int* parameter.
-   
+                A feature_assignment will be added in 'sgRNA' or 'tag' or 'CMO' feature type.   
         """
         print("===========================================\n  Inferring .....")
         total_set = UMIDataset(self.raw_count, self.ambient_profile)
