@@ -42,7 +42,7 @@ Git + pip
    .. tab:: GPU version
       
       .. code-block::
-         :caption: Please use ``scar-gpu`` if you have an nvidia graphics card and the corresponging driver installed
+         :caption: Please use ``scar-gpu`` if you have an nvidia graphics card and the corresponding driver installed
             
             conda env create -f scar-gpu.yml
 
