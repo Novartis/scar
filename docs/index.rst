@@ -9,6 +9,7 @@ scAR documentation
 **Version**: |release|
 
 **Useful links**:
+`Binary Installers <https://anaconda.org/bioconda/scar/files>`__ |
 `Source Repository <https://github.com/Novartis/scar>`__ |
 `Issues <https://github.com/Novartis/scar/issues>`__ |
 `Contacts <https://scar-tutorials.readthedocs.io/en/latest/Contacts.html>`__
@@ -18,8 +19,7 @@ scAR documentation
 
 It is developed by Oncology Data Science, Novartis Institute for BioMedical Research.
 
----------------------------------------
-================================
+
 .. grid:: 1 2 2 2
    :gutter: 2
 
