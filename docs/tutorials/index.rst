@@ -15,6 +15,35 @@ Run scar with Python API
 
 Run scar with the command line tool
 ---------------------------------
+
+Use ``.h5`` files as the input 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+We can directly use cellranger outputed *filtered_feature_bc_matrix.h5* to run ``scar`` by::
+
+   scar filtered_feature_bc_matrix.h5 -ft feature_type -o output
+
+``filtered_feature_bc_matrix.h5``, the cellranger output.
+
+``feature_type``, a string, either 'mRNA' or 'sgRNA' or 'ADT' or 'tag' or 'CMO'.
+
+ .. note::
+      The ambient profile is calculated by averaging the cell pool under this mode.
+      
+The output folder contains an h5ad file::
+   
+   output
+	└── filtered_feature_bc_matrix_denoised_feature_type.h5ad
+
+In the h5ad object:
+
+- anndata.X, denosed counts.  
+- anndata.obs[``noise_ratio``], estimated noise ratio per cell.  
+- anndata.layer[``native_frequencies``], estimated native frequencies.  
+- anndata.layer[``BayesFactor``], bayesian factor of ambient contamination.
+- anndata.obs[``sgRNAs``], optional, feature assignment, e.g., sgRNA, tag, CMO, and etc..
+
+Use ``.pickle`` files as the input 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 We can also run ``scar`` by::
    
    scar raw_count_matrix.pickle -ft feature_type -o output
@@ -80,7 +109,4 @@ In the folder structure above:
 - ``denoised_counts.pickle``, denoised count matrix.
 - ``BayesFactor.pickle``, bayesian factor of ambient contamination.
 - ``expected_native_freq.pickle``, estimated native frequencies.  
-- ``assignment.pickle``, feature assignment, e.g., sgRNA, tag, and etc..
-
-.. note::
-    Only ``.pickle`` format is supported at the moment.
+- ``assignment.pickle``, optional, feature assignment, e.g., sgRNA, tag, and etc..

@@ -85,7 +85,7 @@ def main():
             adata_fb = adata[:, adata.var["feature_types"] == features]
             count_matrix = adata_fb.to_df()
 
-        print(f"{len(features)} modalities to denoise: {features}")
+        print(f"modalities to denoise: {features}")
 
     else:
         raise Exception(file_extension + " files are not supported.")
@@ -191,7 +191,7 @@ def main():
     elif file_extension == ".h5":
 
         output_path_h5ad = os.path.join(
-            output_dir, "filtered_feature_bc_matrix_denoised_{feature_type}.h5ad"
+            output_dir, f"filtered_feature_bc_matrix_denoised_{feature_type}.h5ad"
         )
 
         denoised_adata = adata.copy()
@@ -247,14 +247,14 @@ def scar_parser():
         "count_matrix",
         type=str,
         nargs="+",
-        help="The file of observed count matrix, 2D array (cells x genes) or the path of a filtered_feature_bc_matrix.h5",
+        help="The file of raw count matrix, 2D array (cells x genes) or the path of a filtered_feature_bc_matrix.h5",
     )
     parser.add_argument(
         "-ap",
         "--ambient_profile",
         type=str,
         default=None,
-        help="The file of empty profile obtained from empty droplets, 1D array or the path of a raw_feature_bc_matrix.h5",
+        help="The file of empty profile obtained from empty droplets, 1D array",
     )
     parser.add_argument(
         "-ft",
