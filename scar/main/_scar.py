@@ -194,12 +194,15 @@ class model:
         dropout_prob: float = 0,
         feature_type: str = "mRNA",
         count_model: str = "binomial",
-        sparsity: float = .9
+        sparsity: float = .9,
+        device: str = 'auto'
     ):
         """initialize object"""
-
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        """str, "cuda" if gpu is available
+        if device == 'auto':
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        else:
+            self.device = device
+        """str, either "auto, "cpu" or "cuda".
         """        
         self.nn_layer1 = nn_layer1
         """int, number of neurons of the 1st layer.
@@ -547,14 +550,14 @@ class model:
     # Inference
     @torch.no_grad()
     def inference(
-        self, batch_size=None, count_model_inf="poisson", adjust="micro", cutoff=3, round_to_int="stochastic_rounding", moi=None
+        self, batch_size=4096, count_model_inf="poisson", adjust="micro", cutoff=3, round_to_int="stochastic_rounding", moi=None
     ):
         """inference infering the expected native signals, noise ratios, Bayesfactors and expected native frequencies
 
         Parameters
         ----------
         batch_size : int, optional
-            batch size, set a small value upon GPU memory issue, by default None
+            batch size, set a small value upon GPU memory issue, by default 4096
         count_model_inf : str, optional
             inference model for evaluation of ambient presence, by default "poisson"
         adjust : str, optional
