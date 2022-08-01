@@ -37,7 +37,7 @@ The output folder contains an h5ad file::
    output
 	└── filtered_feature_bc_matrix_denoised_feature_type.h5ad
 
-The h5ad file can be read by `scanpy.read <https://scanpy.readthedocs.io/en/stable/index.html#>`__ as an `anndata <https://anndata.readthedocs.io/en/latest/>`__ object:
+The h5ad file can be read by `scanpy.read <https://scanpy.readthedocs.io/en/stable/generated/scanpy.read.html#scanpy.read>`__ as an `anndata <https://anndata.readthedocs.io/en/latest/>`__ object:
 
 - anndata.X, denosed counts.
 - anndata.obs['``noise_ratio``'], estimated noise ratio per cell.  
