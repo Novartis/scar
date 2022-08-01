@@ -16,31 +16,35 @@ Run scar with Python API
 Run scar with the command line tool
 ---------------------------------
 
+The command line tool supports two formats of input.
+
 Use ``.h5`` files as the input 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-We can directly use cellranger outputed *filtered_feature_bc_matrix.h5* to run ``scar`` by::
+
+We can use the output of cellranger count *filtered_feature_bc_matrix.h5* as the input for ``scar``::
 
    scar filtered_feature_bc_matrix.h5 -ft feature_type -o output
 
-``filtered_feature_bc_matrix.h5``, the cellranger output.
+``filtered_feature_bc_matrix.h5``, a filtered .h5 file produced by cellranger count.
 
 ``feature_type``, a string, either 'mRNA' or 'sgRNA' or 'ADT' or 'tag' or 'CMO'.
 
  .. note::
-      The ambient profile is calculated by averaging the cell pool under this mode.
+      The ambient profile is calculated by averaging the cell pool under this mode. If you want to use a more accurate ambient profile, please consider calculating it and using ``.pickle`` files as the input, as detailed below.
       
 The output folder contains an h5ad file::
    
    output
 	└── filtered_feature_bc_matrix_denoised_feature_type.h5ad
 
-In the h5ad object:
+The h5ad file can be read by ``scanpy.read`` as an anndata object:
 
-- anndata.X, denosed counts.  
-- anndata.obs[``noise_ratio``], estimated noise ratio per cell.  
-- anndata.layer[``native_frequencies``], estimated native frequencies.  
-- anndata.layer[``BayesFactor``], bayesian factor of ambient contamination.
-- anndata.obs[``sgRNAs``], optional, feature assignment, e.g., sgRNA, tag, CMO, and etc..
+- anndata.X, denosed counts.
+- anndata.obs['``noise_ratio``'], estimated noise ratio per cell.  
+- anndata.layers['``native_frequencies``'], estimated native frequencies.  
+- anndata.layers['``BayesFactor``'], bayesian factor of ambient contamination.
+- anndata.obs['``sgRNAs``' or '``tags``'], optional, feature assignment, e.g., sgRNA, tag, CMO, and etc..
+
 
 Use ``.pickle`` files as the input 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

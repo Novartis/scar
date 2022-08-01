@@ -2,7 +2,7 @@ jinja2<3.1.0
 myst_parser
 sphinx
 nbsphinx
-sphinx-gallery
+sphinx-gallery==0.10.1
 sphinx-argparse
 sphinx-disqus
 autodocsumm
