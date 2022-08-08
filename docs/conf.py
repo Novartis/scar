@@ -128,4 +128,6 @@ plot_html_show_source_link = False
 sphinx_gallery_conf = {
     "examples_dirs": "tutorials",  # path to your example scripts
     "gallery_dirs": "_build/tutorial_gallery",  # path to where to save gallery generated output
+    "filename_pattern": "/scAR_tutorial_",
+#    "ignore_pattern": r"__init__\.py",
 }
