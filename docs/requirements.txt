@@ -1,6 +1,5 @@
 jinja2<3.1.0
-# myst_parser
-sphinx==5.1.1
+sphinx==5.0
 nbsphinx==0.8.8
 sphinx-gallery==0.10.1
 sphinx-argparse==0.3.1
@@ -12,5 +11,4 @@ anndata
 scanpy
 sphinx-design==0.2.0
 pydata-sphinx-theme==0.9.0
-# sphinx_tabs
 git+https://github.com/Novartis/scAR.git
