@@ -1,10 +1,10 @@
 jinja2<3.1.0
-sphinx==5.0
+sphinx==5.1.1
 nbsphinx==0.8.8
 sphinx-gallery==0.10.1
 sphinx-argparse==0.3.1
 sphinx-disqus==1.2.0
-autodocsumm==0.2.8
+autodocsumm==0.2.9
 ipykernel==5.5.3
 protobuf==3.20.*
 anndata
