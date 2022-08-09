@@ -11,6 +11,30 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.4 (2022-08-09)
+### Documentation
+* Update dependency ([`03cf19e`](https://github.com/Novartis/scar/commit/03cf19e2adfcb84714b7845914feaa45f7b0ae83))
+* Update dependencies ([`9bd7f1c`](https://github.com/Novartis/scar/commit/9bd7f1c164e7f3e1b30af73dcf9f6b8737d26019))
+* Update documentations ([`418996c`](https://github.com/Novartis/scar/commit/418996c2dcd3796444d7e01b3b2f1c897c0f7b0d))
+* Update dependencies ([`1bde351`](https://github.com/Novartis/scar/commit/1bde351ad7f027d36de75f3a60f471e7ef75a6bf))
+* **main:** Add link to anndata and scanpy ([`8436e05`](https://github.com/Novartis/scar/commit/8436e0514f5d9f9cdd9ed2c3b9ef036f23232b31))
+* **main:** Update dependencies ([`984df35`](https://github.com/Novartis/scar/commit/984df3562f1d4f753ca66caf88619d7305089dcd))
+* **main:** Update documentation for .h5 file ([`2a309e0`](https://github.com/Novartis/scar/commit/2a309e0d44eddb75fd1ddf5cdf69fe59e3e40280))
+* Add a link of binary installers ([`2faed3e`](https://github.com/Novartis/scar/commit/2faed3e56b98027e4ecda68d73044e0c29c369a1))
+* Update documentations ([`e26a6e9`](https://github.com/Novartis/scar/commit/e26a6e9653e2e41ad46f6fa6aff19a01be00d3ea))
+* Add competing methods ([`8564b2b`](https://github.com/Novartis/scar/commit/8564b2b5164f72b36cf4e930034fb26951891d4f))
+* **scar:** Add versionadded directives for parameter sparsity and round_to_int ([`33e35ca`](https://github.com/Novartis/scar/commit/33e35caf24f15cbe76731586db324cfd52b22511))
+* Update docs ([`a4da539`](https://github.com/Novartis/scar/commit/a4da5393175e8214f871eb64556cdd6e0f6c632f))
+* Update introduction ([`a036b24`](https://github.com/Novartis/scar/commit/a036b246b7aed1aa3133bc8df306497afb8942af))
+* Change readthedocs template ([`421e52f`](https://github.com/Novartis/scar/commit/421e52fe2d23015e4288eeff83fedb105832b2a9))
+* **data_generator:** Update docs ([`1f8f668`](https://github.com/Novartis/scar/commit/1f8f66888c42e2433ac712935518ee07b1b4fb1a))
+* **data_generator:** Re-style docs ([`afef9fb`](https://github.com/Novartis/scar/commit/afef9fbfd61d827b66139cd9bbf4ff374e2f8a70))
+* ***:** Re-style docs ([`2d550fa`](https://github.com/Novartis/scar/commit/2d550fafa816070c153d363a200e0783c863b166))
+
+### Performance
+* **main:** Command line tool supports a new input: filtered_feature_bc_matrix.h5 ([`73bc13e`](https://github.com/Novartis/scar/commit/73bc13e2741d97885840c67177cc985c23749e96))
+* **setup:** Add an error raise statement ([`f4fb1a8`](https://github.com/Novartis/scar/commit/f4fb1a8fe915e8deb89c05bf319f85684cbbc853))
+
 ## v0.4.3 (2022-06-15)
 ### Fix
 * **setup:** Fix a bug to allow sample reasonable numbers of droplets ([`ef6f7e4`](https://github.com/Novartis/scar/commit/ef6f7e4e58fcb1ce8cf463bed3697883f561eba9))

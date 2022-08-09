@@ -15,6 +15,39 @@ Run scar with Python API
 
 Run scar with the command line tool
 ---------------------------------
+
+The command line tool supports two formats of input.
+
+Use ``.h5`` files as the input 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We can use the output of cellranger count *filtered_feature_bc_matrix.h5* as the input for ``scar``::
+
+   scar filtered_feature_bc_matrix.h5 -ft feature_type -o output
+
+``filtered_feature_bc_matrix.h5``, a filtered .h5 file produced by cellranger count.
+
+``feature_type``, a string, either 'mRNA' or 'sgRNA' or 'ADT' or 'tag' or 'CMO'.
+
+ .. note::
+      The ambient profile is calculated by averaging the cell pool under this mode. If you want to use a more accurate ambient profile, please consider calculating it and using ``.pickle`` files as the input, as detailed below.
+      
+The output folder contains an h5ad file::
+   
+   output
+	└── filtered_feature_bc_matrix_denoised_feature_type.h5ad
+
+The h5ad file can be read by `scanpy.read <https://scanpy.readthedocs.io/en/stable/generated/scanpy.read.html#scanpy.read>`__ as an `anndata <https://anndata.readthedocs.io/en/latest/>`__ object:
+
+- anndata.X, denosed counts.
+- anndata.obs['``noise_ratio``'], estimated noise ratio per cell.  
+- anndata.layers['``native_frequencies``'], estimated native frequencies.  
+- anndata.layers['``BayesFactor``'], bayesian factor of ambient contamination.
+- anndata.obs['``sgRNAs``' or '``tags``'], optional, feature assignment, e.g., sgRNA, tag, CMO, and etc..
+
+
+Use ``.pickle`` files as the input 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 We can also run ``scar`` by::
    
    scar raw_count_matrix.pickle -ft feature_type -o output
@@ -80,7 +113,4 @@ In the folder structure above:
 - ``denoised_counts.pickle``, denoised count matrix.
 - ``BayesFactor.pickle``, bayesian factor of ambient contamination.
 - ``expected_native_freq.pickle``, estimated native frequencies.  
-- ``assignment.pickle``, feature assignment, e.g., sgRNA, tag, and etc..
-
-.. note::
-    Only ``.pickle`` format is supported at the moment.
+- ``assignment.pickle``, optional, feature assignment, e.g., sgRNA, tag, and etc..

@@ -3,9 +3,10 @@
 
 import argparse
 
-# from distutils.command.config import config
 import os
 import pandas as pd
+import scanpy as sc
+from scipy.sparse import csr_matrix
 from ._scar import model
 from .__version__ import __version__
 
@@ -25,6 +26,7 @@ def main():
     nn_layer2 = args.hidden_layer2
     latent_dim = args.latent_dim
     epochs = args.epochs
+    device = args.device
     sparsity = args.sparsity
     save_model = args.save_model
     batch_size = args.batchsize
@@ -33,7 +35,77 @@ def main():
     cutoff = args.cutoff
     moi = args.moi
     round_to_int = args.round2int
-    count_matrix = pd.read_pickle(count_matrix_path)
+
+    _, file_extension = os.path.splitext(count_matrix_path)
+
+    if file_extension == ".pickle":
+        count_matrix = pd.read_pickle(count_matrix_path)
+
+    # Denoising transcritomic data
+    elif file_extension == ".h5":
+        adata = sc.read_10x_h5(count_matrix_path, gex_only=False)
+
+        print(
+            "unprocessed data contains: {0} cells and {1} genes".format(
+                adata.shape[0], adata.shape[1]
+            )
+        )
+        adata = adata[:, adata.X.sum(axis=0) > 0]  # filter out features of zero counts
+        print(
+            "filter out features of zero counts, remaining data contains: {0} cells and {1} genes".format(
+                adata.shape[0], adata.shape[1]
+            )
+        )
+
+        if feature_type.lower() == "all":
+            features = adata.var["feature_types"].unique()
+            count_matrix = adata.to_df()
+
+        # Denoising mRNAs
+        elif feature_type.lower() in ["mrna", "mrnas"]:
+            features = "Gene Expression"
+            adata_fb = adata[:, adata.var["feature_types"] == features]
+            count_matrix = adata_fb.to_df()
+
+        # Denoising sgRNAs
+        elif feature_type.lower() in ["sgrna", "sgrnas"]:
+            features = "CRISPR Guide Capture"
+            adata_fb = adata[:, adata.var["feature_types"] == features]
+            count_matrix = adata_fb.to_df()
+
+        # Denoising CMO tags
+        elif feature_type.lower() in ["tag", "tags"]:
+            features = "Multiplexing Capture"
+            adata_fb = adata[:, adata.var["feature_types"] == features]
+            count_matrix = adata_fb.to_df()
+
+        # Denoising CMO tags
+        elif feature_type.lower() in ["tag", "tags"]:
+            features = "Antibody Capture"
+            adata_fb = adata[:, adata.var["feature_types"] == features]
+            count_matrix = adata_fb.to_df()
+
+        print(f"modalities to denoise: {features}")
+
+    else:
+        raise Exception(file_extension + " files are not supported.")
+
+    if ambient_profile_path:
+
+        _, ambient_profile_file_extension = os.path.splitext(ambient_profile_path)
+        if ambient_profile_file_extension == ".pickle":
+            ambient_profile = pd.read_pickle(ambient_profile_path)
+
+        # Currently, use the default approach to calculate the ambient profile in the case of h5
+        elif ambient_profile_file_extension == ".h5":
+            ambient_profile = None
+
+        else:
+            raise Exception(
+                ambient_profile_file_extension + " files are not supported."
+            )
+    else:
+        ambient_profile = None
 
     print("===========================================")
     print("feature_type: ", feature_type)
@@ -49,14 +121,15 @@ def main():
 
     # Run model
     scar_model = model(
-        raw_count=count_matrix_path,
-        ambient_profile=ambient_profile_path,
+        raw_count=count_matrix,
+        ambient_profile=ambient_profile,
         nn_layer1=nn_layer1,
         nn_layer2=nn_layer2,
         latent_dim=latent_dim,
         feature_type=feature_type,
         count_model=count_model,
         sparsity=sparsity,
+        device=device,
     )
 
     scar_model.train(
@@ -74,38 +147,71 @@ def main():
         scar_model.assignment(cutoff=cutoff, moi=moi)
 
     print("===========================================\n  Saving results...")
-    output_path01, output_path02, output_path03, output_path04 = (
-        os.path.join(output_dir, "denoised_counts.pickle"),
-        os.path.join(output_dir, "BayesFactor.pickle"),
-        os.path.join(output_dir, "native_frequency.pickle"),
-        os.path.join(output_dir, "noise_ratio.pickle"),
-    )
 
     # save results
-    pd.DataFrame(
-        scar_model.native_counts, index=count_matrix.index, columns=count_matrix.columns
-    ).to_pickle(output_path01)
-    pd.DataFrame(
-        scar_model.bayesfactor, index=count_matrix.index, columns=count_matrix.columns
-    ).to_pickle(output_path02)
-    pd.DataFrame(
-        scar_model.native_frequencies,
-        index=count_matrix.index,
-        columns=count_matrix.columns,
-    ).to_pickle(output_path03)
-    pd.DataFrame(
-        scar_model.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]
-    ).to_pickle(output_path04)
+    if file_extension == ".pickle":
 
-    print("...denoised counts saved in: ", output_path01)
-    print("...BayesFactor matrix saved in: ", output_path02)
-    print("...expected native frequencies saved in: ", output_path03)
-    print("...expected noise ratio saved in: ", output_path04)
+        output_path01, output_path02, output_path03, output_path04 = (
+            os.path.join(output_dir, "denoised_counts.pickle"),
+            os.path.join(output_dir, "BayesFactor.pickle"),
+            os.path.join(output_dir, "native_frequency.pickle"),
+            os.path.join(output_dir, "noise_ratio.pickle"),
+        )
 
-    if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
-        output_path05 = os.path.join(output_dir, "assignment.pickle")
-        scar_model.feature_assignment.to_pickle(output_path05)
-        print("...assignment saved in: ", output_path05)
+        pd.DataFrame(
+            scar_model.native_counts,
+            index=count_matrix.index,
+            columns=count_matrix.columns,
+        ).to_pickle(output_path01)
+        pd.DataFrame(
+            scar_model.bayesfactor,
+            index=count_matrix.index,
+            columns=count_matrix.columns,
+        ).to_pickle(output_path02)
+        pd.DataFrame(
+            scar_model.native_frequencies,
+            index=count_matrix.index,
+            columns=count_matrix.columns,
+        ).to_pickle(output_path03)
+        pd.DataFrame(
+            scar_model.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]
+        ).to_pickle(output_path04)
+
+        print("...denoised counts saved in: ", output_path01)
+        print("...BayesFactor matrix saved in: ", output_path02)
+        print("...expected native frequencies saved in: ", output_path03)
+        print("...expected noise ratio saved in: ", output_path04)
+
+        if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
+
+            output_path05 = os.path.join(output_dir, "assignment.pickle")
+            scar_model.feature_assignment.to_pickle(output_path05)
+            print("...assignment saved in: ", output_path05)
+
+    elif file_extension == ".h5":
+
+        output_path_h5ad = os.path.join(
+            output_dir, f"filtered_feature_bc_matrix_denoised_{feature_type}.h5ad"
+        )
+
+        denoised_adata = adata.copy()
+        denoised_adata.X = csr_matrix(scar_model.native_counts)
+        denoised_adata.obs["noise_ratio"] = pd.DataFrame(
+            scar_model.noise_ratio,
+            index=count_matrix.index,
+            columns=["noise_ratio"],
+        )
+
+        denoised_adata.layers["native_frequencies"] = csr_matrix(
+            scar_model.native_frequencies
+        )
+        denoised_adata.layers["BayesFactor"] = csr_matrix(scar_model.bayesfactor)
+
+        if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
+            denoised_adata.obs = denoised_adata.obs.join(scar_model.feature_assignment)
+
+        denoised_adata.write(output_path_h5ad)
+        print("the denoised h5ad file saved in: ", output_path_h5ad)
 
     print("===========================================\n  Done!!!")
 
@@ -141,7 +247,7 @@ def scar_parser():
         "count_matrix",
         type=str,
         nargs="+",
-        help="The file of observed count matrix, 2D array (cells x genes)",
+        help="The file of raw count matrix, 2D array (cells x genes) or the path of a filtered_feature_bc_matrix.h5",
     )
     parser.add_argument(
         "-ap",
@@ -198,6 +304,13 @@ def scar_parser():
         "-epo", "--epochs", type=int, default=800, help="Training epochs"
     )
     parser.add_argument(
+        "-device",
+        "--device",
+        type=str,
+        default="auto",
+        help="Device used for training, either 'auto', 'cpu', or 'cuda'",
+    )
+    parser.add_argument(
         "-s",
         "--save_model",
         type=int,
@@ -215,7 +328,7 @@ def scar_parser():
         "-batchsize_infer",
         "--batchsize_infer",
         type=int,
-        default=None,
+        default=4096,
         help="Batch size for inference, set a small value upon out of memory error",
     )
     parser.add_argument(
