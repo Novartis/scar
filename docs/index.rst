@@ -45,7 +45,7 @@ It is developed by Oncology Data Science, Novartis Institute for BioMedical Rese
       :link-type: doc
       :img-background: _static/bgd.png
       
-      Want to install *scAR*? Check out the installation guide. It contains steps to install *scARs'*. 
+      Want to install *scAR*? Check out the installation guide. It contains steps to install *scAR*. 
       
       +++
       .. button-ref:: Installation
