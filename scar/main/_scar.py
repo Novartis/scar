@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 
 import torch
-from torch.utils.tensorboard import SummaryWriter
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from tqdm.contrib import DummyTqdmFile
@@ -332,7 +331,6 @@ class model:
         epochs: int = 800,
         reconstruction_weight: float = 1,
         dropout_prob: float = 0,
-        TensorBoard: bool = False,
         save_model: bool = False,
         verbose: bool = True,
     ):
@@ -362,13 +360,6 @@ class model:
             weight on reconstruction error, by default 1
         dropout_prob : float, optional
             dropout probability of neurons, by default 0
-        TensorBoard : bool, optional
-            whether to output training details through Tensorboard \
-                (under development), by default False
-
-            .. deprecated:: 0.4.5
-               The *TensorBoard* parameter will be removed since version 0.4.5
-
         save_model : bool, optional
             whether to save trained models(under development), by default False
         verbose : bool, optional
@@ -395,22 +386,6 @@ class model:
         # self.n_batch_train = len(training_generator)
         # self.n_batch_val = len(val_generator)
         # self.batch_size = batch_size
-
-        # TensorBoard writer
-        if TensorBoard:
-            writer = SummaryWriter(TensorBoard)
-            writer.add_text(
-                "Experiment description",
-                f"nn_layer1={self.nn_layer1}"
-                + f"nn_layer2={self.nn_layer2}"
-                + f"latent_dim={self.latent_dim}"
-                + f"kld_weight={kld_weight}"
-                + f"lr={lr}"
-                + f"epochs={epochs}"
-                + f"reconstruction_weight={reconstruction_weight}"
-                + f"dropout_prob={dropout_prob}",
-                0,
-            )
 
         # Define model
         vae_nets = VAE(
@@ -477,81 +452,8 @@ class model:
 
                 scheduler.step()
 
-                # ...log the running training loss
-                if TensorBoard:
-                    writer.add_scalar("TrainingLoss/total loss", train_tot_loss, epoch)
-                    writer.add_scalar(
-                        "TrainingLoss/reconstruction loss", train_recon_loss, epoch
-                    )
-                    writer.add_scalar("TrainingLoss/kld_loss", train_kld_loss, epoch)
-                    writer.add_scalar(
-                        "learning rate", optim.param_groups[0]["lr"], epoch
-                    )
-                    # writer.flush()
-
-                # ...log the running validation loss
-                if TensorBoard:
-                    ##################################################################
-                    # model evaluation
-                    ##################################################################
-                    val_tot_loss = 0
-                    val_kld_loss = 0
-                    val_recon_loss = 0
-
-                    vae_nets.eval()
-                    for x_batch_val, ambient_freq_val in val_generator:
-
-                        (
-                            dec_nr_val,
-                            dec_prob_val,
-                            mu_val,
-                            var_val,
-                            dec_dp_val,
-                        ) = vae_nets(x_batch_val)
-
-                        (
-                            recon_loss_minibatch,
-                            kld_loss_minibatch,
-                            loss_minibatch,
-                        ) = loss_fn(
-                            x_batch_val,
-                            dec_nr_val,
-                            dec_prob_val,
-                            mu_val,
-                            var_val,
-                            ambient_freq_val,
-                            reconstruction_weight=reconstruction_weight,
-                            kld_weight=kld_weight,
-                            dec_dp=dec_dp_val,
-                            count_model=self.count_model,
-                        )
-                        val_tot_loss += loss_minibatch.detach().item()
-                        val_recon_loss += recon_loss_minibatch.detach().item()
-                        val_kld_loss += kld_loss_minibatch.detach().item()
-
-                    writer.add_scalar("ValLoss/total loss", val_tot_loss, epoch)
-                    writer.add_scalar(
-                        "ValLoss/reconstruction loss", val_recon_loss, epoch
-                    )
-                    writer.add_scalar("ValLoss/kld_loss", val_kld_loss, epoch)
-                    writer.flush()
-
         if save_model:
             torch.save(vae_nets, save_model)
-
-        # if TensorBoard:
-        #     writer.add_hparams(
-        #         {
-        #             "lr": lr,
-        #             "nn_layer1": self.nn_layer1,
-        #             "nn_layer2": self.nn_layer2,
-        #             "latent_dim": self.latent_dim,
-        #             "reconstruction_weight": reconstruction_weight,
-        #             "kld_weight": kld_weight,
-        #             "epochs": epochs,
-        #         }
-        #     )
-        #     writer.close()
 
         self.trained_model = vae_nets
         self.runtime = time.time() - training_start_time
