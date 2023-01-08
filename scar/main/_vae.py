@@ -109,6 +109,7 @@ class VAE(nn.Module):
         count_model_inf="poisson",
         adjust="micro",
         round_to_int="stochastic_rounding",
+        clip_to_obs=True,
     ):
         """
         Inference of presence of native signals
@@ -150,6 +151,13 @@ class VAE(nn.Module):
             ).astype(int)
         elif round_to_int is None:
             pass
+
+        if clip_to_obs:
+            expected_native_counts = np.clip(
+                expected_native_counts,
+                a_min=np.zeros_like(input_matrix_np),
+                a_max=input_matrix_np,
+            )
 
         if not adjust:
             adjust = 0

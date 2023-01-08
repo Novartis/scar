@@ -35,6 +35,7 @@ def main():
     cutoff = args.cutoff
     moi = args.moi
     round_to_int = args.round2int
+    clip_to_obs = args.clip_to_obs
 
     _, file_extension = os.path.splitext(count_matrix_path)
 
@@ -140,7 +141,10 @@ def main():
     )
 
     scar_model.inference(
-        adjust=adjust, round_to_int=round_to_int, batch_size=batch_size_infer
+        adjust=adjust,
+        round_to_int=round_to_int,
+        batch_size=batch_size_infer,
+        clip_to_obs=clip_to_obs,
     )
 
     if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
@@ -355,6 +359,14 @@ def scar_parser():
         type=str,
         default="stochastic_rounding",
         help="Round the counts",
+    )
+
+    parser.add_argument(
+        "-clip_to_obs",
+        "--clip_to_obs",
+        type=bool,
+        default=True,
+        help="clip the predicted native counts by observed counts",
     )
     parser.add_argument(
         "-moi",

@@ -18,6 +18,7 @@ from tqdm.contrib import DummyTqdmFile
 from ._vae import VAE
 from ._loss_functions import loss_fn
 
+
 @contextlib.contextmanager
 def std_out_err_redirect_tqdm():
     """
@@ -194,11 +195,11 @@ class model:
         dropout_prob: float = 0,
         feature_type: str = "mRNA",
         count_model: str = "binomial",
-        sparsity: float = .9,
-        device: str = 'auto'
+        sparsity: float = 0.9,
+        device: str = "auto",
     ):
         """initialize object"""
-        if device == 'auto':
+        if device == "auto":
             if torch.cuda.is_available():
                 self.device = torch.device("cuda")
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
@@ -208,13 +209,13 @@ class model:
         else:
             self.device = device
         """str, either "auto, "cpu" or "cuda".
-        """        
+        """
         self.nn_layer1 = nn_layer1
         """int, number of neurons of the 1st layer.
         """
         self.nn_layer2 = nn_layer2
         """int, number of neurons of the 2nd layer.
-        """        
+        """
         self.latent_dim = latent_dim
         """int, number of neurons of the bottleneck layer.
         """
@@ -296,7 +297,7 @@ class model:
         self.ambient_profile = torch.from_numpy(ambient_profile).float().to(self.device)
         """ambient_profile : np.ndarray, the probability of occurrence of each ambient transcript.
         """
-        
+
         self.runtime = None
         """int, runtime in seconds.
         """
@@ -384,7 +385,8 @@ class model:
         # Generators
         training_set = UMIDataset(self.raw_count, self.ambient_profile, train_ids)
         training_generator = torch.utils.data.DataLoader(
-            training_set, batch_size=batch_size, shuffle=shuffle)
+            training_set, batch_size=batch_size, shuffle=shuffle
+        )
         val_set = UMIDataset(self.raw_count, self.ambient_profile, test_ids)
         val_generator = torch.utils.data.DataLoader(
             val_set, batch_size=batch_size, shuffle=shuffle
@@ -424,7 +426,9 @@ class model:
         ).to(self.device)
         # Define optimizer
         optim = torch.optim.Adam(vae_nets.parameters(), lr=lr)
-        scheduler = torch.optim.lr_scheduler.StepLR(optim, step_size=lr_step_size, gamma=lr_gamma)        
+        scheduler = torch.optim.lr_scheduler.StepLR(
+            optim, step_size=lr_step_size, gamma=lr_gamma
+        )
         if verbose:
             print("......kld_weight: ", kld_weight)
             print("......lr: ", lr)
@@ -502,7 +506,7 @@ class model:
                             dec_prob_val,
                             mu_val,
                             var_val,
-                            dec_dp_val
+                            dec_dp_val,
                         ) = vae_nets(x_batch_val)
 
                         (
@@ -555,7 +559,14 @@ class model:
     # Inference
     @torch.no_grad()
     def inference(
-        self, batch_size=4096, count_model_inf="poisson", adjust="micro", cutoff=3, round_to_int="stochastic_rounding", moi=None
+        self,
+        batch_size=4096,
+        count_model_inf="poisson",
+        adjust="micro",
+        cutoff=3,
+        round_to_int="stochastic_rounding",
+        clip_to_obs=True,
+        moi=None,
     ):
         """inference infering the expected native signals, noise ratios, Bayesfactors and expected native frequencies
 
@@ -581,7 +592,13 @@ class model:
             whether to round the counts, by default "stochastic_rounding"
 
             .. versionadded:: 0.4.1
-            
+
+        clip_to_obs : bool, optional
+            whether to clip the predicted native counts to the observation in order to ensure \
+                that denoised counts are not greater than the observation, by default True
+
+            .. versionadded:: 0.4.5
+
         moi : int, optional (under development)
             multiplicity of infection. If assigned, it will allow optimized thresholding, \
                 which tests a series of cutoffs to find the best one \
@@ -613,7 +630,7 @@ class model:
 
             minibatch_size = x_batch_tot.shape[
                 0
-            ]  # if not last batch, equals to batch size
+            ]  # if not the last batch, equals to batch size
 
             (
                 native_counts_batch,
@@ -625,7 +642,8 @@ class model:
                 ambient_freq_tot[0, :],
                 count_model_inf=count_model_inf,
                 adjust=adjust,
-                round_to_int=round_to_int
+                round_to_int=round_to_int,
+                clip_to_obs=clip_to_obs,
             )
             self.native_counts[
                 i * batch_size : i * batch_size + minibatch_size, :
@@ -641,7 +659,14 @@ class model:
             ] = noise_ratio_batch
             i += 1
 
-        if self.feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
+        if self.feature_type.lower() in [
+            "sgrna",
+            "sgrnas",
+            "tag",
+            "tags",
+            "cmo",
+            "cmos",
+        ]:
             self.assignment(cutoff=cutoff, moi=moi)
         else:
             self.feature_assignment = None
@@ -700,6 +725,7 @@ class model:
         if moi:
             raise NotImplementedError
 
+
 class UMIDataset(torch.utils.data.Dataset):
     """Characterizes dataset for PyTorch"""
 
@@ -723,4 +749,3 @@ class UMIDataset(torch.utils.data.Dataset):
         sc_count = self.raw_count[sc_id, :]
         sc_ambient = self.ambient_profile[sc_id, :]
         return sc_count, sc_ambient
-      
