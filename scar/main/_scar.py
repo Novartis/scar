@@ -328,7 +328,7 @@ class model:
         lr: float = 1e-3,
         lr_step_size: int = 5,
         lr_gamma: float = 0.97,
-        epochs: int = 800,
+        epochs: int = 400,
         reconstruction_weight: float = 1,
         dropout_prob: float = 0,
         save_model: bool = False,
