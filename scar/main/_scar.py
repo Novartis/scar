@@ -10,13 +10,13 @@ import numpy as np
 import pandas as pd
 
 import torch
-from torch.utils.tensorboard import SummaryWriter
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from tqdm.contrib import DummyTqdmFile
 
 from ._vae import VAE
 from ._loss_functions import loss_fn
+
 
 @contextlib.contextmanager
 def std_out_err_redirect_tqdm():
@@ -194,22 +194,27 @@ class model:
         dropout_prob: float = 0,
         feature_type: str = "mRNA",
         count_model: str = "binomial",
-        sparsity: float = .9,
-        device: str = 'auto'
+        sparsity: float = 0.9,
+        device: str = "auto",
     ):
         """initialize object"""
-        if device == 'auto':
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if device == "auto":
+            if torch.cuda.is_available():
+                self.device = torch.device("cuda")
+            elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
+                self.device = torch.device("mps")
+            else:
+                self.device = torch.device("cpu")
         else:
             self.device = device
         """str, either "auto, "cpu" or "cuda".
-        """        
+        """
         self.nn_layer1 = nn_layer1
         """int, number of neurons of the 1st layer.
         """
         self.nn_layer2 = nn_layer2
         """int, number of neurons of the 2nd layer.
-        """        
+        """
         self.latent_dim = latent_dim
         """int, number of neurons of the bottleneck layer.
         """
@@ -291,7 +296,7 @@ class model:
         self.ambient_profile = torch.from_numpy(ambient_profile).float().to(self.device)
         """ambient_profile : np.ndarray, the probability of occurrence of each ambient transcript.
         """
-        
+
         self.runtime = None
         """int, runtime in seconds.
         """
@@ -323,10 +328,9 @@ class model:
         lr: float = 1e-3,
         lr_step_size: int = 5,
         lr_gamma: float = 0.97,
-        epochs: int = 800,
+        epochs: int = 400,
         reconstruction_weight: float = 1,
         dropout_prob: float = 0,
-        TensorBoard: bool = False,
         save_model: bool = False,
         verbose: bool = True,
     ):
@@ -356,13 +360,6 @@ class model:
             weight on reconstruction error, by default 1
         dropout_prob : float, optional
             dropout probability of neurons, by default 0
-        TensorBoard : bool, optional
-            whether to output training details through Tensorboard \
-                (under development), by default False
-
-            .. deprecated:: 0.4.5
-               The *TensorBoard* parameter will be removed since version 0.4.5
-
         save_model : bool, optional
             whether to save trained models(under development), by default False
         verbose : bool, optional
@@ -379,7 +376,8 @@ class model:
         # Generators
         training_set = UMIDataset(self.raw_count, self.ambient_profile, train_ids)
         training_generator = torch.utils.data.DataLoader(
-            training_set, batch_size=batch_size, shuffle=shuffle)
+            training_set, batch_size=batch_size, shuffle=shuffle
+        )
         val_set = UMIDataset(self.raw_count, self.ambient_profile, test_ids)
         val_generator = torch.utils.data.DataLoader(
             val_set, batch_size=batch_size, shuffle=shuffle
@@ -388,22 +386,6 @@ class model:
         # self.n_batch_train = len(training_generator)
         # self.n_batch_val = len(val_generator)
         # self.batch_size = batch_size
-
-        # TensorBoard writer
-        if TensorBoard:
-            writer = SummaryWriter(TensorBoard)
-            writer.add_text(
-                "Experiment description",
-                f"nn_layer1={self.nn_layer1}"
-                + f"nn_layer2={self.nn_layer2}"
-                + f"latent_dim={self.latent_dim}"
-                + f"kld_weight={kld_weight}"
-                + f"lr={lr}"
-                + f"epochs={epochs}"
-                + f"reconstruction_weight={reconstruction_weight}"
-                + f"dropout_prob={dropout_prob}",
-                0,
-            )
 
         # Define model
         vae_nets = VAE(
@@ -419,7 +401,9 @@ class model:
         ).to(self.device)
         # Define optimizer
         optim = torch.optim.Adam(vae_nets.parameters(), lr=lr)
-        scheduler = torch.optim.lr_scheduler.StepLR(optim, step_size=lr_step_size, gamma=lr_gamma)        
+        scheduler = torch.optim.lr_scheduler.StepLR(
+            optim, step_size=lr_step_size, gamma=lr_gamma
+        )
         if verbose:
             print("......kld_weight: ", kld_weight)
             print("......lr: ", lr)
@@ -468,81 +452,8 @@ class model:
 
                 scheduler.step()
 
-                # ...log the running training loss
-                if TensorBoard:
-                    writer.add_scalar("TrainingLoss/total loss", train_tot_loss, epoch)
-                    writer.add_scalar(
-                        "TrainingLoss/reconstruction loss", train_recon_loss, epoch
-                    )
-                    writer.add_scalar("TrainingLoss/kld_loss", train_kld_loss, epoch)
-                    writer.add_scalar(
-                        "learning rate", optim.param_groups[0]["lr"], epoch
-                    )
-                    # writer.flush()
-
-                # ...log the running validation loss
-                if TensorBoard:
-                    ##################################################################
-                    # model evaluation
-                    ##################################################################
-                    val_tot_loss = 0
-                    val_kld_loss = 0
-                    val_recon_loss = 0
-
-                    vae_nets.eval()
-                    for x_batch_val, ambient_freq_val in val_generator:
-
-                        (
-                            dec_nr_val,
-                            dec_prob_val,
-                            mu_val,
-                            var_val,
-                            dec_dp_val
-                        ) = vae_nets(x_batch_val)
-
-                        (
-                            recon_loss_minibatch,
-                            kld_loss_minibatch,
-                            loss_minibatch,
-                        ) = loss_fn(
-                            x_batch_val,
-                            dec_nr_val,
-                            dec_prob_val,
-                            mu_val,
-                            var_val,
-                            ambient_freq_val,
-                            reconstruction_weight=reconstruction_weight,
-                            kld_weight=kld_weight,
-                            dec_dp=dec_dp_val,
-                            count_model=self.count_model,
-                        )
-                        val_tot_loss += loss_minibatch.detach().item()
-                        val_recon_loss += recon_loss_minibatch.detach().item()
-                        val_kld_loss += kld_loss_minibatch.detach().item()
-
-                    writer.add_scalar("ValLoss/total loss", val_tot_loss, epoch)
-                    writer.add_scalar(
-                        "ValLoss/reconstruction loss", val_recon_loss, epoch
-                    )
-                    writer.add_scalar("ValLoss/kld_loss", val_kld_loss, epoch)
-                    writer.flush()
-
         if save_model:
             torch.save(vae_nets, save_model)
-
-        # if TensorBoard:
-        #     writer.add_hparams(
-        #         {
-        #             "lr": lr,
-        #             "nn_layer1": self.nn_layer1,
-        #             "nn_layer2": self.nn_layer2,
-        #             "latent_dim": self.latent_dim,
-        #             "reconstruction_weight": reconstruction_weight,
-        #             "kld_weight": kld_weight,
-        #             "epochs": epochs,
-        #         }
-        #     )
-        #     writer.close()
 
         self.trained_model = vae_nets
         self.runtime = time.time() - training_start_time
@@ -550,7 +461,14 @@ class model:
     # Inference
     @torch.no_grad()
     def inference(
-        self, batch_size=4096, count_model_inf="poisson", adjust="micro", cutoff=3, round_to_int="stochastic_rounding", moi=None
+        self,
+        batch_size=4096,
+        count_model_inf="poisson",
+        adjust="micro",
+        cutoff=3,
+        round_to_int="stochastic_rounding",
+        clip_to_obs=True,
+        moi=None,
     ):
         """inference infering the expected native signals, noise ratios, Bayesfactors and expected native frequencies
 
@@ -576,7 +494,13 @@ class model:
             whether to round the counts, by default "stochastic_rounding"
 
             .. versionadded:: 0.4.1
-            
+
+        clip_to_obs : bool, optional
+            whether to clip the predicted native counts to the observation in order to ensure \
+                that denoised counts are not greater than the observation, by default True
+
+            .. versionadded:: 0.4.5
+
         moi : int, optional (under development)
             multiplicity of infection. If assigned, it will allow optimized thresholding, \
                 which tests a series of cutoffs to find the best one \
@@ -608,7 +532,7 @@ class model:
 
             minibatch_size = x_batch_tot.shape[
                 0
-            ]  # if not last batch, equals to batch size
+            ]  # if not the last batch, equals to batch size
 
             (
                 native_counts_batch,
@@ -620,7 +544,8 @@ class model:
                 ambient_freq_tot[0, :],
                 count_model_inf=count_model_inf,
                 adjust=adjust,
-                round_to_int=round_to_int
+                round_to_int=round_to_int,
+                clip_to_obs=clip_to_obs,
             )
             self.native_counts[
                 i * batch_size : i * batch_size + minibatch_size, :
@@ -636,7 +561,14 @@ class model:
             ] = noise_ratio_batch
             i += 1
 
-        if self.feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
+        if self.feature_type.lower() in [
+            "sgrna",
+            "sgrnas",
+            "tag",
+            "tags",
+            "cmo",
+            "cmos",
+        ]:
             self.assignment(cutoff=cutoff, moi=moi)
         else:
             self.feature_assignment = None
@@ -695,6 +627,7 @@ class model:
         if moi:
             raise NotImplementedError
 
+
 class UMIDataset(torch.utils.data.Dataset):
     """Characterizes dataset for PyTorch"""
 
@@ -718,4 +651,3 @@ class UMIDataset(torch.utils.data.Dataset):
         sc_count = self.raw_count[sc_id, :]
         sc_ambient = self.ambient_profile[sc_id, :]
         return sc_count, sc_ambient
-      

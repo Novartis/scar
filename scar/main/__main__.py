@@ -21,7 +21,6 @@ def main():
         os.getcwd() if not args.output else args.output
     )  # if None, output to current directory
     count_model = args.count_model
-    TensorBoard = args.TensorBoard
     nn_layer1 = args.hidden_layer1
     nn_layer2 = args.hidden_layer2
     latent_dim = args.latent_dim
@@ -35,6 +34,7 @@ def main():
     cutoff = args.cutoff
     moi = args.moi
     round_to_int = args.round2int
+    clip_to_obs = args.clip_to_obs
 
     _, file_extension = os.path.splitext(count_matrix_path)
 
@@ -114,7 +114,6 @@ def main():
     print("count_matrix_path: ", count_matrix_path)
     print("ambient_profile_path: ", ambient_profile_path)
     print("expected data sparsity: ", sparsity)
-    print("TensorBoard path: ", TensorBoard)
 
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
@@ -135,12 +134,14 @@ def main():
     scar_model.train(
         batch_size=batch_size,
         epochs=epochs,
-        TensorBoard=TensorBoard,
         save_model=save_model,
     )
 
     scar_model.inference(
-        adjust=adjust, round_to_int=round_to_int, batch_size=batch_size_infer
+        adjust=adjust,
+        round_to_int=round_to_int,
+        batch_size=batch_size_infer,
+        clip_to_obs=clip_to_obs,
     )
 
     if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
@@ -277,9 +278,6 @@ def scar_parser():
         help="The sparsity of expected native signals",
     )
     parser.add_argument(
-        "-tb", "--TensorBoard", type=str, default=False, help="Tensorboard directory"
-    )
-    parser.add_argument(
         "-hl1",
         "--hidden_layer1",
         type=int,
@@ -355,6 +353,14 @@ def scar_parser():
         type=str,
         default="stochastic_rounding",
         help="Round the counts",
+    )
+
+    parser.add_argument(
+        "-clip_to_obs",
+        "--clip_to_obs",
+        type=bool,
+        default=True,
+        help="clip the predicted native counts by observed counts",
     )
     parser.add_argument(
         "-moi",

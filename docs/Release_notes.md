@@ -2,10 +2,12 @@
 
 ## TODO List
 * Multiple ambient profiles
-* Plotting functionality
-* Reporting functionality
+* Tutorial for snRNAseq (to be added since version v0.4.5)
+* Batch processing
 * Transfer learning
 * Early stopping
+* Plotting functionality
+* Reporting functionality
 
 -------------------------------------
 

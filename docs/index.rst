@@ -15,7 +15,7 @@ scAR documentation
 `Contacts <https://scar-tutorials.readthedocs.io/en/latest/Contacts.html>`__
 
 
-:mod:`scAR` (single-cell Ambient Remover) is an explainable machine learning model for denoising the ambient signals in droplet-based single cell omics. It can be used for multiple tasks, such as, **sgRNA assignment** in scCRISPR-seq, **identity barcode assignment** in cell multiplexing, **protein denoising** in CITE-seq, **mRNA denoising** in scRNAseq, and etc..
+:mod:`scAR` (single-cell Ambient Remover) is an explainable machine learning model that can denoise ambient signals in droplet-based single cell omics data. It can be used for various applications, including **sgRNA assignment** in scCRISPR-seq, **identity barcode assignment** in cell multiplexing, **protein denoising** in CITE-seq, **mRNA denoising** in scRNAseq, and more.
 
 It is developed by Oncology Data Science, Novartis Institute for BioMedical Research.
 
@@ -45,7 +45,7 @@ It is developed by Oncology Data Science, Novartis Institute for BioMedical Rese
       :link-type: doc
       :img-background: _static/bgd.png
       
-      Want to install *scAR*? Check out the installation guide. It contains steps to install *scARs'*. 
+      Want to install *scAR*? Check out the installation guide. It contains steps to install *scAR*. 
       
       +++
       .. button-ref:: Installation
