@@ -13,6 +13,11 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.0 (2023-02-04)
+### Feature
+* ***:** Remove tensorboard parameter ([`98717e7`](https://github.com/Novartis/scar/commit/98717e7c55f4c4184309cb6d3956097fde661046))
+* **model:** Add an option to clip the prediction ([`b250ebf`](https://github.com/Novartis/scar/commit/b250ebfcb412d41430ebcb1fe01b0c4f1b415b11))
+
 ## v0.4.4 (2022-08-09)
 ### Documentation
 * Update dependency ([`03cf19e`](https://github.com/Novartis/scar/commit/03cf19e2adfcb84714b7845914feaa45f7b0ae83))
