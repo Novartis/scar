@@ -168,7 +168,7 @@ def setup_anndata(
         )
 
     # update ambient profile for all feature types
-    adata.uns[f"ambient_profile_{ft}"] = pd.DataFrame(
+    adata.uns[f"ambient_profile_all"] = pd.DataFrame(
         emptydrops.X.sum(axis=0).reshape(-1, 1) / emptydrops.X.sum(),
         index=emptydrops.var_names,
         columns=[f"ambient_profile_all"],
