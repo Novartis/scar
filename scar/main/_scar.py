@@ -8,6 +8,7 @@ from typing import Optional, Union
 import contextlib
 import numpy as np
 import pandas as pd
+import anndata as ad
 
 import torch
 from sklearn.model_selection import train_test_split
@@ -42,7 +43,7 @@ class model:
 
         Parameters
         ----------
-        raw_count : Union[str, np.ndarray, pd.DataFrame]
+        raw_count : Union[str, np.ndarray, pd.DataFrame, ad.AnnData]
             Raw count matrix.
 
             .. note::
@@ -255,6 +256,12 @@ class model:
             )
         elif isinstance(raw_count, pd.DataFrame):
             pass
+        elif isinstance(raw_count, ad.AnnData):
+            # get ambient profile
+            if (ambient_profile is None) and ("ambient_profile_all" in raw_count.uns):
+                ambient_profile = raw_count.uns["ambient_profile_all"]
+            # convert AnnData to pd.DataFrame
+            raw_count = raw_count.to_df()
         else:
             raise TypeError(
                 f"Expecting str or np.array or pd.DataFrame object, but get a {type(raw_count)}"
@@ -414,11 +421,9 @@ class model:
         print("===========================================\n  Training.....")
         training_start_time = time.time()
         with std_out_err_redirect_tqdm() as orig_stdout:
-
             for epoch in tqdm(
                 range(epochs), file=orig_stdout, dynamic_ncols=True
             ):  # tqdm needs the original stdout and dynamic_ncols=True to autodetect console width
-
                 ################################################################################
                 # Training
                 ################################################################################
@@ -428,7 +433,6 @@ class model:
 
                 vae_nets.train()
                 for x_batch, ambient_freq in training_generator:
-
                     optim.zero_grad()
                     dec_nr, dec_prob, means, var, dec_dp = vae_nets(x_batch)
                     recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(
@@ -529,7 +533,6 @@ class model:
         )
 
         for x_batch_tot, ambient_freq_tot in generator_full_data:
-
             minibatch_size = x_batch_tot.shape[
                 0
             ]  # if not the last batch, equals to batch size
