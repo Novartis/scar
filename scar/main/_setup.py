@@ -167,6 +167,9 @@ def setup_anndata(
             columns=[f"ambient_profile_{ft}"],
         )
 
+        if verbose:
+            print("Estimating ambient profile for ", feature_type, "...")
+
     # update ambient profile for all feature types
     adata.uns[f"ambient_profile_all"] = pd.DataFrame(
         emptydrops.X.sum(axis=0).reshape(-1, 1) / emptydrops.X.sum(),
