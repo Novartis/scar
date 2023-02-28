@@ -168,7 +168,7 @@ def setup_anndata(
         )
 
         if verbose:
-            print("Estimating ambient profile for ", feature_type, "...")
+            print("Estimated ambient profile for ", ft, " saved in adata.uns")
 
     # update ambient profile for all feature types
     adata.uns[f"ambient_profile_all"] = pd.DataFrame(
@@ -176,6 +176,9 @@ def setup_anndata(
         index=emptydrops.var_names,
         columns=[f"ambient_profile_all"],
     )
+
+    if verbose:
+        print("Estimated ambient profile for all features saved in adata.uns")
 
     if kneeplot:
         _, axs = plt.subplots(2, figsize=figsize)
