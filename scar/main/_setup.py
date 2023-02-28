@@ -117,7 +117,6 @@ def setup_anndata(
 
     i = 0
     while i < iterations:
-
         # calculate joint probability (log) of being cell-free droplets for each droplet
         log_prob = []
         batch_idx = np.floor(
@@ -159,7 +158,7 @@ def setup_anndata(
         if verbose:
             print("iteration: ", i)
 
-    # update ambient profile
+    # update ambient profile for each feature type
     for ft in feature_type:
         tmp = emptydrops[:, emptydrops.var["feature_types"] == ft]
         adata.uns[f"ambient_profile_{ft}"] = pd.DataFrame(
@@ -167,6 +166,13 @@ def setup_anndata(
             index=tmp.var_names,
             columns=[f"ambient_profile_{ft}"],
         )
+
+    # update ambient profile for all feature types
+    adata.uns[f"ambient_profile_{ft}"] = pd.DataFrame(
+        emptydrops.X.sum(axis=0).reshape(-1, 1) / emptydrops.X.sum(),
+        index=emptydrops.var_names,
+        columns=[f"ambient_profile_all"],
+    )
 
     if kneeplot:
         _, axs = plt.subplots(2, figsize=figsize)
