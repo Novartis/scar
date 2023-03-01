@@ -501,7 +501,8 @@ class model:
 
         clip_to_obs : bool, optional
             whether to clip the predicted native counts to the observation in order to ensure \
-                that denoised counts are not greater than the observation, by default True
+                that denoised counts are not greater than the observation, by default False. \
+                Use it with caution, as it may lead to over-estimation of overall noise.
 
             .. versionadded:: 0.4.5
 
