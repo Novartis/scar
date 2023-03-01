@@ -13,6 +13,16 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.0 (2023-03-01)
+### Feature
+* Support AnnData object as the input ([`24a1ab6`](https://github.com/Novartis/scar/commit/24a1ab67b64d870f4a785ad8ca13dbb4b45c8293))
+* Print message ([`7659672`](https://github.com/Novartis/scar/commit/76596727389acc484c3dce78d6f2a262dec33a0e))
+* Print message ([`203687f`](https://github.com/Novartis/scar/commit/203687fb03f098a1bd2f1f3940d49c7e83421f22))
+* Estimate ambient_profile_all ([`e1913fd`](https://github.com/Novartis/scar/commit/e1913fd15fdf5546619f750c23e03debbcf1d63e))
+
+### Fix
+* Fix setupdata ([`63afe9d`](https://github.com/Novartis/scar/commit/63afe9dd8fbc701360715e1a4318f6be8f07e58b))
+
 ## v0.5.0 (2023-02-04)
 ### Feature
 * ***:** Remove tensorboard parameter ([`98717e7`](https://github.com/Novartis/scar/commit/98717e7c55f4c4184309cb6d3956097fde661046))
