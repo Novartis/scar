@@ -504,7 +504,7 @@ class model:
                 that denoised counts are not greater than the observation, by default False. \
                 Use it with caution, as it may lead to over-estimation of overall noise.
 
-            .. versionadded:: 0.4.5
+            .. versionadded:: 0.5.0
 
         moi : int, optional (under development)
             multiplicity of infection. If assigned, it will allow optimized thresholding, \

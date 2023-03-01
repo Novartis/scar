@@ -159,6 +159,13 @@ class VAE(nn.Module):
                 a_max=input_matrix_np,
             )
 
+        if clip_to_obs:
+            expected_native_counts = np.clip(
+                expected_native_counts,
+                a_min=np.zeros_like(input_matrix_np),
+                a_max=input_matrix_np,
+            )
+
         if not adjust:
             adjust = 0
         elif adjust == "global":
