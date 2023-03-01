@@ -471,7 +471,7 @@ class model:
         adjust="micro",
         cutoff=3,
         round_to_int="stochastic_rounding",
-        clip_to_obs=True,
+        clip_to_obs=False,
         moi=None,
     ):
         """inference infering the expected native signals, noise ratios, Bayesfactors and expected native frequencies

@@ -109,7 +109,7 @@ class VAE(nn.Module):
         count_model_inf="poisson",
         adjust="micro",
         round_to_int="stochastic_rounding",
-        clip_to_obs=True,
+        clip_to_obs=False,
     ):
         """
         Inference of presence of native signals
@@ -131,7 +131,9 @@ class VAE(nn.Module):
         expected_amb_counts = total_count_per_cell * noise_ratio * amb_prob
         tot_amb = expected_amb_counts.sum(axis=1).reshape(-1, 1)
 
-        if round_to_int.lower() == "stochastic_rounding":
+        if not round_to_int:
+            pass
+        elif round_to_int.lower() == "stochastic_rounding":
             expected_native_counts = (
                 np.floor(expected_native_counts)
                 + np.random.binomial(
@@ -149,8 +151,6 @@ class VAE(nn.Module):
                     expected_amb_counts.shape,
                 )
             ).astype(int)
-        elif round_to_int is None:
-            pass
 
         if clip_to_obs:
             expected_native_counts = np.clip(
