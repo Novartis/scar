@@ -11,7 +11,8 @@ Run scar with Python API
    scAR_tutorial_sgRNA_assignment
    scAR_tutorial_identity_barcode
    scAR_tutorial_denoising_CITEseq
-   scAR_tutorial_mRNA_denoising
+   scAR_tutorial_denoising_scRNAseq
+   scAR_tutorial_denoising_snRNAseq
 
 Run scar with the command line tool
 ---------------------------------
