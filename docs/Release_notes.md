@@ -13,7 +13,7 @@
 
 <!--next-version-placeholder-->
 
-## v0.6.0 (2023-03-01)
+## v0.5.1 (2023-03-01)
 ### Feature
 * Support AnnData object as the input ([`24a1ab6`](https://github.com/Novartis/scar/commit/24a1ab67b64d870f4a785ad8ca13dbb4b45c8293))
 * Print message ([`7659672`](https://github.com/Novartis/scar/commit/76596727389acc484c3dce78d6f2a262dec33a0e))

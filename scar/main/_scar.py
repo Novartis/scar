@@ -44,7 +44,7 @@ class model:
         Parameters
         ----------
         raw_count : Union[str, np.ndarray, pd.DataFrame, ad.AnnData]
-            Raw count matrix.
+            Raw count matrix or Anndata object.
 
             .. note::
                scar takes the raw UMI counts as input. No size normalization or log transformation.
@@ -63,7 +63,7 @@ class model:
         feature_type : str, optional
             the feature to be denoised. One of the following:  
 
-                | 'mRNA' -- transcriptome
+                | 'mRNA' -- transcriptome data, including scRNAseq and snRNAseq
                 | 'ADT' -- protein counts in CITE-seq
                 | 'sgRNA' -- sgRNA counts for scCRISPRseq
                 | 'tag' -- identity barcodes or any data types of super high sparsity. \
@@ -101,7 +101,7 @@ class model:
             >>> import scanpy as sc
             >>> from scar import model
             >>> adata = sc.read("...")  # load an anndata object
-            >>> scarObj = model(adata.X.to_df(), ambient_profile)  # initialize scar model
+            >>> scarObj = model(adata, ambient_profile)  # initialize scar model
             >>> scarObj.train()  # start training
             >>> scarObj.inference()  # inference
             >>> adata.layers["X_scar_denoised"] = scarObj.native_counts   # results are saved in scarObj
@@ -187,7 +187,7 @@ class model:
 
     def __init__(
         self,
-        raw_count: Union[str, np.ndarray, pd.DataFrame],
+        raw_count: Union[str, np.ndarray, pd.DataFrame, ad.AnnData],
         ambient_profile: Optional[Union[str, np.ndarray, pd.DataFrame]] = None,
         nn_layer1: int = 150,
         nn_layer2: int = 100,
@@ -203,7 +203,10 @@ class model:
             if torch.cuda.is_available():
                 self.device = torch.device("cuda")
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
-                self.device = torch.device("mps")
+                NotImplementedError(
+                    "MPS is not fully supported by Pytorch yet. Please use CPU or CUDA."
+                )
+                # self.device = torch.device("mps")
             else:
                 self.device = torch.device("cpu")
         else:
@@ -257,9 +260,16 @@ class model:
         elif isinstance(raw_count, pd.DataFrame):
             pass
         elif isinstance(raw_count, ad.AnnData):
-            # get ambient profile
+            # get ambient profile from AnnData.uns
             if (ambient_profile is None) and ("ambient_profile_all" in raw_count.uns):
+                print("Found ambient profile in AnnData.uns['ambient_profile_all']")
                 ambient_profile = raw_count.uns["ambient_profile_all"]
+            elif (ambient_profile is None) and (
+                "ambient_profile_all" not in raw_count.uns
+            ):
+                print(
+                    "Ambient profile not found in AnnData.uns['ambient_profile'], estimating it by averaging pooled cells..."
+                )
             # convert AnnData to pd.DataFrame
             raw_count = raw_count.to_df()
         else:

@@ -15,12 +15,12 @@ import sys
 
 sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath(".."))
-from scar.main.__version__ import __version__, _copyright
+from scar.main.__version__ import __version__, _copyright, _author
 
 # -- Project information -----------------------------------------------------
 project = "scAR"
 copyright = _copyright
-author = "Caibin Sheng"
+author = _author
 release = __version__
 
 
