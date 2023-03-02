@@ -15,8 +15,8 @@ def setup_anndata(
     prob: float = 0.995,
     min_raw_counts: int = 2,
     iterations: int = 3,
-    n_batch: int = 1,
-    sample: int = 50000,
+    n_batch: int = None,
+    sample: int = None,
     kneeplot: bool = True,
     verbose: bool = True,
     figsize: tuple = (6, 6),
@@ -41,9 +41,9 @@ def setup_anndata(
     iterations : int, optional
         Total iterations, by default 3
     n_batch : int, optional
-        Total number of batches, set it to a bigger number when out of memory issue occurs, by default 1
+        Total number of batches, set it to a bigger number when out of memory issue occurs, by default None
     sample : int, optional
-        Randomly sample droplets to test, if greater than total droplets, use all droplets, by default 50000
+        Randomly sample droplets to test, if greater than total droplets, use all droplets. Use all droplets by default (None)
     kneeplot : bool, optional
         Kneeplot to show subpopulations of droplets, by default True
     verbose : bool, optional
@@ -98,7 +98,23 @@ def setup_anndata(
 
     raw_adata.obs["total_counts"] = raw_adata.X.sum(axis=1)
 
-    sample = int(sample)
+    if sample is not None:
+        sample = int(sample)
+    else:
+        sample = raw_adata.shape[0]
+
+    # check n_batch
+    if n_batch is None:
+        n_batch = int(np.ceil(sample / 5000))
+    else:
+        n_batch = int(n_batch)
+
+    # check if per batch contains too many droplets
+    if sample / n_batch > 5000:
+        print(
+            "The number of droplets per batch is too large, this may cause memory issue, please increase the number of batches."
+        )
+
     idx = np.random.choice(
         raw_adata.shape[0], size=min(raw_adata.shape[0], sample), replace=False
     )
@@ -117,7 +133,6 @@ def setup_anndata(
 
     i = 0
     while i < iterations:
-
         # calculate joint probability (log) of being cell-free droplets for each droplet
         log_prob = []
         batch_idx = np.floor(
@@ -159,7 +174,7 @@ def setup_anndata(
         if verbose:
             print("iteration: ", i)
 
-    # update ambient profile
+    # update ambient profile for each feature type
     for ft in feature_type:
         tmp = emptydrops[:, emptydrops.var["feature_types"] == ft]
         adata.uns[f"ambient_profile_{ft}"] = pd.DataFrame(
@@ -167,6 +182,19 @@ def setup_anndata(
             index=tmp.var_names,
             columns=[f"ambient_profile_{ft}"],
         )
+
+        if verbose:
+            print("Estimated ambient profile for ", ft, " saved in adata.uns")
+
+    # update ambient profile for all feature types
+    adata.uns[f"ambient_profile_all"] = pd.DataFrame(
+        emptydrops.X.sum(axis=0).reshape(-1, 1) / emptydrops.X.sum(),
+        index=emptydrops.var_names,
+        columns=[f"ambient_profile_all"],
+    )
+
+    if verbose:
+        print("Estimated ambient profile for all features saved in adata.uns")
 
     if kneeplot:
         _, axs = plt.subplots(2, figsize=figsize)

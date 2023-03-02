@@ -359,8 +359,9 @@ def scar_parser():
         "-clip_to_obs",
         "--clip_to_obs",
         type=bool,
-        default=True,
-        help="clip the predicted native counts by observed counts",
+        default=False,
+        help="clip the predicted native counts by observed counts, \
+            use it with caution, as it may lead to overestimation of overall noise.",
     )
     parser.add_argument(
         "-moi",

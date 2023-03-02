@@ -8,6 +8,7 @@ from typing import Optional, Union
 import contextlib
 import numpy as np
 import pandas as pd
+import anndata as ad
 
 import torch
 from sklearn.model_selection import train_test_split
@@ -42,8 +43,8 @@ class model:
 
         Parameters
         ----------
-        raw_count : Union[str, np.ndarray, pd.DataFrame]
-            Raw count matrix.
+        raw_count : Union[str, np.ndarray, pd.DataFrame, ad.AnnData]
+            Raw count matrix or Anndata object.
 
             .. note::
                scar takes the raw UMI counts as input. No size normalization or log transformation.
@@ -62,7 +63,7 @@ class model:
         feature_type : str, optional
             the feature to be denoised. One of the following:  
 
-                | 'mRNA' -- transcriptome
+                | 'mRNA' -- transcriptome data, including scRNAseq and snRNAseq
                 | 'ADT' -- protein counts in CITE-seq
                 | 'sgRNA' -- sgRNA counts for scCRISPRseq
                 | 'tag' -- identity barcodes or any data types of super high sparsity. \
@@ -100,7 +101,7 @@ class model:
             >>> import scanpy as sc
             >>> from scar import model
             >>> adata = sc.read("...")  # load an anndata object
-            >>> scarObj = model(adata.X.to_df(), ambient_profile)  # initialize scar model
+            >>> scarObj = model(adata, ambient_profile)  # initialize scar model
             >>> scarObj.train()  # start training
             >>> scarObj.inference()  # inference
             >>> adata.layers["X_scar_denoised"] = scarObj.native_counts   # results are saved in scarObj
@@ -186,7 +187,7 @@ class model:
 
     def __init__(
         self,
-        raw_count: Union[str, np.ndarray, pd.DataFrame],
+        raw_count: Union[str, np.ndarray, pd.DataFrame, ad.AnnData],
         ambient_profile: Optional[Union[str, np.ndarray, pd.DataFrame]] = None,
         nn_layer1: int = 150,
         nn_layer2: int = 100,
@@ -202,7 +203,10 @@ class model:
             if torch.cuda.is_available():
                 self.device = torch.device("cuda")
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
-                self.device = torch.device("mps")
+                NotImplementedError(
+                    "MPS is not fully supported by Pytorch yet. Please use CPU or CUDA."
+                )
+                # self.device = torch.device("mps")
             else:
                 self.device = torch.device("cpu")
         else:
@@ -255,6 +259,19 @@ class model:
             )
         elif isinstance(raw_count, pd.DataFrame):
             pass
+        elif isinstance(raw_count, ad.AnnData):
+            # get ambient profile from AnnData.uns
+            if (ambient_profile is None) and ("ambient_profile_all" in raw_count.uns):
+                print("Found ambient profile in AnnData.uns['ambient_profile_all']")
+                ambient_profile = raw_count.uns["ambient_profile_all"]
+            elif (ambient_profile is None) and (
+                "ambient_profile_all" not in raw_count.uns
+            ):
+                print(
+                    "Ambient profile not found in AnnData.uns['ambient_profile'], estimating it by averaging pooled cells..."
+                )
+            # convert AnnData to pd.DataFrame
+            raw_count = raw_count.to_df()
         else:
             raise TypeError(
                 f"Expecting str or np.array or pd.DataFrame object, but get a {type(raw_count)}"
@@ -414,11 +431,9 @@ class model:
         print("===========================================\n  Training.....")
         training_start_time = time.time()
         with std_out_err_redirect_tqdm() as orig_stdout:
-
             for epoch in tqdm(
                 range(epochs), file=orig_stdout, dynamic_ncols=True
             ):  # tqdm needs the original stdout and dynamic_ncols=True to autodetect console width
-
                 ################################################################################
                 # Training
                 ################################################################################
@@ -428,7 +443,6 @@ class model:
 
                 vae_nets.train()
                 for x_batch, ambient_freq in training_generator:
-
                     optim.zero_grad()
                     dec_nr, dec_prob, means, var, dec_dp = vae_nets(x_batch)
                     recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(
@@ -467,7 +481,7 @@ class model:
         adjust="micro",
         cutoff=3,
         round_to_int="stochastic_rounding",
-        clip_to_obs=True,
+        clip_to_obs=False,
         moi=None,
     ):
         """inference infering the expected native signals, noise ratios, Bayesfactors and expected native frequencies
@@ -497,9 +511,10 @@ class model:
 
         clip_to_obs : bool, optional
             whether to clip the predicted native counts to the observation in order to ensure \
-                that denoised counts are not greater than the observation, by default True
+                that denoised counts are not greater than the observation, by default False. \
+                Use it with caution, as it may lead to over-estimation of overall noise.
 
-            .. versionadded:: 0.4.5
+            .. versionadded:: 0.5.0
 
         moi : int, optional (under development)
             multiplicity of infection. If assigned, it will allow optimized thresholding, \
@@ -529,7 +544,6 @@ class model:
         )
 
         for x_batch_tot, ambient_freq_tot in generator_full_data:
-
             minibatch_size = x_batch_tot.shape[
                 0
             ]  # if not the last batch, equals to batch size
