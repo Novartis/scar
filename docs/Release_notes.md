@@ -2,7 +2,7 @@
 
 ## TODO List
 * Multiple ambient profiles
-* Tutorial for snRNAseq (to be added since version v0.4.5)
+* Tutorial for snRNAseq (to be added since version v0.5.2)
 * Batch processing
 * Transfer learning
 * Early stopping
@@ -15,13 +15,19 @@
 
 ## v0.5.1 (2023-03-01)
 ### Feature
+* Update dependencies ([`40e906e`](https://github.com/Novartis/scar/commit/40e906e2789509eaa493658d0775f074d571f04c))
+* Default clip_to_obs to False, as it leads to overall over-correction ([`944f09a`](https://github.com/Novartis/scar/commit/944f09aef2a1d9b97200fa90efb4a19eacaa7160))
 * Support AnnData object as the input ([`24a1ab6`](https://github.com/Novartis/scar/commit/24a1ab67b64d870f4a785ad8ca13dbb4b45c8293))
 * Print message ([`7659672`](https://github.com/Novartis/scar/commit/76596727389acc484c3dce78d6f2a262dec33a0e))
 * Print message ([`203687f`](https://github.com/Novartis/scar/commit/203687fb03f098a1bd2f1f3940d49c7e83421f22))
-* Estimate ambient_profile_all ([`e1913fd`](https://github.com/Novartis/scar/commit/e1913fd15fdf5546619f750c23e03debbcf1d63e))
+* Estimate the ambient profile for all features all together, add ambient_profile_all to adata.uns ([`e1913fd`](https://github.com/Novartis/scar/commit/e1913fd15fdf5546619f750c23e03debbcf1d63e))
 
 ### Fix
-* Fix setupdata ([`63afe9d`](https://github.com/Novartis/scar/commit/63afe9dd8fbc701360715e1a4318f6be8f07e58b))
+* **setup:** Change sample and n_batch parameters to allow using all droplets by default ([`4f5e05f`](https://github.com/Novartis/scar/commit/4f5e05fa5bf6aa413287fb2be73d6ad01a3fc9b3))
+* **setup:** Fix setupdata ([`63afe9d`](https://github.com/Novartis/scar/commit/63afe9dd8fbc701360715e1a4318f6be8f07e58b))
+
+### Documentation
+* **tutorials:** Update tutorials ([`a21e2ec`](https://github.com/Novartis/scar/commit/a21e2ecd507f0c2b9f0e876af04a477927443205))
 
 ## v0.5.0 (2023-02-04)
 ### Feature
