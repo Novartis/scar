@@ -14,7 +14,7 @@
 [![Stars](https://img.shields.io/github/stars/Novartis/scar?logo=GitHub&color=red)](https://github.com/Novartis/scAR)
 [![Downloads](https://anaconda.org/bioconda/scar/badges/downloads.svg)](https://anaconda.org/bioconda/scar/files)
 
-**scAR** (<u>s</u>ingle-<u>c</u>ell <u>A</u>mbient <u>R</u>emover) is a tool for denoising the ambient signals in droplet-based single cell omics. It can be used for multiple tasks, such as, **sgRNA assignment** for scCRISPRseq, **identity barcode assignment** for cell indexing, **protein denoising** for CITE-seq, **mRNA denoising** for scRNAseq, and etc..
+**scAR** (<u>s</u>ingle-<u>c</u>ell <u>A</u>mbient <u>R</u>emover) is a tool designed for denoising ambient signals in droplet-based single-cell omics data. It can be employed for a wide range of applications, such as, **sgRNA assignment** in scCRISPRseq, **identity barcode assignment** in cell indexing, **protein denoising** in CITE-seq, **mRNA denoising** in scRNAseq, and **ATAC signal denoising** in scATACseq, among others.
 
 # Table of Contents
 

@@ -2,7 +2,6 @@
 
 ## TODO List
 * Multiple ambient profiles
-* Tutorial for snRNAseq (to be added since version v0.5.2)
 * Batch processing
 * Transfer learning
 * Early stopping

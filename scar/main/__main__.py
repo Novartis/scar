@@ -79,9 +79,15 @@ def main():
             adata_fb = adata[:, adata.var["feature_types"] == features]
             count_matrix = adata_fb.to_df()
 
-        # Denoising CMO tags
-        elif feature_type.lower() in ["tag", "tags"]:
+        # Denoising ADTs
+        elif feature_type.lower() in ["adt", "adts"]:
             features = "Antibody Capture"
+            adata_fb = adata[:, adata.var["feature_types"] == features]
+            count_matrix = adata_fb.to_df()
+        
+        # Denoising ATAC peaks
+        elif feature_type.lower() in ["atac"]:
+            features = "Peaks"
             adata_fb = adata[:, adata.var["feature_types"] == features]
             count_matrix = adata_fb.to_df()
 
@@ -91,7 +97,6 @@ def main():
         raise Exception(file_extension + " files are not supported.")
 
     if ambient_profile_path:
-
         _, ambient_profile_file_extension = os.path.splitext(ambient_profile_path)
         if ambient_profile_file_extension == ".pickle":
             ambient_profile = pd.read_pickle(ambient_profile_path)
@@ -151,7 +156,6 @@ def main():
 
     # save results
     if file_extension == ".pickle":
-
         output_path01, output_path02, output_path03, output_path04 = (
             os.path.join(output_dir, "denoised_counts.pickle"),
             os.path.join(output_dir, "BayesFactor.pickle"),
@@ -184,13 +188,11 @@ def main():
         print("...expected noise ratio saved in: ", output_path04)
 
         if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
-
             output_path05 = os.path.join(output_dir, "assignment.pickle")
             scar_model.feature_assignment.to_pickle(output_path05)
             print("...assignment saved in: ", output_path05)
 
     elif file_extension == ".h5":
-
         output_path_h5ad = os.path.join(
             output_dir, f"filtered_feature_bc_matrix_denoised_{feature_type}.h5ad"
         )
@@ -262,7 +264,7 @@ def scar_parser():
         "--feature_type",
         type=str,
         default="mRNA",
-        help="The feature types, e.g. mRNA, sgRNA, ADT, tag and CMO",
+        help="The feature types, e.g. mRNA, sgRNA, ADT, tag, CMO and ATAC",
     )
     parser.add_argument(
         "-o", "--output", type=str, default=None, help="Output directory"

@@ -66,10 +66,12 @@ class model:
                 | 'mRNA' -- transcriptome data, including scRNAseq and snRNAseq
                 | 'ADT' -- protein counts in CITE-seq
                 | 'sgRNA' -- sgRNA counts for scCRISPRseq
-                | 'tag' -- identity barcodes or any data types of super high sparsity. \
+                | 'tag' -- identity barcodes or any data types of high sparsity. \
                     E.g., in cell indexing experiments, we would expect a single true signal \
                         (1) and many negative signals (0) for each cell
-                | 'CMO' -- Cell Multiplexing Oligo
+                | 'CMO' -- Cell Multiplexing Oligo counts for cell hashing
+                | 'ATAC' -- peak counts for scATACseq
+                .. versionadded:: 0.5.2
                 | By default "mRNA"
         count_model : str, optional
             the model to generate the UMI count. One of the following:  
@@ -234,7 +236,8 @@ class model:
             | 'tag' -- identity barcodes or any data types of super high sparsity. \
                 E.g., in cell indexing experiments, we would expect a single true signal \
                     (1) and many negative signals (0) for each cell.
-            | 'CMO' -- Cell Multiplexing Oligo
+            | 'CMO' -- Cell Multiplexing Oligo counts for cell hashing
+            | 'ATAC' -- peak counts for scATACseq           
             | By default "mRNA"
         """
         self.count_model = count_model
@@ -582,6 +585,7 @@ class model:
             "tags",
             "cmo",
             "cmos",
+            "atac",
         ]:
             self.assignment(cutoff=cutoff, moi=moi)
         else:

@@ -8,7 +8,8 @@ What is ambient signal?
    :width: 500
    :align: center
 
-During the preparation of the single-cell solution, RNA or protein counts are released upon cell lysis and consequently encapsulated by droplets. These exogenous molecules are mixed with native ones and barcoded by the same 10x beads, resulting in overestimated count data. The ambient signal harms the downstream analysis and even introduces significant bias in some cases (e.g. scCRISPR-seq and Cell multiplexing).
+
+When preparing a single-cell solution, cell lysis releases RNA or protein counts that become encapsulated by droplets. These exogenous molecules are mixed with native ones and barcoded by the same 10x beads, leading to overestimated count data. The presence of this ambient signal can compromise downstream analysis and even introduce significant bias in certain cases, such as scCRISPR-seq and cell multiplexing.
 
 The design of scAR
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -17,15 +18,16 @@ The design of scAR
    :width: 600
    :align: center
 
-scAR uses a latent variable model to represent the biological and technical components in the observed count data. scAR is built under ambient signal hypothesis, in which the probability of occurrence of each ambient transcript can be empirically estimated from cell-free droplets. There are two hidden variables, contamination level per cell and the probability of occurrence of native transcript. With these three parameters, we are able to reconstruct the noisy observations. To learn the hidden variables, we train neural networks (the variational autoencoder) to minimize the differences between the reconstructions and original noisy observations. Once converging, the contamination levels and native expression are inferred and downstream analysis can be performed using these values. See our manuscript [Sheng2022]_ for details.
+
+scAR employs a latent variable model that represents both biological and technical components in the observed count data. The model is developed under the ambient signal hypothesis, where the probability of each ambient transcript's occurrence can be estimated empirically from cell-free droplets. The model has two hidden variables, namely the contamination level per cell and the probability of native transcript occurrence. With these three parameters, scAR can reconstruct noisy observations. We train neural networks, specifically the variational autoencoder, to learn the hidden variables by minimizing the differences between the reconstructions and the original noisy observations. Once the model converges, contamination levels and native expression are inferred, and downstream analysis can be performed using these values. For more information, please refer to our manuscript [Sheng2022]_.
 
 What types of data that scAR can process?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-We validated scAR on scRNAseq to remove ambient mRNA, scCRISPR-seq to assign sgRNAs, cell multiplexing to identify the true tags and CITE-seq to clean noisy protein counts (ADT). It recovers a great number (33% ~ 50%) of cells in scCRISPR-seq and cell multiplexing experiments and significantly improves data quality in scRNAseq and CITE-seq. In theory, any droplet-based single-cell omics technology should have the ambient contamination issue, especially for the complex experiments or samples. scAR can be a reasonable solution in these cases.
+We validated the effectiveness of scAR across a range of droplet-based single-cell omics technologies, including scRNAseq, scCRISPR-seq, CITEseq, and scATACseq. scAR was able to remove ambient mRNA, assign sgRNAs, assign cell tags, clean noisy protein counts (ADT), and clean peak counts, resulting in significant improvements in data quality in all tested datasets. Notably, scAR was able to recover a substantial proportion (33% to 50%) of cells in scCRISPR-seq and cell multiplexing experiments. Given that ambient contamination is a common issue in droplet-based single-cell omics, particularly in complex experiments or samples, scAR represents a viable solution for addressing this challenge.
 
 What are the alternative apporaches?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-There are several methods to model the data noise in single-cell omics. In general, they can be categorized into two classes. One is dealing with background noise and the other is modeling the stachastic noise. Some of them are listed below.
+Several methods exist for modeling noise in single-cell omics data. In general, these methods can be classified into two categories: those that deal with background noise and those that model stochastic noise. Some examples of these methods are provided below.
 
 +-------------------------------------------+-------------------------------------------+
 | Background noise                          | Stachastic noise                          |

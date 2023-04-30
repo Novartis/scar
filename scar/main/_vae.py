@@ -32,7 +32,7 @@ class VAE(nn.Module):
     dropout_prob : int, optional
         dropout probability, by default 0
     feature_type : str, optional
-        the feature to be denoised,  either of 'mRNA', 'sgRNA', 'ADT', 'tag', 'CMO', by default "mRNA"
+        the feature to be denoised,  either of 'mRNA', 'sgRNA', 'ADT', 'tag', 'CMO', 'ATAC', by default "mRNA"
     count_model : str, optional
         the model to generate the UMI count, either of "binomial", "poisson", "zeroinflatedpoisson", by default "binomial"
     sparsity : float, optional
@@ -65,10 +65,18 @@ class VAE(nn.Module):
             "tags",
             "cmo",
             "cmos",
+            "atac",
         ]
         assert count_model.lower() in ["binomial", "poisson", "zeroinflatedpoisson"]
-        # force the sparsity to be one in the mode of "sgRNAs" and "tags"
-        if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
+        # force the sparsity to be one in the mode of "sgRNAs" and "tags" and "CMOs"
+        if feature_type.lower() in [
+            "sgrna",
+            "sgrnas",
+            "tag",
+            "tags",
+            "cmo",
+            "cmos",
+        ]:
             sparsity = 1
 
         self.encoder = Encoder(
