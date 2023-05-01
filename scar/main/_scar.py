@@ -450,7 +450,6 @@ class model:
 
         # Run training
         training_start_time = time.time()
-        # with std_out_err_redirect_tqdm() as orig_stdout:
         with std_out_err_redirect_tqdm() as orig_stdout:
             # Initialize progress bar
             progress_bar = tqdm(
@@ -459,10 +458,8 @@ class model:
                 dynamic_ncols=True,
                 desc="Training",
             )
+            progress_bar.clear()
             for epoch in range(epochs):
-                ################################################################################
-                # Training
-                ################################################################################
                 train_tot_loss = 0
                 train_kld_loss = 0
                 train_recon_loss = 0
