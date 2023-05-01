@@ -205,14 +205,16 @@ class model:
             if torch.cuda.is_available():
                 self.device = torch.device("cuda")
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
-                NotImplementedError(
-                    "MPS is not fully supported by Pytorch yet. Please use CPU or CUDA."
+                raise NotImplementedError(
+                    "MPS is not fully supported by Pytorch yet. Please specify CPU or CUDA."
                 )
                 # self.device = torch.device("mps")
             else:
                 self.device = torch.device("cpu")
+                print("No GPU detected. Use CPU instead.")
         else:
             self.device = device
+
         """str, either "auto, "cpu" or "cuda".
         """
         self.nn_layer1 = nn_layer1

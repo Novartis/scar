@@ -84,7 +84,7 @@ def main():
             features = "Antibody Capture"
             adata_fb = adata[:, adata.var["feature_types"] == features]
             count_matrix = adata_fb.to_df()
-        
+
         # Denoising ATAC peaks
         elif feature_type.lower() in ["atac"]:
             features = "Peaks"
@@ -304,7 +304,7 @@ def scar_parser():
         "-epo", "--epochs", type=int, default=800, help="Training epochs"
     )
     parser.add_argument(
-        "-device",
+        "-d",
         "--device",
         type=str,
         default="auto",
