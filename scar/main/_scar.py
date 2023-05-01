@@ -322,6 +322,9 @@ class model:
         self.runtime = None
         """int, runtime in seconds.
         """
+        self.loss_values = None
+        """list, loss values during training.
+        """
         self.trained_model = None
         """nn.Module object, added after training.
         """
@@ -405,6 +408,8 @@ class model:
             val_set, batch_size=batch_size, shuffle=shuffle
         )
 
+        loss_values = []
+
         # self.n_batch_train = len(training_generator)
         # self.n_batch_val = len(val_generator)
         # self.batch_size = batch_size
@@ -435,10 +440,15 @@ class model:
         # Run training
         print("===========================================\n  Training.....")
         training_start_time = time.time()
+        # with std_out_err_redirect_tqdm() as orig_stdout:
         with std_out_err_redirect_tqdm() as orig_stdout:
-            for epoch in tqdm(
-                range(epochs), file=orig_stdout, dynamic_ncols=True
-            ):  # tqdm needs the original stdout and dynamic_ncols=True to autodetect console width
+            # Initialize progress bar
+            progress_bar = tqdm(
+                total=epochs,
+                file=orig_stdout,
+                dynamic_ncols=True,
+            )
+            for epoch in range(epochs):
                 ################################################################################
                 # Training
                 ################################################################################
@@ -471,9 +481,18 @@ class model:
 
                 scheduler.step()
 
+                avg_train_tot_loss = train_tot_loss / len(training_generator)
+                loss_values.append(avg_train_tot_loss)
+
+                progress_bar.set_postfix({"Loss": "{:.4e}".format(avg_train_tot_loss)})
+                progress_bar.update()
+
+            progress_bar.close()
+
         if save_model:
             torch.save(vae_nets, save_model)
 
+        self.loss_values = loss_values
         self.trained_model = vae_nets
         self.runtime = time.time() - training_start_time
 
