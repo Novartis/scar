@@ -36,8 +36,9 @@ def main():
     moi = args.moi
     round_to_int = args.round2int
     clip_to_obs = args.clip_to_obs
+    verbose = args.verbose
 
-    main_logger = get_logger("scar", verbose=args.verbose)
+    main_logger = get_logger("scar", verbose=verbose)
 
     _, file_extension = os.path.splitext(count_matrix_path)
 
@@ -115,7 +116,6 @@ def main():
     else:
         ambient_profile = None
 
-    main_logger.info("===========================================")
     main_logger.info(f"feature_type: {feature_type}")
     main_logger.info(f"count_model: {count_model}")
     main_logger.info(f"output_dir: {output_dir}")
@@ -155,7 +155,7 @@ def main():
     if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
         scar_model.assignment(cutoff=cutoff, moi=moi)
 
-    main_logger.info("===========================================\n  Saving results...")
+    main_logger.info("Saving results...")
 
     # save results
     if file_extension == ".pickle":
@@ -218,8 +218,6 @@ def main():
 
         denoised_adata.write(output_path_h5ad)
         main_logger.info("the denoised h5ad file saved in: {output_path_h5ad}")
-
-    main_logger.info("===========================================\n  Done!!!")
 
 
 class Config:
@@ -376,6 +374,13 @@ def scar_parser():
         help="Multiplicity of Infection. If assigned, it will allow optimized thresholding, \
         which tests a series of cutoffs to find the best one based on distributions of infections under given moi. \
         See [Dixit2016]_ for details. Under development.",
+    )
+    parser.add_argument(
+        "-verbose",
+        "--verbose",
+        type=bool,
+        default=True,
+        help="Whether to print the logging messages",
     )
     return parser
 
