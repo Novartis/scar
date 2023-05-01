@@ -10,6 +10,7 @@ import torch
 from torch import nn
 
 from ._activation_functions import mytanh, hnormalization, mysoftplus
+from ._utils import get_logger
 
 #########################################################################
 ## Variational autoencoder
@@ -92,16 +93,17 @@ class VAE(nn.Module):
             sparsity,
         )
 
-        if verbose:
-            print("..Running VAE using the following param set:")
-            print("......denoised count type: ", feature_type)
-            print("......count model: ", count_model)
-            print("......num_input_feature: ", n_features)
-            print("......NN_layer1: ", nn_layer1)
-            print("......NN_layer2: ", nn_layer2)
-            print("......latent_space: ", latent_dim)
-            print("......dropout_prob: ", dropout_prob)
-            print("......expected data sparsity: ", sparsity)
+        vae_logger = get_logger("VAE", verbose=verbose)
+
+        vae_logger.info("Running VAE using the following param set:")
+        vae_logger.info(f"...denoised count type: {feature_type}")
+        vae_logger.info(f"...count model: {count_model}")
+        vae_logger.info(f"...num_input_feature: {n_features:d}")
+        vae_logger.info(f"...NN_layer1: {nn_layer1:d}")
+        vae_logger.info(f"...NN_layer2: {nn_layer2:d}")
+        vae_logger.info(f"...latent_space: {latent_dim:d}")
+        vae_logger.info(f"...dropout_prob: {dropout_prob:.2f}")
+        vae_logger.info(f"...expected data sparsity: {sparsity:.2f}")
 
     def forward(self, input_matrix):
         """forward function"""

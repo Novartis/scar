@@ -17,6 +17,7 @@ from tqdm.contrib import DummyTqdmFile
 
 from ._vae import VAE
 from ._loss_functions import loss_fn
+from ._utils import get_logger
 
 
 @contextlib.contextmanager
@@ -199,8 +200,14 @@ class model:
         count_model: str = "binomial",
         sparsity: float = 0.9,
         device: str = "auto",
+        verbose: bool = True,
     ):
         """initialize object"""
+
+        self.logger = get_logger("model", verbose=verbose)
+        """logging.Logger, the logger for this class.
+        """
+
         if device == "auto":
             if torch.cuda.is_available():
                 self.device = torch.device("cuda")
@@ -211,7 +218,7 @@ class model:
                 # self.device = torch.device("mps")
             else:
                 self.device = torch.device("cpu")
-                print("No GPU detected. Use CPU instead.")
+                self.logger.info("No GPU detected. Use CPU instead.")
         else:
             self.device = device
 
@@ -267,12 +274,14 @@ class model:
         elif isinstance(raw_count, ad.AnnData):
             # get ambient profile from AnnData.uns
             if (ambient_profile is None) and ("ambient_profile_all" in raw_count.uns):
-                print("Found ambient profile in AnnData.uns['ambient_profile_all']")
+                self.logger.info(
+                    "Found ambient profile in AnnData.uns['ambient_profile_all']"
+                )
                 ambient_profile = raw_count.uns["ambient_profile_all"]
             elif (ambient_profile is None) and (
                 "ambient_profile_all" not in raw_count.uns
             ):
-                print(
+                self.logger.info(
                     "Ambient profile not found in AnnData.uns['ambient_profile'], estimating it by averaging pooled cells..."
                 )
             # convert AnnData to pd.DataFrame
@@ -301,7 +310,7 @@ class model:
         elif isinstance(ambient_profile, np.ndarray):
             ambient_profile = np.nan_to_num(ambient_profile)  # missing vals -> zeros
         elif not ambient_profile:
-            print(" ... Evaluate empty profile from cells")
+            self.logger.info(" Evaluate empty profile from cells")
             ambient_profile = raw_count.sum() / raw_count.sum().sum()
             ambient_profile = ambient_profile.fillna(0).values
         else:
@@ -431,14 +440,13 @@ class model:
         scheduler = torch.optim.lr_scheduler.StepLR(
             optim, step_size=lr_step_size, gamma=lr_gamma
         )
-        if verbose:
-            print("......kld_weight: ", kld_weight)
-            print("......lr: ", lr)
-            print("......lr_step_size: ", lr_step_size)
-            print("......lr_gamma: ", lr_gamma)
+
+        self.logger.info(f"kld_weight: {kld_weight:.2e}")
+        self.logger.info(f"learning rate: {lr:.2e}")
+        self.logger.info(f"lr_step_size: {lr_step_size:d}")
+        self.logger.info(f"lr_gamma: {lr_gamma:.2f}")
 
         # Run training
-        print("===========================================\n  Training.....")
         training_start_time = time.time()
         # with std_out_err_redirect_tqdm() as orig_stdout:
         with std_out_err_redirect_tqdm() as orig_stdout:
@@ -447,6 +455,7 @@ class model:
                 total=epochs,
                 file=orig_stdout,
                 dynamic_ncols=True,
+                desc="Training",
             )
             for epoch in range(epochs):
                 ################################################################################
@@ -551,7 +560,6 @@ class model:
             native_frequencies, and noise_ratio. \
                 A feature_assignment will be added in 'sgRNA' or 'tag' or 'CMO' feature type.   
         """
-        print("===========================================\n  Inferring .....")
         total_set = UMIDataset(self.raw_count, self.ambient_profile)
         n_features = self.n_features
         sample_size = self.raw_count.shape[0]
