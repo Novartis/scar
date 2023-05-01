@@ -211,6 +211,7 @@ class model:
         if device == "auto":
             if torch.cuda.is_available():
                 self.device = torch.device("cuda")
+                self.logger.info("CPU is detected and will be used.")
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
                 raise NotImplementedError(
                     "MPS is not fully supported by Pytorch yet. Please specify CPU or CUDA."
@@ -221,6 +222,7 @@ class model:
                 self.logger.info("No GPU detected. Use CPU instead.")
         else:
             self.device = device
+            self.logger.info(f"{device} will be used.")
 
         """str, either "auto, "cpu" or "cuda".
         """
