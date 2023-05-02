@@ -5,3 +5,5 @@
 **.egg-info
 **.vscode
 **dist
+**.h5
+**.h5ad

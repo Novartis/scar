@@ -17,6 +17,7 @@ from tqdm.contrib import DummyTqdmFile
 
 from ._vae import VAE
 from ._loss_functions import loss_fn
+from ._utils import get_logger
 
 
 @contextlib.contextmanager
@@ -66,10 +67,12 @@ class model:
                 | 'mRNA' -- transcriptome data, including scRNAseq and snRNAseq
                 | 'ADT' -- protein counts in CITE-seq
                 | 'sgRNA' -- sgRNA counts for scCRISPRseq
-                | 'tag' -- identity barcodes or any data types of super high sparsity. \
+                | 'tag' -- identity barcodes or any data types of high sparsity. \
                     E.g., in cell indexing experiments, we would expect a single true signal \
                         (1) and many negative signals (0) for each cell
-                | 'CMO' -- Cell Multiplexing Oligo
+                | 'CMO' -- Cell Multiplexing Oligo counts for cell hashing
+                | 'ATAC' -- peak counts for scATACseq
+                .. versionadded:: 0.5.2
                 | By default "mRNA"
         count_model : str, optional
             the model to generate the UMI count. One of the following:  
@@ -197,20 +200,30 @@ class model:
         count_model: str = "binomial",
         sparsity: float = 0.9,
         device: str = "auto",
+        verbose: bool = True,
     ):
         """initialize object"""
+
+        self.logger = get_logger("model", verbose=verbose)
+        """logging.Logger, the logger for this class.
+        """
+
         if device == "auto":
             if torch.cuda.is_available():
                 self.device = torch.device("cuda")
+                self.logger.info("CPU is detected and will be used.")
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
-                NotImplementedError(
-                    "MPS is not fully supported by Pytorch yet. Please use CPU or CUDA."
+                raise NotImplementedError(
+                    "MPS is not fully supported by Pytorch yet. Please specify CPU or CUDA."
                 )
                 # self.device = torch.device("mps")
             else:
                 self.device = torch.device("cpu")
+                self.logger.info("No GPU detected. Use CPU instead.")
         else:
             self.device = device
+            self.logger.info(f"{device} will be used.")
+
         """str, either "auto, "cpu" or "cuda".
         """
         self.nn_layer1 = nn_layer1
@@ -234,7 +247,8 @@ class model:
             | 'tag' -- identity barcodes or any data types of super high sparsity. \
                 E.g., in cell indexing experiments, we would expect a single true signal \
                     (1) and many negative signals (0) for each cell.
-            | 'CMO' -- Cell Multiplexing Oligo
+            | 'CMO' -- Cell Multiplexing Oligo counts for cell hashing
+            | 'ATAC' -- peak counts for scATACseq           
             | By default "mRNA"
         """
         self.count_model = count_model
@@ -262,12 +276,14 @@ class model:
         elif isinstance(raw_count, ad.AnnData):
             # get ambient profile from AnnData.uns
             if (ambient_profile is None) and ("ambient_profile_all" in raw_count.uns):
-                print("Found ambient profile in AnnData.uns['ambient_profile_all']")
+                self.logger.info(
+                    "Found ambient profile in AnnData.uns['ambient_profile_all']"
+                )
                 ambient_profile = raw_count.uns["ambient_profile_all"]
             elif (ambient_profile is None) and (
                 "ambient_profile_all" not in raw_count.uns
             ):
-                print(
+                self.logger.info(
                     "Ambient profile not found in AnnData.uns['ambient_profile'], estimating it by averaging pooled cells..."
                 )
             # convert AnnData to pd.DataFrame
@@ -296,7 +312,7 @@ class model:
         elif isinstance(ambient_profile, np.ndarray):
             ambient_profile = np.nan_to_num(ambient_profile)  # missing vals -> zeros
         elif not ambient_profile:
-            print(" ... Evaluate empty profile from cells")
+            self.logger.info(" Evaluate empty profile from cells")
             ambient_profile = raw_count.sum() / raw_count.sum().sum()
             ambient_profile = ambient_profile.fillna(0).values
         else:
@@ -316,6 +332,9 @@ class model:
 
         self.runtime = None
         """int, runtime in seconds.
+        """
+        self.loss_values = None
+        """list, loss values during training.
         """
         self.trained_model = None
         """nn.Module object, added after training.
@@ -400,6 +419,8 @@ class model:
             val_set, batch_size=batch_size, shuffle=shuffle
         )
 
+        loss_values = []
+
         # self.n_batch_train = len(training_generator)
         # self.n_batch_val = len(val_generator)
         # self.batch_size = batch_size
@@ -421,22 +442,24 @@ class model:
         scheduler = torch.optim.lr_scheduler.StepLR(
             optim, step_size=lr_step_size, gamma=lr_gamma
         )
-        if verbose:
-            print("......kld_weight: ", kld_weight)
-            print("......lr: ", lr)
-            print("......lr_step_size: ", lr_step_size)
-            print("......lr_gamma: ", lr_gamma)
+
+        self.logger.info(f"kld_weight: {kld_weight:.2e}")
+        self.logger.info(f"learning rate: {lr:.2e}")
+        self.logger.info(f"lr_step_size: {lr_step_size:d}")
+        self.logger.info(f"lr_gamma: {lr_gamma:.2f}")
 
         # Run training
-        print("===========================================\n  Training.....")
         training_start_time = time.time()
         with std_out_err_redirect_tqdm() as orig_stdout:
-            for epoch in tqdm(
-                range(epochs), file=orig_stdout, dynamic_ncols=True
-            ):  # tqdm needs the original stdout and dynamic_ncols=True to autodetect console width
-                ################################################################################
-                # Training
-                ################################################################################
+            # Initialize progress bar
+            progress_bar = tqdm(
+                total=epochs,
+                file=orig_stdout,
+                dynamic_ncols=True,
+                desc="Training",
+            )
+            progress_bar.clear()
+            for epoch in range(epochs):
                 train_tot_loss = 0
                 train_kld_loss = 0
                 train_recon_loss = 0
@@ -466,9 +489,18 @@ class model:
 
                 scheduler.step()
 
+                avg_train_tot_loss = train_tot_loss / len(training_generator)
+                loss_values.append(avg_train_tot_loss)
+
+                progress_bar.set_postfix({"Loss": "{:.4e}".format(avg_train_tot_loss)})
+                progress_bar.update()
+
+            progress_bar.close()
+
         if save_model:
             torch.save(vae_nets, save_model)
 
+        self.loss_values = loss_values
         self.trained_model = vae_nets
         self.runtime = time.time() - training_start_time
 
@@ -527,7 +559,6 @@ class model:
             native_frequencies, and noise_ratio. \
                 A feature_assignment will be added in 'sgRNA' or 'tag' or 'CMO' feature type.   
         """
-        print("===========================================\n  Inferring .....")
         total_set = UMIDataset(self.raw_count, self.ambient_profile)
         n_features = self.n_features
         sample_size = self.raw_count.shape[0]
@@ -582,6 +613,7 @@ class model:
             "tags",
             "cmo",
             "cmos",
+            "atac",
         ]:
             self.assignment(cutoff=cutoff, moi=moi)
         else:

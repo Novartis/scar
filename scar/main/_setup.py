@@ -7,6 +7,8 @@ from anndata import AnnData
 import torch
 from torch.distributions.multinomial import Multinomial
 
+from ._utils import get_logger
+
 
 def setup_anndata(
     adata: AnnData,
@@ -85,6 +87,8 @@ def setup_anndata(
         )
     """
 
+    setup_logger = get_logger("setup_anndata", verbose=verbose)
+
     if feature_type is None:
         feature_type = adata.var["feature_types"].unique()
     elif isinstance(feature_type, str):
@@ -111,7 +115,7 @@ def setup_anndata(
 
     # check if per batch contains too many droplets
     if sample / n_batch > 5000:
-        print(
+        setup_logger.info(
             "The number of droplets per batch is too large, this may cause memory issue, please increase the number of batches."
         )
 
@@ -119,17 +123,14 @@ def setup_anndata(
         raw_adata.shape[0], size=min(raw_adata.shape[0], sample), replace=False
     )
     raw_adata = raw_adata[idx]
-    if verbose:
-        print(
-            "Randomly sample ",
-            sample,
-            " droplets to calculate the ambient profile.",
-        )
+
+    setup_logger.info(
+        f"Randomly sample {sample:d} droplets from {raw_adata.shape[0]:d} droplets."
+    )
     # initial estimation of ambient profile, will be update
     ambient_prof = raw_adata.X.sum(axis=0) / raw_adata.X.sum()
 
-    if verbose:
-        print("Estimating ambient profile for ", feature_type, "...")
+    setup_logger.info(f"Estimating ambient profile for {feature_type}...")
 
     i = 0
     while i < iterations:
@@ -171,8 +172,7 @@ def setup_anndata(
 
         i += 1
 
-        if verbose:
-            print("iteration: ", i)
+        setup_logger.info(f"Iteration: {i:d}")
 
     # update ambient profile for each feature type
     for ft in feature_type:
@@ -183,8 +183,7 @@ def setup_anndata(
             columns=[f"ambient_profile_{ft}"],
         )
 
-        if verbose:
-            print("Estimated ambient profile for ", ft, " saved in adata.uns")
+        setup_logger.info(f"Estimated ambient profile for {ft} saved in adata.uns")
 
     # update ambient profile for all feature types
     adata.uns[f"ambient_profile_all"] = pd.DataFrame(
@@ -193,8 +192,7 @@ def setup_anndata(
         columns=[f"ambient_profile_all"],
     )
 
-    if verbose:
-        print("Estimated ambient profile for all features saved in adata.uns")
+    setup_logger.info("Estimated ambient profile for all features saved in adata.uns")
 
     if kneeplot:
         _, axs = plt.subplots(2, figsize=figsize)
