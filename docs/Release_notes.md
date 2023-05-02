@@ -12,6 +12,20 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.2 (2023-05-02)
+### Feature
+* Add support for scATACseq ([#65](https://github.com/Novartis/scar/pull/65)) ([`b54d541`](https://github.com/Novartis/scar/pull/65/commits/b54d541a2d4abe82090fb5568c63dd1ab71660de))
+* Print message ([#65](https://github.com/Novartis/scar/pull/65)) ([`bc88dd2`](https://github.com/Novartis/scar/pull/65/commits/bc88dd2f9eb468b781e0353abc5cbb863311430b))
+
+### Fix
+* **scar:** Raise MPS NotImplementedError ([`838981e`](https://github.com/Novartis/scar/commit/4f5e05fa5bf6aa413287fb2be73d6ad01a3fc9b3))
+
+### Documentation
+* **tutorials:** Update tutorials ([#65](https://github.com/Novartis/scar/pull/65)) ([`a41bf0f`](https://github.com/Novartis/scar/pull/65/commits/a41bf0f67e5f3bda1ca9e9280c1a593876ab3d82))
+
+### Chore
+* **scar:** add loss in progression bar ([#65](https://github.com/Novartis/scar/pull/65)) ([`37e95ea`](https://github.com/Novartis/scar/pull/65/commits/37e95ea31a3ac14e8e5089ef2286da5f1ea4b3d9))
+
 ## v0.5.1 (2023-03-01)
 ### Feature
 * Update dependencies ([`40e906e`](https://github.com/Novartis/scar/commit/40e906e2789509eaa493658d0775f074d571f04c))
