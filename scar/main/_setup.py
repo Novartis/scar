@@ -104,8 +104,12 @@ def setup_anndata(
 
     if sample is not None:
         sample = int(sample)
+        setup_logger.info(
+            f"Randomly sample {sample:d} droplets from {raw_adata.shape[0]:d} droplets."
+        )
     else:
         sample = raw_adata.shape[0]
+        setup_logger.info(f"Use all {sample:d} droplets.")
 
     # check n_batch
     if n_batch is None:
@@ -124,9 +128,6 @@ def setup_anndata(
     )
     raw_adata = raw_adata[idx]
 
-    setup_logger.info(
-        f"Randomly sample {sample:d} droplets from {raw_adata.shape[0]:d} droplets."
-    )
     # initial estimation of ambient profile, will be update
     ambient_prof = raw_adata.X.sum(axis=0) / raw_adata.X.sum()
 
