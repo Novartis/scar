@@ -9,9 +9,9 @@ Reference
     `Single-cell RNA-seq denoising using a deep count autoencoder <http://dx.doi.org/10.1038/s41467-018-07931-2>`__,
     Nature Communications.
 
-.. [Fleming2019] Fleming *et al.* (2019),
-    `CellBender remove-background: a deep generative model for unsupervised removal of background noise from scRNA-seq datasets <https://doi.org/10.1101/791699>`__,
-    bioRxiv.
+.. [Fleming2023] Fleming *et al.* (2023),
+    `Unsupervised removal of systematic background noise from droplet-based single-cell experiments using CellBender <https://doi.org/10.1038/s41592-023-01943-7>`__,
+    Nature Methods.
 
 .. [Gayoso2021] Gayoso *et al.* (2021),
     `Joint probabilistic modeling of single-cell multi-omic data with totalVI <http://dx.doi.org/10.1038/s41592-020-01050-x>`__,
