@@ -9,6 +9,7 @@ import scanpy as sc
 from scipy.sparse import csr_matrix
 from ._scar import model
 from .__version__ import __version__
+from ._utils import get_logger
 
 
 def main():
@@ -35,6 +36,9 @@ def main():
     moi = args.moi
     round_to_int = args.round2int
     clip_to_obs = args.clip_to_obs
+    verbose = args.verbose
+
+    main_logger = get_logger("scar", verbose=verbose)
 
     _, file_extension = os.path.splitext(count_matrix_path)
 
@@ -45,13 +49,13 @@ def main():
     elif file_extension == ".h5":
         adata = sc.read_10x_h5(count_matrix_path, gex_only=False)
 
-        print(
+        main_logger.info(
             "unprocessed data contains: {0} cells and {1} genes".format(
                 adata.shape[0], adata.shape[1]
             )
         )
         adata = adata[:, adata.X.sum(axis=0) > 0]  # filter out features of zero counts
-        print(
+        main_logger.info(
             "filter out features of zero counts, remaining data contains: {0} cells and {1} genes".format(
                 adata.shape[0], adata.shape[1]
             )
@@ -79,19 +83,24 @@ def main():
             adata_fb = adata[:, adata.var["feature_types"] == features]
             count_matrix = adata_fb.to_df()
 
-        # Denoising CMO tags
-        elif feature_type.lower() in ["tag", "tags"]:
+        # Denoising ADTs
+        elif feature_type.lower() in ["adt", "adts"]:
             features = "Antibody Capture"
             adata_fb = adata[:, adata.var["feature_types"] == features]
             count_matrix = adata_fb.to_df()
 
-        print(f"modalities to denoise: {features}")
+        # Denoising ATAC peaks
+        elif feature_type.lower() in ["atac"]:
+            features = "Peaks"
+            adata_fb = adata[:, adata.var["feature_types"] == features]
+            count_matrix = adata_fb.to_df()
+
+        main_logger.info(f"modalities to denoise: {features}")
 
     else:
         raise Exception(file_extension + " files are not supported.")
 
     if ambient_profile_path:
-
         _, ambient_profile_file_extension = os.path.splitext(ambient_profile_path)
         if ambient_profile_file_extension == ".pickle":
             ambient_profile = pd.read_pickle(ambient_profile_path)
@@ -107,13 +116,12 @@ def main():
     else:
         ambient_profile = None
 
-    print("===========================================")
-    print("feature_type: ", feature_type)
-    print("count_model: ", count_model)
-    print("output_dir: ", output_dir)
-    print("count_matrix_path: ", count_matrix_path)
-    print("ambient_profile_path: ", ambient_profile_path)
-    print("expected data sparsity: ", sparsity)
+    main_logger.info(f"feature_type: {feature_type}")
+    main_logger.info(f"count_model: {count_model}")
+    main_logger.info(f"output_dir: {output_dir}")
+    main_logger.info(f"count_matrix_path: {count_matrix_path}")
+    main_logger.info(f"ambient_profile_path: {ambient_profile_path}")
+    main_logger.info(f"expected data sparsity: {sparsity:.2f}")
 
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
@@ -147,11 +155,10 @@ def main():
     if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
         scar_model.assignment(cutoff=cutoff, moi=moi)
 
-    print("===========================================\n  Saving results...")
+    main_logger.info("Saving results...")
 
     # save results
     if file_extension == ".pickle":
-
         output_path01, output_path02, output_path03, output_path04 = (
             os.path.join(output_dir, "denoised_counts.pickle"),
             os.path.join(output_dir, "BayesFactor.pickle"),
@@ -178,19 +185,17 @@ def main():
             scar_model.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]
         ).to_pickle(output_path04)
 
-        print("...denoised counts saved in: ", output_path01)
-        print("...BayesFactor matrix saved in: ", output_path02)
-        print("...expected native frequencies saved in: ", output_path03)
-        print("...expected noise ratio saved in: ", output_path04)
+        main_logger.info(f"denoised counts saved in: {output_path01}")
+        main_logger.info(f"BayesFactor matrix saved in: {output_path02}")
+        main_logger.info(f"expected native frequencies saved in: {output_path03}")
+        main_logger.info(f"expected noise ratio saved in: {output_path04}")
 
         if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
-
             output_path05 = os.path.join(output_dir, "assignment.pickle")
             scar_model.feature_assignment.to_pickle(output_path05)
-            print("...assignment saved in: ", output_path05)
+            main_logger.info(f"assignment saved in: {output_path05}")
 
     elif file_extension == ".h5":
-
         output_path_h5ad = os.path.join(
             output_dir, f"filtered_feature_bc_matrix_denoised_{feature_type}.h5ad"
         )
@@ -212,9 +217,7 @@ def main():
             denoised_adata.obs = denoised_adata.obs.join(scar_model.feature_assignment)
 
         denoised_adata.write(output_path_h5ad)
-        print("the denoised h5ad file saved in: ", output_path_h5ad)
-
-    print("===========================================\n  Done!!!")
+        main_logger.info("the denoised h5ad file saved in: {output_path_h5ad}")
 
 
 class Config:
@@ -262,7 +265,7 @@ def scar_parser():
         "--feature_type",
         type=str,
         default="mRNA",
-        help="The feature types, e.g. mRNA, sgRNA, ADT, tag and CMO",
+        help="The feature types, e.g. mRNA, sgRNA, ADT, tag, CMO and ATAC",
     )
     parser.add_argument(
         "-o", "--output", type=str, default=None, help="Output directory"
@@ -302,7 +305,7 @@ def scar_parser():
         "-epo", "--epochs", type=int, default=800, help="Training epochs"
     )
     parser.add_argument(
-        "-device",
+        "-d",
         "--device",
         type=str,
         default="auto",
@@ -371,6 +374,13 @@ def scar_parser():
         help="Multiplicity of Infection. If assigned, it will allow optimized thresholding, \
         which tests a series of cutoffs to find the best one based on distributions of infections under given moi. \
         See [Dixit2016]_ for details. Under development.",
+    )
+    parser.add_argument(
+        "-verbose",
+        "--verbose",
+        type=bool,
+        default=True,
+        help="Whether to print the logging messages",
     )
     return parser
 
