@@ -19,7 +19,7 @@ jobs:
           echo $CONDA/bin >> $GITHUB_PATH
       - name: Install dependencies
         run: |
-          mamba env create -f scar-cpu.yml
+          conda env create -f scar-cpu.yml
       - name: Run binary
         run: |
           export PATH="$GITHUB_PATH:$PATH"
@@ -29,7 +29,7 @@ jobs:
         run: |
           export PATH="$GITHUB_PATH:$PATH"
           source activate scar
-          mamba install pylint
+          conda install pylint
           pylint scar --fail-under 8.5 --disable=R,C --generated-members=torch.*
       - name: Run unit tests
         run: |
