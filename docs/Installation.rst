@@ -33,7 +33,7 @@ Git + pip
     
 2, Enter the cloned directory::
 
-    cd scAR
+    cd scar
     
 3, Create a conda environment
 
