@@ -18,7 +18,7 @@ Conda install
     
 4, Install scar::
 
-    conda install -c bioconda scar
+    conda install bioconda::scar
     
 5, Activate the scar conda environment::
 
