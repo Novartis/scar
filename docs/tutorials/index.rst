@@ -30,8 +30,8 @@ We can use the output of cellranger count *filtered_feature_bc_matrix.h5* as the
 
 ``feature_type``, a string, either 'mRNA' or 'sgRNA' or 'ADT' or 'tag' or 'CMO' or 'ATAC'.
 
- .. note::
-      The ambient profile is calculated by averaging the cell pool under this mode. If you want to use a more accurate ambient profile, please consider calculating it and using ``.pickle`` files as the input, as detailed below.
+.. note::
+	The ambient profile is calculated by averaging the cell pool under this mode. If you want to use a more accurate ambient profile, please consider calculating it and using ``.pickle`` files as the input, as detailed below.
       
 The output folder contains an h5ad file::
    
