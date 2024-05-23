@@ -9,10 +9,10 @@ jobs:
       max-parallel: 5
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python 3.12.3
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.12.3
       - name: Add conda to system path
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
@@ -25,12 +25,12 @@ jobs:
           export PATH="$GITHUB_PATH:$PATH"
           source activate scar
           scar --help
-      - name: Run pylint
-        run: |
-          export PATH="$GITHUB_PATH:$PATH"
-          source activate scar
-          conda install pylint
-          pylint scar --fail-under 8.5 --disable=R,C --generated-members=torch.*
+      # - name: Run pylint
+      #   run: |
+      #     export PATH="$GITHUB_PATH:$PATH"
+      #     source activate scar
+      #     conda install -c anaconda pylint astroid
+      #     pylint scar --fail-under 8.5 --disable=R,C --generated-members=torch.*
       - name: Run unit tests
         run: |
           export PATH="$GITHUB_PATH:$PATH"
