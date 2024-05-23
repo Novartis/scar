@@ -9,17 +9,17 @@ jobs:
       max-parallel: 5
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.10
       - name: Add conda to system path
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
           echo $CONDA/bin >> $GITHUB_PATH
       - name: Install dependencies
         run: |
-          conda env create -f scar-cpu.yml
+          mamba env create -f scar-cpu.yml
       - name: Run binary
         run: |
           export PATH="$GITHUB_PATH:$PATH"
@@ -29,7 +29,7 @@ jobs:
         run: |
           export PATH="$GITHUB_PATH:$PATH"
           source activate scar
-          conda install pylint
+          mamba install pylint
           pylint scar --fail-under 8.5 --disable=R,C --generated-members=torch.*
       - name: Run unit tests
         run: |
