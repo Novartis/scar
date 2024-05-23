@@ -29,7 +29,7 @@ jobs:
         run: |
           export PATH="$GITHUB_PATH:$PATH"
           source activate scar
-          conda install -anaconda pylint astroid
+          conda install -c anaconda pylint astroid
           pylint scar --fail-under 8.5 --disable=R,C --generated-members=torch.*
       - name: Run unit tests
         run: |
