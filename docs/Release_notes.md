@@ -11,6 +11,16 @@
 -------------------------------------
 
 <!--next-version-placeholder-->
+## v0.5.2 -> v0.5.5 (2024-05-24) 
+### No changes in core functionalities.
+### Fix
+* **setup:** update version of setuptools to be compatible with pytorch-cuda12 ([`d08ff9a`](https://github.com/Novartis/scar/commit/d08ff9a9ec7edde1055ea871525b07b6294fac0c))
+* **setup:** update version of dependencies ([`ffc4091`](https://github.com/Novartis/scar/commit/ffc40915dbf0921ea89b0cb5ebbd11007feac493))
+* **setup:** fix anndata dependency ([`d8d12ed`](https://github.com/Novartis/scar/commit/d8d12ed1f15ff427bff1a5f1dac4b74720177eaa))
+
+### Documentation
+* **tutorials:** Update references
+
 
 ## v0.5.2 (2023-05-02)
 ### Feature
