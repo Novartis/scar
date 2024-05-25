@@ -8,7 +8,7 @@ import pandas as pd
 import scanpy as sc
 from scipy.sparse import csr_matrix
 from ._scar import model
-from .__version__ import __version__
+from ..main import __version__
 from ._utils import get_logger
 
 
