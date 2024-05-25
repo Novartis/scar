@@ -4,6 +4,7 @@
 
 import sys
 import time
+import warnings
 from typing import Optional, Union
 import contextlib
 import numpy as np
@@ -213,10 +214,9 @@ class model:
                 self.device = torch.device("cuda")
                 self.logger.info("CPU is detected and will be used.")
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
-                raise NotImplementedError(
-                    "MPS is not fully supported by Pytorch yet. Please specify CPU or CUDA."
-                )
-                # self.device = torch.device("mps")
+                self.device = torch.device("mps")
+                self.logger.info("MPS is detected and will be used.")
+                self.logger.warning("PyTorch is slower on MPS than on the CPU; we recommend using the CPU by specifying device='cpu' on Mac.")
             else:
                 self.device = torch.device("cpu")
                 self.logger.info("No GPU detected. Use CPU instead.")
