@@ -6,7 +6,6 @@ build-backend = "setuptools.build_meta"
 name = "scar"
 version = "0.5.5"
 requires-python = ">= 3.10"
-
 dependencies = [
     "torch >= 1.10.0",
     "torchvision >= 0.9.0",
@@ -14,7 +13,7 @@ dependencies = [
     "seaborn >= 0.11.2",
     "scikit-learn >= 1.0.1",
     "pyro-ppl >= 1.8.0",
-    "scanpy >= 1.9.2","
+    "scanpy >= 1.9.2"
 ]
 authors = [
     {name = "Caibin Sheng", email = "caibin.sheng.res@gmail.com"}
@@ -23,7 +22,6 @@ description = "scAR (single-cell Ambient Remover) is a package for denoising the
 readme = "README.md"
 license = {text = "MIT License"}
 keywords = ["single cell omics", "variational autoencoder", "machine learning", "generative model", "cite-seq", "scCRISPRseq", "scRNAseq"]
-
 
 [project.urls]
 Homepage = "https://github.com/Novartis/scAR"
@@ -34,7 +32,6 @@ Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
 
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
-version_variables = ["scar/main/__version__.py:__version__"]
 major_on_zero = false
 branch = "develop"
 upload_to_release = false
@@ -43,6 +40,8 @@ upload_to_repository = false
 upload_to_pypi = false
 patch_without_tag = false
 
-
 [tool.semantic_release.changelog]
 changelog_file="docs/Release_notes.md"
+
+[project.gui-scripts]
+scar = "scar.main.__main__:main"
