@@ -735,7 +735,8 @@ class UMIDataset(torch.utils.data.Dataset):
 
     def _onehot(self, batch_id):
         """One-hot encoding"""
-        n_batch = batch_id.to(self.device).unique().size()[0]
+        batch_id = batch_id.to(self.device)
+        n_batch = batch_id.unique().size()[0]
         x_onehot = torch.zeros(n_batch, n_batch)
         x_onehot.scatter_(1, batch_id.unique().unsqueeze(1), 1)
         return x_onehot
