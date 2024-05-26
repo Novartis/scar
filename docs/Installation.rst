@@ -16,11 +16,13 @@ Conda install
     
     conda activate scar
     
-4, Install scar::
+4, Install `PyTorch <https://pytorch.org/get-started/locally/>`_
+
+5, Install scar::
 
     conda install bioconda::scar
     
-5, Activate the scar conda environment::
+6, Activate the scar conda environment::
 
     conda activate scar
     
