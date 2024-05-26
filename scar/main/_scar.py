@@ -91,6 +91,17 @@ class model:
                             Thank Will Macnair for the valuable feedback.
         
             .. versionadded:: 0.4.0
+        batch_key : str, optional
+            batch key in AnnData.obs, by default None. \
+                If assigned, batch ambient removel will be performed and \
+                the ambient profile will be estimated for each batch.
+
+            .. versionadded:: 0.6.1
+
+        device : str, optional
+            either "auto, "cpu" or "cuda", by default "auto"
+        verbose : bool, optional
+            whether to print the details, by default True
 
         Raises
         ------
@@ -200,6 +211,7 @@ class model:
         feature_type: str = "mRNA",
         count_model: str = "binomial",
         sparsity: float = 0.9,
+        batch_key: str = None,
         device: str = "auto",
         verbose: bool = True,
     ):
@@ -262,7 +274,7 @@ class model:
         """float, the sparsity of expected native signals. (0, 1]. \
             Forced to be one in the mode of "sgRNA(s)" and "tag(s)".
         """
-
+        
         if isinstance(raw_count, str):
             raw_count = pd.read_pickle(raw_count)
         elif isinstance(raw_count, np.ndarray):
@@ -274,8 +286,25 @@ class model:
         elif isinstance(raw_count, pd.DataFrame):
             pass
         elif isinstance(raw_count, ad.AnnData):
+            if batch_key:
+                if batch_key not in raw_count.obs.columns:
+                    raise ValueError(f"{batch_key} not found in AnnData.obs.")
+                
+                self.logger.info(
+                    f"Estimating ambient profile for each batch defined by {batch_key} in AnnData.obs..."
+                )
+                batch_id_per_cell = pd.Categorical(raw_count.obs[batch_key]).codes
+                ambient_profile = np.empty((len(np.unique(batch_id_per_cell)),raw_count.shape[1]))
+                for batch_id in np.unique(batch_id_per_cell):
+                    subset = raw_count[batch_id_per_cell==batch_id]
+                    ambient_profile[batch_id, :] = subset.X.sum(axis=0) / subset.X.sum()
+
+                # add a mapper to locate the batch id
+                self.batch_id = torch.from_numpy(batch_id_per_cell).int().to(self.device)
+                self.n_batch = np.unique(batch_id_per_cell).size
+
             # get ambient profile from AnnData.uns
-            if (ambient_profile is None) and ("ambient_profile_all" in raw_count.uns):
+            elif (ambient_profile is None) and ("ambient_profile_all" in raw_count.uns):
                 self.logger.info(
                     "Found ambient profile in AnnData.uns['ambient_profile_all']"
                 )
@@ -296,7 +325,7 @@ class model:
         raw_count = raw_count.fillna(0)  # missing vals -> zeros
 
         # Loading numpy to tensor on GPU
-        self.raw_count = torch.from_numpy(raw_count.values).int().to(self.device)
+        self.raw_count = raw_count.values
         """raw_count : np.ndarray, raw count matrix.
         """
         self.n_features = raw_count.shape[1]
@@ -324,9 +353,12 @@ class model:
             ambient_profile = (
                 ambient_profile.squeeze()
                 .reshape(1, -1)
-                .repeat(raw_count.shape[0], axis=0)
             )
-        self.ambient_profile = torch.from_numpy(ambient_profile).float().to(self.device)
+            # add a mapper to locate the artificial batch id
+            self.batch_id = torch.zeros(raw_count.shape[0]).int().to(self.device)
+            self.n_batch = 1
+
+        self.ambient_profile = ambient_profile
         """ambient_profile : np.ndarray, the probability of occurrence of each ambient transcript.
         """
 
@@ -410,20 +442,16 @@ class model:
         train_ids, test_ids = train_test_split(list_ids, train_size=train_size)
 
         # Generators
-        training_set = UMIDataset(self.raw_count, self.ambient_profile, train_ids)
+        training_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, device=self.device, list_ids=train_ids)
         training_generator = torch.utils.data.DataLoader(
             training_set, batch_size=batch_size, shuffle=shuffle
         )
-        val_set = UMIDataset(self.raw_count, self.ambient_profile, test_ids)
+        val_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, device=self.device, list_ids=test_ids)
         val_generator = torch.utils.data.DataLoader(
             val_set, batch_size=batch_size, shuffle=shuffle
         )
 
         loss_values = []
-
-        # self.n_batch_train = len(training_generator)
-        # self.n_batch_val = len(val_generator)
-        # self.batch_size = batch_size
 
         # Define model
         vae_nets = VAE(
@@ -435,6 +463,7 @@ class model:
             feature_type=self.feature_type,
             count_model=self.count_model,
             sparsity=self.sparsity,
+            n_batch=self.n_batch,
             verbose=verbose,
         ).to(self.device)
         # Define optimizer
@@ -459,15 +488,15 @@ class model:
                 desc="Training",
             )
             progress_bar.clear()
-            for epoch in range(epochs):
+            for _ in range(epochs):
                 train_tot_loss = 0
                 train_kld_loss = 0
                 train_recon_loss = 0
 
                 vae_nets.train()
-                for x_batch, ambient_freq in training_generator:
+                for x_batch, ambient_freq, batch_id_onehot in training_generator:
                     optim.zero_grad()
-                    dec_nr, dec_prob, means, var, dec_dp = vae_nets(x_batch)
+                    dec_nr, dec_prob, means, var, dec_dp = vae_nets(x_batch, batch_id_onehot)
                     recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(
                         x_batch,
                         dec_nr,
@@ -559,7 +588,7 @@ class model:
             native_frequencies, and noise_ratio. \
                 A feature_assignment will be added in 'sgRNA' or 'tag' or 'CMO' feature type.   
         """
-        total_set = UMIDataset(self.raw_count, self.ambient_profile)
+        total_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, device=self.device)
         n_features = self.n_features
         sample_size = self.raw_count.shape[0]
         self.native_counts = np.empty([sample_size, n_features])
@@ -574,7 +603,7 @@ class model:
             total_set, batch_size=batch_size, shuffle=False
         )
 
-        for x_batch_tot, ambient_freq_tot in generator_full_data:
+        for x_batch_tot, ambient_freq_tot, x_batch_id_onehot_tot in generator_full_data:
             minibatch_size = x_batch_tot.shape[
                 0
             ]  # if not the last batch, equals to batch size
@@ -586,6 +615,7 @@ class model:
                 noise_ratio_batch,
             ) = self.trained_model.inference(
                 x_batch_tot,
+                x_batch_id_onehot_tot,
                 ambient_freq_tot[0, :],
                 count_model_inf=count_model_inf,
                 adjust=adjust,
@@ -677,10 +707,14 @@ class model:
 class UMIDataset(torch.utils.data.Dataset):
     """Characterizes dataset for PyTorch"""
 
-    def __init__(self, raw_count, ambient_profile, list_ids=None):
+    def __init__(self, raw_count, ambient_profile, batch_id, device, list_ids=None):
         """Initialization"""
-        self.raw_count = raw_count
-        self.ambient_profile = ambient_profile
+        self.device = device
+        self.raw_count = torch.from_numpy(raw_count).int().to(device)
+        self.ambient_profile = torch.from_numpy(ambient_profile).float().to(device)
+        self.batch_id = batch_id.to(torch.int64).to(device)
+        self.batch_onehot = self._onehot()
+
         if list_ids:
             self.list_ids = list_ids
         else:
@@ -695,5 +729,13 @@ class UMIDataset(torch.utils.data.Dataset):
         # Select sample
         sc_id = self.list_ids[index]
         sc_count = self.raw_count[sc_id, :]
-        sc_ambient = self.ambient_profile[sc_id, :]
-        return sc_count, sc_ambient
+        sc_ambient = self.ambient_profile[self.batch_id[sc_id], :]
+        sc_batch_id_onehot = self.batch_onehot[self.batch_id[sc_id], :]
+        return sc_count, sc_ambient, sc_batch_id_onehot
+
+    def _onehot(self):
+        """One-hot encoding"""
+        n_batch = self.batch_id.unique().size()[0]
+        x_onehot = torch.zeros(n_batch, n_batch).to(self.device)
+        x_onehot.scatter_(1, self.batch_id.unique().unsqueeze(1), 1)
+        return x_onehot

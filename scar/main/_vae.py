@@ -51,6 +51,7 @@ class VAE(nn.Module):
         dropout_prob=0,
         feature_type="mRNA",
         count_model="binomial",
+        n_batch=1,
         sparsity=0.9,
         verbose=True,
     ):
@@ -81,10 +82,11 @@ class VAE(nn.Module):
             sparsity = 1
 
         self.encoder = Encoder(
-            n_features, nn_layer1, nn_layer2, latent_dim, dropout_prob
+            n_features, n_batch, nn_layer1, nn_layer2, latent_dim, dropout_prob
         )
         self.decoder = Decoder(
             n_features,
+            n_batch,
             nn_layer1,
             nn_layer2,
             latent_dim,
@@ -105,16 +107,17 @@ class VAE(nn.Module):
         vae_logger.info(f"...dropout_prob: {dropout_prob:.2f}")
         vae_logger.info(f"...expected data sparsity: {sparsity:.2f}")
 
-    def forward(self, input_matrix):
+    def forward(self, input_matrix, batch_id_onehot=None):
         """forward function"""
-        sampling, means, var = self.encoder(input_matrix)
-        dec_nr, dec_prob, dec_dp = self.decoder(sampling)
+        sampling, means, var = self.encoder(input_matrix, batch_id_onehot)
+        dec_nr, dec_prob, dec_dp = self.decoder(sampling, batch_id_onehot)
         return dec_nr, dec_prob, means, var, dec_dp
 
     @torch.no_grad()
     def inference(
         self,
         input_matrix,
+        batch_id_onehot,
         amb_prob,
         count_model_inf="poisson",
         adjust="micro",
@@ -128,7 +131,7 @@ class VAE(nn.Module):
         assert adjust in [False, "global", "micro"]
 
         # Estimate native signals
-        dec_nr, dec_prob, _, _, _ = self.forward(input_matrix)
+        dec_nr, dec_prob, _, _, _ = self.forward(input_matrix, batch_id_onehot)
 
         # Copy tensor to CPU
         input_matrix_np = input_matrix.cpu().numpy()
@@ -230,11 +233,13 @@ class Encoder(nn.Module):
     Consists of 2 FC layers.
     """
 
-    def __init__(self, n_features, nn_layer1, nn_layer2, latent_dim, dropout_prob):
+    def __init__(self, n_features, n_batch, nn_layer1, nn_layer2, latent_dim, dropout_prob):
         """initialization"""
         super().__init__()
         self.activation = nn.SELU()
-        self.fc1 = nn.Linear(n_features, nn_layer1)
+        # if n_batch > 1:
+        #     n_features += n_batch
+        self.fc1 = nn.Linear(n_features + n_batch, nn_layer1)
         self.bn1 = nn.BatchNorm1d(nn_layer1, momentum=0.01, eps=0.001)
         self.dp1 = nn.Dropout(p=dropout_prob)
         self.fc2 = nn.Linear(nn_layer1, nn_layer2)
@@ -250,9 +255,10 @@ class Encoder(nn.Module):
         var = log_vars.exp() + 1e-4
         return torch.distributions.Normal(means, var.sqrt()).rsample(), var
 
-    def forward(self, input_matrix):
+    def forward(self, input_matrix, batch_id_onehot):
         """forward function"""
         input_matrix = (input_matrix + 1).log2()  # log transformation of count data
+        input_matrix = torch.cat([input_matrix, batch_id_onehot], 1)
         enc = self.fc1(input_matrix)
         enc = self.bn1(enc)
         enc = self.activation(enc)
@@ -284,6 +290,7 @@ class Decoder(nn.Module):
     def __init__(
         self,
         n_features,
+        n_batch,
         nn_layer1,
         nn_layer2,
         latent_dim,
@@ -297,7 +304,7 @@ class Decoder(nn.Module):
         self.normalization_native_freq = hnormalization()
         self.noise_activation = mytanh()
         self.activation_native_freq = mysoftplus(sparsity)
-        self.fc4 = nn.Linear(latent_dim, nn_layer2)
+        self.fc4 = nn.Linear(latent_dim + n_batch, nn_layer2)
         self.bn4 = nn.BatchNorm1d(nn_layer2, momentum=0.01, eps=0.001)
         self.dp4 = nn.Dropout(p=dropout_prob)
         self.fc5 = nn.Linear(nn_layer2, nn_layer1)
@@ -311,10 +318,11 @@ class Decoder(nn.Module):
             self.dropoutprob = nn.Linear(nn_layer1, 1)
             self.dropout_activation = mytanh()
 
-    def forward(self, sampling):
+    def forward(self, sampling, batch_id_onehot):
         """forward function"""
         # decoder
-        dec = self.fc4(sampling)
+        cond_sampling = torch.cat([sampling, batch_id_onehot], 1)
+        dec = self.fc4(cond_sampling)
         dec = self.bn4(dec)
         dec = self.activation(dec)
         dec = self.fc5(dec)
