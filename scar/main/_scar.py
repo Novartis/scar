@@ -354,7 +354,7 @@ class model:
                 .reshape(1, -1)
             )
             # add a mapper to locate the artificial batch id
-            self.batch_id = np.zeros(raw_count.shape[0])
+            self.batch_id = np.zeros(raw_count.shape[0], dtype=int)
 
         self.ambient_profile = torch.from_numpy(ambient_profile).float().to(self.device)
         """ambient_profile : np.ndarray, the probability of occurrence of each ambient transcript.
