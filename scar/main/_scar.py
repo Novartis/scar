@@ -301,7 +301,7 @@ class model:
 
                 # add a mapper to locate the batch id
                 self.batch_id = torch.from_numpy(batch_id_per_cell).int().to(self.device)
-                self.n_batch = batch_id.unique().size()[0]
+                self.n_batch = np.unique(batch_id_per_cell).size
 
             # get ambient profile from AnnData.uns
             elif (ambient_profile is None) and ("ambient_profile_all" in raw_count.uns):
