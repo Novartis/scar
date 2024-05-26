@@ -300,7 +300,8 @@ class model:
                     ambient_profile[batch_id, :] = subset.X.sum(axis=0) / subset.X.sum()
 
                 # add a mapper to locate the batch id
-                self.batch_id = batch_id_per_cell
+                self.batch_id = torch.from_numpy(batch_id_per_cell).int().to(self.device)
+                self.n_batch = batch_id.unique().size()[0]
 
             # get ambient profile from AnnData.uns
             elif (ambient_profile is None) and ("ambient_profile_all" in raw_count.uns):
@@ -354,7 +355,8 @@ class model:
                 .reshape(1, -1)
             )
             # add a mapper to locate the artificial batch id
-            self.batch_id = np.zeros(raw_count.shape[0], dtype=int)
+            self.batch_id = torch.zeros(raw_count.shape[0]).int().to(self.device)
+            self.n_batch = 1
 
         self.ambient_profile = torch.from_numpy(ambient_profile).float().to(self.device)
         """ambient_profile : np.ndarray, the probability of occurrence of each ambient transcript.
@@ -461,6 +463,7 @@ class model:
             feature_type=self.feature_type,
             count_model=self.count_model,
             sparsity=self.sparsity,
+            n_batch=self.n_batch,
             verbose=verbose,
         ).to(self.device)
         # Define optimizer
@@ -491,9 +494,9 @@ class model:
                 train_recon_loss = 0
 
                 vae_nets.train()
-                for x_batch, ambient_freq in training_generator:
+                for x_batch, ambient_freq, batch_id_onehot in training_generator:
                     optim.zero_grad()
-                    dec_nr, dec_prob, means, var, dec_dp = vae_nets(x_batch)
+                    dec_nr, dec_prob, means, var, dec_dp = vae_nets(x_batch, batch_id_onehot)
                     recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(
                         x_batch,
                         dec_nr,
@@ -600,7 +603,7 @@ class model:
             total_set, batch_size=batch_size, shuffle=False
         )
 
-        for x_batch_tot, ambient_freq_tot in generator_full_data:
+        for x_batch_tot, ambient_freq_tot, x_batch_id_onehot_tot in generator_full_data:
             minibatch_size = x_batch_tot.shape[
                 0
             ]  # if not the last batch, equals to batch size
@@ -612,6 +615,7 @@ class model:
                 noise_ratio_batch,
             ) = self.trained_model.inference(
                 x_batch_tot,
+                x_batch_id_onehot_tot,
                 ambient_freq_tot[0, :],
                 count_model_inf=count_model_inf,
                 adjust=adjust,
@@ -708,6 +712,7 @@ class UMIDataset(torch.utils.data.Dataset):
         self.raw_count = raw_count
         self.ambient_profile = ambient_profile
         self.batch_id = batch_id
+        self.batch_onehot = self._onehot(batch_id)
 
         if list_ids:
             self.list_ids = list_ids
@@ -724,4 +729,12 @@ class UMIDataset(torch.utils.data.Dataset):
         sc_id = self.list_ids[index]
         sc_count = self.raw_count[sc_id, :]
         sc_ambient = self.ambient_profile[self.batch_id[sc_id], :]
-        return sc_count, sc_ambient
+        sc_batch_id_onehot = self.batch_onehot[self.batch_id[sc_id], :]
+        return sc_count, sc_ambient, sc_batch_id_onehot
+
+    def _onehot(self, batch_id):
+        """One-hot encoding"""
+        n_batch = batch_id.unique().size()[0]
+        x_onehot = torch.zeros(n_batch, n_batch).to(batch_id.device)
+        x_onehot.scatter_(1, batch_id.unique().unsqueeze(1), 1)
+        return x_onehot
