@@ -2,16 +2,11 @@
 
 """The main module of scar"""
 
-import sys
-import time
-import warnings
+import sys, time, contextlib, torch
 from typing import Optional, Union
-import contextlib
-import numpy as np
-import pandas as pd
-import anndata as ad
+import numpy as np, pandas as pd, anndata as ad
 
-import torch
+from scipy import sparse
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from tqdm.contrib import DummyTqdmFile
@@ -275,17 +270,7 @@ class model:
             Forced to be one in the mode of "sgRNA(s)" and "tag(s)".
         """
         
-        if isinstance(raw_count, str):
-            raw_count = pd.read_pickle(raw_count)
-        elif isinstance(raw_count, np.ndarray):
-            raw_count = pd.DataFrame(
-                raw_count,
-                index=range(raw_count.shape[0]),
-                columns=range(raw_count.shape[1]),
-            )
-        elif isinstance(raw_count, pd.DataFrame):
-            pass
-        elif isinstance(raw_count, ad.AnnData):
+        if isinstance(raw_count, ad.AnnData):
             if batch_key:
                 if batch_key not in raw_count.obs.columns:
                     raise ValueError(f"{batch_key} not found in AnnData.obs.")
@@ -315,22 +300,35 @@ class model:
                 self.logger.info(
                     "Ambient profile not found in AnnData.uns['ambient_profile'], estimating it by averaging pooled cells..."
                 )
-            # convert AnnData to pd.DataFrame
-            raw_count = raw_count.to_df()
+        elif isinstance(raw_count, str):
+            # read pickle file into dataframe
+            raw_count = pd.read_pickle(raw_count)
+        elif isinstance(raw_count, np.ndarray):
+            # convert np.array to pd.DataFrame
+            raw_count = pd.DataFrame(
+                raw_count,
+                index=range(raw_count.shape[0]),
+                columns=range(raw_count.shape[1]),
+            )
+        elif isinstance(raw_count, pd.DataFrame):
+            pass
         else:
             raise TypeError(
-                f"Expecting str or np.array or pd.DataFrame object, but get a {type(raw_count)}"
+                f"Expecting str or np.array or pd.DataFrame or AnnData object, but get a {type(raw_count)}"
             )
 
-        # Loading numpy to tensor on GPU
-        raw_count = raw_count.fillna(0)  # missing vals -> zeros raw_count if isinstance(raw_count, ad.AnnData) else 
-        self.raw_count = raw_count.values
+        self.raw_count = raw_count
         """raw_count : np.ndarray, raw count matrix.
         """
         self.n_features = raw_count.shape[1]
-
-        self.cell_id = raw_count.index.to_list()
-        self.feature_names = raw_count.columns.to_list()
+        """int, number of features.
+        """
+        self.cell_id = raw_count.index.to_list() if isinstance(raw_count, pd.DataFrame) else raw_count.obs_names.to_list()
+        """list, cell id.
+        """
+        self.feature_names = raw_count.columns.to_list() if isinstance(raw_count, pd.DataFrame) else raw_count.var_names.to_list()
+        """list, feature names.
+        """
 
         if isinstance(ambient_profile, str):
             ambient_profile = pd.read_pickle(ambient_profile)
@@ -441,14 +439,14 @@ class model:
         train_ids, test_ids = train_test_split(list_ids, train_size=train_size)
 
         # Generators
-        training_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, device=self.device, list_ids=train_ids)
+        training_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, list_ids=train_ids)
         training_generator = torch.utils.data.DataLoader(
             training_set, batch_size=batch_size, shuffle=shuffle
         )
-        val_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, device=self.device, list_ids=test_ids)
-        val_generator = torch.utils.data.DataLoader(
-            val_set, batch_size=batch_size, shuffle=shuffle
-        )
+        # val_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, list_ids=test_ids)
+        # val_generator = torch.utils.data.DataLoader(
+        #     val_set, batch_size=batch_size, shuffle=shuffle
+        # )
 
         loss_values = []
 
@@ -495,9 +493,9 @@ class model:
                 vae_nets.train()
                 for x_batch, ambient_freq, batch_id_onehot in training_generator:
                     # Move data to device
-                    # x_batch = x_batch.to(self.device)
-                    # ambient_freq = ambient_freq.to(self.device)
-                    # batch_id_onehot = batch_id_onehot.to(self.device)
+                    x_batch = x_batch.to(self.device)
+                    ambient_freq = ambient_freq.to(self.device)
+                    batch_id_onehot = batch_id_onehot.to(self.device)
 
                     optim.zero_grad()
                     dec_nr, dec_prob, means, var, dec_dp = vae_nets(x_batch, batch_id_onehot)
@@ -592,7 +590,7 @@ class model:
             native_frequencies, and noise_ratio. \
                 A feature_assignment will be added in 'sgRNA' or 'tag' or 'CMO' feature type.   
         """
-        total_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, device=self.device)
+        total_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id)
         n_features = self.n_features
         sample_size = self.raw_count.shape[0]
         self.native_counts = np.empty([sample_size, n_features])
@@ -609,9 +607,9 @@ class model:
 
         for x_batch_tot, ambient_freq_tot, x_batch_id_onehot_tot in generator_full_data:
             # Move data to device
-            # x_batch_tot = x_batch_tot.to(self.device)
-            # x_batch_id_onehot_tot = x_batch_id_onehot_tot.to(self.device)
-            # ambient_freq_tot = ambient_freq_tot.to(self.device)
+            x_batch_tot = x_batch_tot.to(self.device)
+            x_batch_id_onehot_tot = x_batch_id_onehot_tot.to(self.device)
+            ambient_freq_tot = ambient_freq_tot.to(self.device)
 
             minibatch_size = x_batch_tot.shape[
                 0
@@ -716,12 +714,12 @@ class model:
 class UMIDataset(torch.utils.data.Dataset):
     """Characterizes dataset for PyTorch"""
 
-    def __init__(self, raw_count, ambient_profile, batch_id, device, list_ids=None):
+    def __init__(self, raw_count, ambient_profile, batch_id, list_ids=None):
         """Initialization"""
-        self.raw_count = torch.from_numpy(raw_count).int().to(device)
-        self.ambient_profile = torch.from_numpy(ambient_profile).float().to(device)
-        self.batch_id = torch.from_numpy(batch_id).to(torch.int64).to(device)
-        self.batch_onehot = torch.from_numpy(np.eye(len(np.unique(batch_id)))).to(torch.int64).to(device)
+        self.raw_count = torch.from_numpy(raw_count.fillna(0).values).int() if isinstance(raw_count, pd.DataFrame) else raw_count
+        self.ambient_profile = torch.from_numpy(ambient_profile.fillna(0)).float()
+        self.batch_id = torch.from_numpy(batch_id).to(torch.int64)
+        self.batch_onehot = torch.from_numpy(np.eye(len(np.unique(batch_id)))).to(torch.int64)
 
         if list_ids:
             self.list_ids = list_ids
@@ -736,7 +734,7 @@ class UMIDataset(torch.utils.data.Dataset):
         """Generates one sample of data"""
         # Select sample
         sc_id = self.list_ids[index]
-        sc_count = self.raw_count[sc_id, :]
+        sc_count = self.raw_count[sc_id] if isinstance(self.raw_count, torch.Tensor) else torch.from_numpy(self.raw_count[sc_id].X.toarray().flatten()).int()
         sc_ambient = self.ambient_profile[self.batch_id[sc_id], :]
         sc_batch_id_onehot = self.batch_onehot[self.batch_id[sc_id], :]
         return sc_count, sc_ambient, sc_batch_id_onehot
