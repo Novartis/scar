@@ -6,7 +6,6 @@ import sys, time, contextlib, torch
 from typing import Optional, Union
 import numpy as np, pandas as pd, anndata as ad
 
-from scipy import sparse
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from tqdm.contrib import DummyTqdmFile
