@@ -275,7 +275,7 @@ class model:
                     raise ValueError(f"{batch_key} not found in AnnData.obs.")
                 
                 self.logger.info(
-                    f"Estimating ambient profile for each batch defined by {batch_key} in AnnData.obs..."
+                    f"Found {raw_count.obs[batch_key].nunique()} batches defined by {batch_key} in AnnData.obs. Estimating ambient profile per batch..."
                 )
                 batch_id_per_cell = pd.Categorical(raw_count.obs[batch_key]).codes
                 ambient_profile = np.empty((len(np.unique(batch_id_per_cell)),raw_count.shape[1]))
