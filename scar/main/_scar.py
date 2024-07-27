@@ -717,7 +717,7 @@ class UMIDataset(torch.utils.data.Dataset):
     def __init__(self, raw_count, ambient_profile, batch_id, list_ids=None):
         """Initialization"""
         self.raw_count = torch.from_numpy(raw_count.fillna(0).values).int() if isinstance(raw_count, pd.DataFrame) else raw_count
-        self.ambient_profile = torch.from_numpy(ambient_profile.fillna(0)).float()
+        self.ambient_profile = torch.from_numpy(ambient_profile).float()
         self.batch_id = torch.from_numpy(batch_id).to(torch.int64)
         self.batch_onehot = torch.from_numpy(np.eye(len(np.unique(batch_id)))).to(torch.int64)
 
