@@ -271,7 +271,7 @@ class model:
             Forced to be one in the mode of "sgRNA(s)" and "tag(s)".
         """
         self.cache_capacity = cache_capacity
-        """int, the capacity of cache.
+        """int, the capacity of caching data on GPU. Set a smaller value upon GPU memory issue. By default 20000 cells are cached on GPU/MPS.
 
             .. versionadded:: 0.6.1
         """
@@ -499,10 +499,6 @@ class model:
 
                 vae_nets.train()
                 for x_batch, ambient_freq, batch_id_onehot in training_generator:
-                    # Move data to device
-                    # x_batch = x_batch.to(self.device)
-                    # ambient_freq = ambient_freq.to(self.device)
-                    # batch_id_onehot = batch_id_onehot.to(self.device)
 
                     optim.zero_grad()
                     dec_nr, dec_prob, means, var, dec_dp = vae_nets(x_batch, batch_id_onehot)
@@ -613,10 +609,6 @@ class model:
         )
 
         for x_batch_tot, ambient_freq_tot, x_batch_id_onehot_tot in generator_full_data:
-            # Move data to device
-            # x_batch_tot = x_batch_tot.to(self.device)
-            # x_batch_id_onehot_tot = x_batch_id_onehot_tot.to(self.device)
-            # ambient_freq_tot = ambient_freq_tot.to(self.device)
 
             minibatch_size = x_batch_tot.shape[
                 0
@@ -716,25 +708,6 @@ class model:
 
         if moi:
             raise NotImplementedError
-
-
-class LRUCache:
-    def __init__(self, capacity: int):
-        self.cache = OrderedDict()
-        self.capacity = capacity
-
-    def get(self, key):
-        if key not in self.cache:
-            return None
-        self.cache.move_to_end(key)
-        return self.cache[key]
-
-    def put(self, key, value):
-        if key in self.cache:
-            self.cache.move_to_end(key)
-        self.cache[key] = value
-        if len(self.cache) > self.capacity:
-            self.cache.popitem(last=False)
 
 class UMIDataset(torch.utils.data.Dataset):
     """Characterizes dataset for PyTorch"""
