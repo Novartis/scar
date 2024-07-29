@@ -656,7 +656,7 @@ class model:
             noise_ratio[
                 i * batch_size : i * batch_size + minibatch_size, :
             ] = noise_ratio_batch
-            if native_counts is not None:
+            if native_frequencies is not None:
                 native_frequencies[
                     i * batch_size : i * batch_size + minibatch_size, :
                 ] = native_frequencies_batch
