@@ -4,6 +4,7 @@
 
 import sys, time, contextlib, torch
 from typing import Optional, Union
+from scipy import sparse
 import numpy as np, pandas as pd, anndata as ad
 
 from collections import OrderedDict
@@ -597,10 +598,11 @@ class model:
         # total_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, device=self.device, cache_capacity=self.cache_capacity)
         n_features = self.n_features
         sample_size = self.raw_count.shape[0]
-        self.native_counts = np.empty([sample_size, n_features])
-        self.bayesfactor = np.empty([sample_size, n_features])
-        self.native_frequencies = np.empty([sample_size, n_features])
-        self.noise_ratio = np.empty([sample_size, 1])
+
+        native_counts = sparse.lil_matrix((sample_size, n_features), dtype=np.float32)
+        bayesfactor = sparse.lil_matrix((sample_size, n_features), dtype=np.float32)
+        native_frequencies = sparse.lil_matrix((sample_size, n_features), dtype=np.float32)
+        noise_ratio = sparse.lil_matrix((sample_size, 1), dtype=np.float32)
 
         if not batch_size:
             batch_size = sample_size
@@ -629,19 +631,24 @@ class model:
                 round_to_int=round_to_int,
                 clip_to_obs=clip_to_obs,
             )
-            self.native_counts[
+            native_counts[
                 i * batch_size : i * batch_size + minibatch_size, :
             ] = native_counts_batch
-            self.bayesfactor[
+            bayesfactor[
                 i * batch_size : i * batch_size + minibatch_size, :
             ] = bayesfactor_batch
-            self.native_frequencies[
+            native_frequencies[
                 i * batch_size : i * batch_size + minibatch_size, :
             ] = native_frequencies_batch
-            self.noise_ratio[
+            noise_ratio[
                 i * batch_size : i * batch_size + minibatch_size, :
             ] = noise_ratio_batch
             i += 1
+
+        self.native_counts = native_counts.tocsr()
+        self.bayesfactor = bayesfactor.tocsr()
+        self.native_frequencies = native_frequencies.tocsr()
+        self.noise_ratio = noise_ratio.tocsr()
 
         if self.feature_type.lower() in [
             "sgrna",
@@ -683,7 +690,7 @@ class model:
             index=self.cell_id, columns=[self.feature_type, f"n_{self.feature_type}"]
         )
         bayesfactor_df = pd.DataFrame(
-            self.bayesfactor, index=self.cell_id, columns=self.feature_names
+            self.bayesfactor.toarray(), index=self.cell_id, columns=self.feature_names
         )
         bayesfactor_df[bayesfactor_df < cutoff] = 0  # Apply the cutoff for Bayesfactors
 
