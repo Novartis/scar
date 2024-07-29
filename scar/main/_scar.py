@@ -550,6 +550,7 @@ class model:
         cutoff=3,
         round_to_int="stochastic_rounding",
         clip_to_obs=False,
+        get_native_frequencies=True,
         moi=None,
     ):
         """inference infering the expected native signals, noise ratios, Bayesfactors and expected native frequencies
@@ -583,6 +584,11 @@ class model:
                 Use it with caution, as it may lead to over-estimation of overall noise.
 
             .. versionadded:: 0.5.0
+        
+        get_native_frequencies : bool, optional
+            whether to get native frequencies, by default True
+
+            .. versionadded:: 0.6.1
 
         moi : int, optional (under development)
             multiplicity of infection. If assigned, it will allow optimized thresholding, \
@@ -599,11 +605,24 @@ class model:
         n_features = self.n_features
         sample_size = self.raw_count.shape[0]
 
-        native_counts = sparse.lil_matrix((sample_size, n_features), dtype=np.float32)
-        bayesfactor = sparse.lil_matrix((sample_size, n_features), dtype=np.float32)
-        native_frequencies = sparse.lil_matrix((sample_size, n_features), dtype=np.float32)
+        native_counts = sparse.lil_matrix((sample_size, n_features), dtype=np.int64)
         noise_ratio = sparse.lil_matrix((sample_size, 1), dtype=np.float32)
 
+        native_frequencies = sparse.lil_matrix((sample_size, n_features), dtype=np.float32) if get_native_frequencies else None
+
+        if self.feature_type.lower() in [
+            "sgrna",
+            "sgrnas",
+            "tag",
+            "tags",
+            "cmo",
+            "cmos",
+            "atac",
+        ]:
+            bayesfactor = sparse.lil_matrix((sample_size, n_features), dtype=np.float32)
+        else:
+            bayesfactor = None
+        
         if not batch_size:
             batch_size = sample_size
         i = 0
@@ -634,21 +653,24 @@ class model:
             native_counts[
                 i * batch_size : i * batch_size + minibatch_size, :
             ] = native_counts_batch
-            bayesfactor[
-                i * batch_size : i * batch_size + minibatch_size, :
-            ] = bayesfactor_batch
-            native_frequencies[
-                i * batch_size : i * batch_size + minibatch_size, :
-            ] = native_frequencies_batch
             noise_ratio[
                 i * batch_size : i * batch_size + minibatch_size, :
             ] = noise_ratio_batch
+            if native_counts is not None:
+                native_frequencies[
+                    i * batch_size : i * batch_size + minibatch_size, :
+                ] = native_frequencies_batch
+            if bayesfactor is not None:
+                bayesfactor[
+                    i * batch_size : i * batch_size + minibatch_size, :
+                ] = bayesfactor_batch
+
             i += 1
 
         self.native_counts = native_counts.tocsr()
-        self.bayesfactor = bayesfactor.tocsr()
-        self.native_frequencies = native_frequencies.tocsr()
         self.noise_ratio = noise_ratio.tocsr()
+        self.bayesfactor = bayesfactor.tocsr() if bayesfactor is not None else None
+        self.native_frequencies = native_frequencies.tocsr() if native_frequencies is not None else None
 
         if self.feature_type.lower() in [
             "sgrna",
