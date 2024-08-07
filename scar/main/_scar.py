@@ -550,7 +550,7 @@ class model:
         cutoff=3,
         round_to_int="stochastic_rounding",
         clip_to_obs=False,
-        get_native_frequencies=True,
+        get_native_frequencies=False,
         moi=None,
     ):
         """inference infering the expected native signals, noise ratios, Bayesfactors and expected native frequencies
@@ -605,7 +605,8 @@ class model:
         n_features = self.n_features
         sample_size = self.raw_count.shape[0]
 
-        native_counts = sparse.lil_matrix((sample_size, n_features), dtype=np.int64)
+        dt = np.int64 if round_to_int=="stochastic_rounding" else np.float32
+        native_counts = sparse.lil_matrix((sample_size, n_features), dtype=dt)
         noise_ratio = sparse.lil_matrix((sample_size, 1), dtype=np.float32)
 
         native_frequencies = sparse.lil_matrix((sample_size, n_features), dtype=np.float32) if get_native_frequencies else None
