@@ -7,7 +7,6 @@ from typing import Optional, Union
 from scipy import sparse
 import numpy as np, pandas as pd, anndata as ad
 
-from collections import OrderedDict
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from tqdm.contrib import DummyTqdmFile
@@ -773,8 +772,8 @@ class UMIDataset(torch.utils.data.Dataset):
         
         # Select sample
         sc_count = self.raw_count[index].to(self.device) if isinstance(self.raw_count, torch.Tensor) else torch.from_numpy(self.raw_count[index].X.toarray().flatten()).int().to(self.device)
-        sc_ambient = self.ambient_profile[self.batch_id[index], :].to(self.device)
-        sc_batch_id_onehot = self.batch_onehot[self.batch_id[index], :].to(self.device)
+        sc_ambient = self.ambient_profile[self.batch_id[index], :]
+        sc_batch_id_onehot = self.batch_onehot[self.batch_id[index], :]
 
         # Cache the sample
         if len(self.cache) <= self.cache_capacity:
