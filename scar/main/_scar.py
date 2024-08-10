@@ -148,7 +148,7 @@ class model:
             sorted_native_counts = citeseq.native_signals[citeseq.celltype.argsort()][
                         :, citeseq.ambient_profile.argsort()
                     ]  # native counts
-            sorted_denoised_counts = citeseq_denoised.native_counts[citeseq.celltype.argsort()][
+            sorted_denoised_counts = citeseq_denoised.native_counts.toarray()[citeseq.celltype.argsort()][
                         :, citeseq.ambient_profile.argsort()
                     ]  # denoised counts
 
