@@ -577,7 +577,7 @@ class model:
             .. versionadded:: 0.5.0
         
         get_native_frequencies : bool, optional
-            whether to get native frequencies, by default True
+            whether to get native frequencies, by default False
 
             .. versionadded:: 0.6.1
 
