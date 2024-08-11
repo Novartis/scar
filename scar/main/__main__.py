@@ -223,7 +223,7 @@ def main():
             denoised_adata.layers["BayesFactor"] = scar_model.bayesfactor.toarray()
 
         denoised_adata.write(output_path_h5ad)
-        main_logger.info("the denoised h5ad file saved in: {output_path_h5ad}")
+        main_logger.info(f"the denoised h5ad file saved in: {output_path_h5ad}")
 
 
 class Config:
