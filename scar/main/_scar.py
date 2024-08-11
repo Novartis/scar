@@ -280,7 +280,7 @@ class model:
         """
         
         if isinstance(raw_count, ad.AnnData):
-            if batch_key:
+            if batch_key is not None:
                 if batch_key not in raw_count.obs.columns:
                     raise ValueError(f"{batch_key} not found in AnnData.obs.")
                 
@@ -296,22 +296,22 @@ class model:
                 # add a mapper to locate the batch id
                 self.batch_id = batch_id_per_cell
                 self.n_batch = len(np.unique(batch_id_per_cell))
+            else:
+                # get ambient profile from AnnData.uns
+                if "ambient_profile_all" in raw_count.uns:
+                    self.logger.info(
+                        "Found ambient profile in AnnData.uns['ambient_profile_all']"
+                    )
+                    ambient_profile = raw_count.uns["ambient_profile_all"]
+                else:
+                    self.logger.info(
+                        "Ambient profile not found in AnnData.uns['ambient_profile'], estimating it by averaging pooled cells..."
+                    )
 
-            # get ambient profile from AnnData.uns
-            elif (ambient_profile is None) and ("ambient_profile_all" in raw_count.uns):
-                self.logger.info(
-                    "Found ambient profile in AnnData.uns['ambient_profile_all']"
-                )
-                ambient_profile = raw_count.uns["ambient_profile_all"]
-            elif (ambient_profile is None) and (
-                "ambient_profile_all" not in raw_count.uns
-            ):
-                self.logger.info(
-                    "Ambient profile not found in AnnData.uns['ambient_profile'], estimating it by averaging pooled cells..."
-                )
         elif isinstance(raw_count, str):
             # read pickle file into dataframe
             raw_count = pd.read_pickle(raw_count)
+
         elif isinstance(raw_count, np.ndarray):
             # convert np.array to pd.DataFrame
             raw_count = pd.DataFrame(
@@ -319,8 +319,10 @@ class model:
                 index=range(raw_count.shape[0]),
                 columns=range(raw_count.shape[1]),
             )
+
         elif isinstance(raw_count, pd.DataFrame):
             pass
+
         else:
             raise TypeError(
                 f"Expecting str or np.array or pd.DataFrame or AnnData object, but get a {type(raw_count)}"
@@ -347,9 +349,13 @@ class model:
         elif isinstance(ambient_profile, np.ndarray):
             ambient_profile = np.nan_to_num(ambient_profile)  # missing vals -> zeros
         elif not ambient_profile:
-            self.logger.info(" Evaluate empty profile from cells")
-            ambient_profile = raw_count.sum() / raw_count.sum().sum()
-            ambient_profile = ambient_profile.fillna(0).values
+            self.logger.info(" Evaluate ambient profile from cells")
+            if isinstance(raw_count, pd.DataFrame):
+                ambient_profile = raw_count.sum() / raw_count.sum().sum()
+                ambient_profile = ambient_profile.fillna(0).values
+            elif isinstance(raw_count, ad.AnnData):
+                ambient_profile = np.array(raw_count.X.sum(axis=0)/raw_count.X.sum())
+                ambient_profile = np.nan_to_num(ambient_profile).flatten()
         else:
             raise TypeError(
                 f"Expecting str / np.array / None / pd.DataFrame, but get a {type(ambient_profile)}"
