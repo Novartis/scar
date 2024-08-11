@@ -212,7 +212,7 @@ def main():
         denoised_adata.X = scar_model.native_counts
         denoised_adata.obs["noise_ratio"] = pd.DataFrame(
             scar_model.noise_ratio.toarray(),
-            index=count_matrix.index,
+            index=count_matrix.obs_names,
             columns=["noise_ratio"],
         )
         if scar_model.native_frequencies is not None:
