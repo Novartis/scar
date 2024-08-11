@@ -86,6 +86,10 @@ class model:
                             Thank Will Macnair for the valuable feedback.
         
             .. versionadded:: 0.4.0
+        cache_capacity : int, optional
+            the capacity of caching data on GPU. Set a smaller value upon GPU memory issue. By default 20000 cells are cached.
+
+            .. versionadded:: 0.6.1
         batch_key : str, optional
             batch key in AnnData.obs, by default None. \
                 If assigned, batch ambient removel will be performed and \
@@ -94,7 +98,7 @@ class model:
             .. versionadded:: 0.6.1
 
         device : str, optional
-            either "auto, "cpu" or "cuda", by default "auto"
+            either "auto, "cpu" or "cuda" or "mps", by default "auto"
         verbose : bool, optional
             whether to print the details, by default True
 
