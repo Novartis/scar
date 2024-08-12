@@ -89,7 +89,7 @@ class model:
         cache_capacity : int, optional
             the capacity of caching data on GPU. Set a smaller value upon GPU memory issue. By default 20000 cells are cached.
 
-            .. versionadded:: 0.6.1
+            .. versionadded:: 0.7.0
         batch_key : str, optional
             batch key in AnnData.obs, by default None. \
                 If assigned, batch ambient removel will be performed and \
@@ -276,7 +276,7 @@ class model:
         self.cache_capacity = cache_capacity
         """int, the capacity of caching data on GPU. Set a smaller value upon GPU memory issue. By default 20000 cells are cached on GPU/MPS.
 
-            .. versionadded:: 0.6.1
+            .. versionadded:: 0.7.0
         """
         
         if isinstance(raw_count, ad.AnnData):
@@ -322,7 +322,6 @@ class model:
 
         elif isinstance(raw_count, pd.DataFrame):
             pass
-
         else:
             raise TypeError(
                 f"Expecting str or np.array or pd.DataFrame or AnnData object, but get a {type(raw_count)}"
@@ -502,7 +501,6 @@ class model:
 
                 vae_nets.train()
                 for x_batch, ambient_freq, batch_id_onehot in training_generator:
-
                     optim.zero_grad()
                     dec_nr, dec_prob, means, var, dec_dp = vae_nets(x_batch, batch_id_onehot)
                     recon_loss_minibatch, kld_loss_minibatch, loss_minibatch = loss_fn(
@@ -632,7 +630,6 @@ class model:
         )
 
         for x_batch_tot, ambient_freq_tot, x_batch_id_onehot_tot in generator_full_data:
-
             minibatch_size = x_batch_tot.shape[
                 0
             ]  # if not the last batch, equals to batch size
