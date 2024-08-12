@@ -95,7 +95,7 @@ class model:
                 If assigned, batch ambient removel will be performed and \
                 the ambient profile will be estimated for each batch.
 
-            .. versionadded:: 0.6.1
+            .. versionadded:: 0.7.0
 
         device : str, optional
             either "auto, "cpu" or "cuda" or "mps", by default "auto"
@@ -587,7 +587,7 @@ class model:
         get_native_frequencies : bool, optional
             whether to get native frequencies, by default False
 
-            .. versionadded:: 0.6.1
+            .. versionadded:: 0.7.0
 
         moi : int, optional (under development)
             multiplicity of infection. If assigned, it will allow optimized thresholding, \
