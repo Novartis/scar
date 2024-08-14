@@ -13,7 +13,6 @@ Run scar with Python API
    scAR_tutorial_denoising_CITEseq
    scAR_tutorial_denoising_scRNAseq
    scAR_tutorial_denoising_scATACseq
-   scAR_tutorial_batch_denoising_scRNAseq
 
 Run scar with the command line tool
 ---------------------------------

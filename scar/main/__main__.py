@@ -4,10 +4,13 @@
 import argparse
 
 import os
-import pandas as pd, scanpy as sc
+import pandas as pd
+import scanpy as sc
+from scipy.sparse import csr_matrix
 from ._scar import model
 from ..__init__ import __version__
 from ._utils import get_logger
+
 
 def main():
     """main function for command line interface"""
@@ -25,9 +28,6 @@ def main():
     epochs = args.epochs
     device = args.device
     sparsity = args.sparsity
-    batchkey = args.batchkey
-    cachecapacity = args.cachecapacity
-    gnf = bool(args.get_native_frequencies)
     save_model = args.save_model
     batch_size = args.batchsize
     batch_size_infer = args.batchsize_infer
@@ -63,37 +63,37 @@ def main():
 
         if feature_type.lower() == "all":
             features = adata.var["feature_types"].unique()
-            count_matrix = adata.copy()
+            count_matrix = adata.to_df()
 
         # Denoising mRNAs
         elif feature_type.lower() in ["mrna", "mrnas"]:
             features = "Gene Expression"
             adata_fb = adata[:, adata.var["feature_types"] == features]
-            count_matrix = adata_fb.copy()
+            count_matrix = adata_fb.to_df()
 
         # Denoising sgRNAs
         elif feature_type.lower() in ["sgrna", "sgrnas"]:
             features = "CRISPR Guide Capture"
             adata_fb = adata[:, adata.var["feature_types"] == features]
-            count_matrix = adata_fb.copy()
+            count_matrix = adata_fb.to_df()
 
         # Denoising CMO tags
         elif feature_type.lower() in ["tag", "tags"]:
             features = "Multiplexing Capture"
             adata_fb = adata[:, adata.var["feature_types"] == features]
-            count_matrix = adata_fb.copy()
+            count_matrix = adata_fb.to_df()
 
         # Denoising ADTs
         elif feature_type.lower() in ["adt", "adts"]:
             features = "Antibody Capture"
             adata_fb = adata[:, adata.var["feature_types"] == features]
-            count_matrix = adata_fb.copy()
+            count_matrix = adata_fb.to_df()
 
         # Denoising ATAC peaks
         elif feature_type.lower() in ["atac"]:
             features = "Peaks"
             adata_fb = adata[:, adata.var["feature_types"] == features]
-            count_matrix = adata_fb.copy()
+            count_matrix = adata_fb.to_df()
 
         main_logger.info(f"modalities to denoise: {features}")
 
@@ -135,8 +135,6 @@ def main():
         latent_dim=latent_dim,
         feature_type=feature_type,
         count_model=count_model,
-        batch_key=batchkey,
-        cache_capacity=cachecapacity,
         sparsity=sparsity,
         device=device,
     )
@@ -149,7 +147,6 @@ def main():
 
     scar_model.inference(
         adjust=adjust,
-        get_native_frequencies=gnf,
         round_to_int=round_to_int,
         batch_size=batch_size_infer,
         clip_to_obs=clip_to_obs,
@@ -170,35 +167,30 @@ def main():
         )
 
         pd.DataFrame(
-            scar_model.native_counts.toarray(),
+            scar_model.native_counts,
             index=count_matrix.index,
             columns=count_matrix.columns,
         ).to_pickle(output_path01)
-        main_logger.info(f"denoised counts saved in: {output_path01}")
-
         pd.DataFrame(
-            scar_model.noise_ratio.toarray(), 
-            index=count_matrix.index, 
-            columns=["noise_ratio"]
+            scar_model.bayesfactor,
+            index=count_matrix.index,
+            columns=count_matrix.columns,
+        ).to_pickle(output_path02)
+        pd.DataFrame(
+            scar_model.native_frequencies,
+            index=count_matrix.index,
+            columns=count_matrix.columns,
+        ).to_pickle(output_path03)
+        pd.DataFrame(
+            scar_model.noise_ratio, index=count_matrix.index, columns=["noise_ratio"]
         ).to_pickle(output_path04)
+
+        main_logger.info(f"denoised counts saved in: {output_path01}")
+        main_logger.info(f"BayesFactor matrix saved in: {output_path02}")
+        main_logger.info(f"expected native frequencies saved in: {output_path03}")
         main_logger.info(f"expected noise ratio saved in: {output_path04}")
 
-        if scar_model.native_frequencies is not None:
-            pd.DataFrame(
-                scar_model.native_frequencies.toarray(),
-                index=count_matrix.index,
-                columns=count_matrix.columns,
-            ).to_pickle(output_path03)
-            main_logger.info(f"expected native frequencies saved in: {output_path03}")
-
         if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
-            pd.DataFrame(
-                scar_model.bayesfactor.toarray(),
-                index=count_matrix.index,
-                columns=count_matrix.columns,
-            ).to_pickle(output_path02)
-            main_logger.info(f"BayesFactor matrix saved in: {output_path02}")
- 
             output_path05 = os.path.join(output_dir, "assignment.pickle")
             scar_model.feature_assignment.to_pickle(output_path05)
             main_logger.info(f"assignment saved in: {output_path05}")
@@ -209,21 +201,23 @@ def main():
         )
 
         denoised_adata = adata.copy()
-        denoised_adata.X = scar_model.native_counts
+        denoised_adata.X = csr_matrix(scar_model.native_counts)
         denoised_adata.obs["noise_ratio"] = pd.DataFrame(
-            scar_model.noise_ratio.toarray(),
-            index=count_matrix.obs_names,
+            scar_model.noise_ratio,
+            index=count_matrix.index,
             columns=["noise_ratio"],
         )
-        if scar_model.native_frequencies is not None:
-            denoised_adata.layers["native_frequencies"] = scar_model.native_frequencies.toarray()
+
+        denoised_adata.layers["native_frequencies"] = csr_matrix(
+            scar_model.native_frequencies
+        )
+        denoised_adata.layers["BayesFactor"] = csr_matrix(scar_model.bayesfactor)
 
         if feature_type.lower() in ["sgrna", "sgrnas", "tag", "tags", "cmo", "cmos"]:
             denoised_adata.obs = denoised_adata.obs.join(scar_model.feature_assignment)
-            denoised_adata.layers["BayesFactor"] = scar_model.bayesfactor.toarray()
 
         denoised_adata.write(output_path_h5ad)
-        main_logger.info(f"the denoised h5ad file saved in: {output_path_h5ad}")
+        main_logger.info("the denoised h5ad file saved in: {output_path_h5ad}")
 
 
 class Config:
@@ -244,7 +238,8 @@ def scar_parser():
     """Argument parser"""
 
     parser = argparse.ArgumentParser(
-        description="scAR (single-cell Ambient Remover) is a deep learning model for removal of the ambient signals in droplet-based single cell omics",
+        description="scAR (single cell Ambient Remover): \
+        denoising drop-based single-cell omics data",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -284,27 +279,6 @@ def scar_parser():
         type=float,
         default=0.9,
         help="The sparsity of expected native signals",
-    )
-    parser.add_argument(
-        "-bk",
-        "--batchkey",
-        type=str,
-        default=None,
-        help="The batch key for batch correction",
-    )
-    parser.add_argument(
-        "-cache",
-        "--cachecapacity",
-        type=int,
-        default=20000,
-        help="The capacity of cache for batch correction",
-    )
-    parser.add_argument(
-        "-gnf",
-        "--get_native_frequencies",
-        type=int,
-        default=0,
-        help="Whether to get native frequencies, 0 or 1, by default 0, not to get native frequencies",
     )
     parser.add_argument(
         "-hl1",
