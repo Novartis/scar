@@ -149,19 +149,28 @@ class VAE(nn.Module):
         elif round_to_int.lower() == "stochastic_rounding":
             expected_native_counts = (
                 np.floor(expected_native_counts)
-                + (
-                    np.random.rand(*expected_native_counts.shape) 
-                 < expected_native_counts - np.floor(expected_native_counts)
-                 ).astype(int)
+                + np.random.binomial(
+                    1,
+                    expected_native_counts - np.floor(expected_native_counts),
+                    expected_native_counts.shape,
+                )
             ).astype(int)
 
             expected_amb_counts = (
                 np.floor(expected_amb_counts)
-                + (
-                    np.random.rand(*expected_amb_counts.shape) 
-                 < expected_amb_counts - np.floor(expected_amb_counts)
-                 ).astype(int)
+                + np.random.binomial(
+                    1,
+                    expected_amb_counts - np.floor(expected_amb_counts),
+                    expected_amb_counts.shape,
+                )
             ).astype(int)
+
+        if clip_to_obs:
+            expected_native_counts = np.clip(
+                expected_native_counts,
+                a_min=np.zeros_like(input_matrix_np),
+                a_max=input_matrix_np,
+            )
 
         if clip_to_obs:
             expected_native_counts = np.clip(

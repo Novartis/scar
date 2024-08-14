@@ -2,12 +2,17 @@
 
 """The main module of scar"""
 
-import sys, time, contextlib, torch
+import sys
+import time
+import warnings
 from typing import Optional, Union
-from scipy import sparse
-import numpy as np, pandas as pd, anndata as ad
+import contextlib
+import numpy as np
+import pandas as pd
+import anndata as ad
 
-from torch.utils.data import Dataset, random_split, DataLoader
+import torch
+from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from tqdm.contrib import DummyTqdmFile
 
@@ -86,19 +91,15 @@ class model:
                             Thank Will Macnair for the valuable feedback.
         
             .. versionadded:: 0.4.0
-        cache_capacity : int, optional
-            the capacity of caching data on GPU. Set a smaller value upon GPU memory issue. By default 20000 cells are cached.
-
-            .. versionadded:: 0.7.0
         batch_key : str, optional
             batch key in AnnData.obs, by default None. \
                 If assigned, batch ambient removel will be performed and \
                 the ambient profile will be estimated for each batch.
 
-            .. versionadded:: 0.7.0
+            .. versionadded:: 0.6.1
 
         device : str, optional
-            either "auto, "cpu" or "cuda" or "mps", by default "auto"
+            either "auto, "cpu" or "cuda", by default "auto"
         verbose : bool, optional
             whether to print the details, by default True
 
@@ -152,7 +153,7 @@ class model:
             sorted_native_counts = citeseq.native_signals[citeseq.celltype.argsort()][
                         :, citeseq.ambient_profile.argsort()
                     ]  # native counts
-            sorted_denoised_counts = citeseq_denoised.native_counts.toarray()[citeseq.celltype.argsort()][
+            sorted_denoised_counts = citeseq_denoised.native_counts[citeseq.celltype.argsort()][
                         :, citeseq.ambient_profile.argsort()
                     ]  # denoised counts
 
@@ -212,7 +213,6 @@ class model:
         sparsity: float = 0.9,
         batch_key: str = None,
         device: str = "auto",
-        cache_capacity: int = 20000,
         verbose: bool = True,
     ):
         """initialize object"""
@@ -224,13 +224,14 @@ class model:
         if device == "auto":
             if torch.cuda.is_available():
                 self.device = torch.device("cuda")
-                self.logger.info(f"{self.device} is detected and will be used.")
+                self.logger.info("CPU is detected and will be used.")
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
                 self.device = torch.device("mps")
-                self.logger.info(f"{self.device} is detected and will be used.")
+                self.logger.info("MPS is detected and will be used.")
+                self.logger.warning("PyTorch is slower on MPS than on the CPU; we recommend using the CPU by specifying device='cpu' on Mac.")
             else:
                 self.device = torch.device("cpu")
-                self.logger.info(f"No GPU detected. {self.device} will be used.")
+                self.logger.info("No GPU detected. Use CPU instead.")
         else:
             self.device = device
             self.logger.info(f"{device} will be used.")
@@ -273,19 +274,24 @@ class model:
         """float, the sparsity of expected native signals. (0, 1]. \
             Forced to be one in the mode of "sgRNA(s)" and "tag(s)".
         """
-        self.cache_capacity = cache_capacity
-        """int, the capacity of caching data on GPU. Set a smaller value upon GPU memory issue. By default 20000 cells are cached on GPU/MPS.
-
-            .. versionadded:: 0.7.0
-        """
         
-        if isinstance(raw_count, ad.AnnData):
-            if batch_key is not None:
+        if isinstance(raw_count, str):
+            raw_count = pd.read_pickle(raw_count)
+        elif isinstance(raw_count, np.ndarray):
+            raw_count = pd.DataFrame(
+                raw_count,
+                index=range(raw_count.shape[0]),
+                columns=range(raw_count.shape[1]),
+            )
+        elif isinstance(raw_count, pd.DataFrame):
+            pass
+        elif isinstance(raw_count, ad.AnnData):
+            if batch_key:
                 if batch_key not in raw_count.obs.columns:
                     raise ValueError(f"{batch_key} not found in AnnData.obs.")
                 
                 self.logger.info(
-                    f"Found {raw_count.obs[batch_key].nunique()} batches defined by {batch_key} in AnnData.obs. Estimating ambient profile per batch..."
+                    f"Estimating ambient profile for each batch defined by {batch_key} in AnnData.obs..."
                 )
                 batch_id_per_cell = pd.Categorical(raw_count.obs[batch_key]).codes
                 ambient_profile = np.empty((len(np.unique(batch_id_per_cell)),raw_count.shape[1]))
@@ -294,51 +300,38 @@ class model:
                     ambient_profile[batch_id, :] = subset.X.sum(axis=0) / subset.X.sum()
 
                 # add a mapper to locate the batch id
-                self.batch_id = batch_id_per_cell
-                self.n_batch = len(np.unique(batch_id_per_cell))
-            else:
-                # get ambient profile from AnnData.uns
-                if "ambient_profile_all" in raw_count.uns:
-                    self.logger.info(
-                        "Found ambient profile in AnnData.uns['ambient_profile_all']"
-                    )
-                    ambient_profile = raw_count.uns["ambient_profile_all"]
-                else:
-                    self.logger.info(
-                        "Ambient profile not found in AnnData.uns['ambient_profile'], estimating it by averaging pooled cells..."
-                    )
+                self.batch_id = torch.from_numpy(batch_id_per_cell).int().to(self.device)
+                self.n_batch = np.unique(batch_id_per_cell).size
 
-        elif isinstance(raw_count, str):
-            # read pickle file into dataframe
-            raw_count = pd.read_pickle(raw_count)
-
-        elif isinstance(raw_count, np.ndarray):
-            # convert np.array to pd.DataFrame
-            raw_count = pd.DataFrame(
-                raw_count,
-                index=range(raw_count.shape[0]),
-                columns=range(raw_count.shape[1]),
-            )
-
-        elif isinstance(raw_count, pd.DataFrame):
-            pass
+            # get ambient profile from AnnData.uns
+            elif (ambient_profile is None) and ("ambient_profile_all" in raw_count.uns):
+                self.logger.info(
+                    "Found ambient profile in AnnData.uns['ambient_profile_all']"
+                )
+                ambient_profile = raw_count.uns["ambient_profile_all"]
+            elif (ambient_profile is None) and (
+                "ambient_profile_all" not in raw_count.uns
+            ):
+                self.logger.info(
+                    "Ambient profile not found in AnnData.uns['ambient_profile'], estimating it by averaging pooled cells..."
+                )
+            # convert AnnData to pd.DataFrame
+            raw_count = raw_count.to_df()
         else:
             raise TypeError(
-                f"Expecting str or np.array or pd.DataFrame or AnnData object, but get a {type(raw_count)}"
+                f"Expecting str or np.array or pd.DataFrame object, but get a {type(raw_count)}"
             )
 
-        self.raw_count = raw_count
+        raw_count = raw_count.fillna(0)  # missing vals -> zeros
+
+        # Loading numpy to tensor on GPU
+        self.raw_count = raw_count.values
         """raw_count : np.ndarray, raw count matrix.
         """
         self.n_features = raw_count.shape[1]
-        """int, number of features.
-        """
-        self.cell_id = raw_count.index.to_list() if isinstance(raw_count, pd.DataFrame) else raw_count.obs_names.to_list()
-        """list, cell id.
-        """
-        self.feature_names = raw_count.columns.to_list() if isinstance(raw_count, pd.DataFrame) else raw_count.var_names.to_list()
-        """list, feature names.
-        """
+
+        self.cell_id = list(raw_count.index)
+        self.feature_names = list(raw_count.columns)
 
         if isinstance(ambient_profile, str):
             ambient_profile = pd.read_pickle(ambient_profile)
@@ -348,13 +341,9 @@ class model:
         elif isinstance(ambient_profile, np.ndarray):
             ambient_profile = np.nan_to_num(ambient_profile)  # missing vals -> zeros
         elif not ambient_profile:
-            self.logger.info(" Evaluate ambient profile from cells")
-            if isinstance(raw_count, pd.DataFrame):
-                ambient_profile = raw_count.sum() / raw_count.sum().sum()
-                ambient_profile = ambient_profile.fillna(0).values
-            elif isinstance(raw_count, ad.AnnData):
-                ambient_profile = np.array(raw_count.X.sum(axis=0)/raw_count.X.sum())
-                ambient_profile = np.nan_to_num(ambient_profile).flatten()
+            self.logger.info(" Evaluate empty profile from cells")
+            ambient_profile = raw_count.sum() / raw_count.sum().sum()
+            ambient_profile = ambient_profile.fillna(0).values
         else:
             raise TypeError(
                 f"Expecting str / np.array / None / pd.DataFrame, but get a {type(ambient_profile)}"
@@ -366,7 +355,7 @@ class model:
                 .reshape(1, -1)
             )
             # add a mapper to locate the artificial batch id
-            self.batch_id = np.zeros(raw_count.shape[0], dtype=int)#.reshape(-1, 1)
+            self.batch_id = torch.zeros(raw_count.shape[0]).int().to(self.device)
             self.n_batch = 1
 
         self.ambient_profile = ambient_profile
@@ -448,14 +437,19 @@ class model:
             After training, a trained_model attribute will be added.
                
         """
+
+        list_ids = list(range(self.raw_count.shape[0]))
+        train_ids, test_ids = train_test_split(list_ids, train_size=train_size)
+
         # Generators
-        total_dataset = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, device=self.device, cache_capacity=self.cache_capacity)
-        training_set, validation_set = random_split(total_dataset, [train_size, 1 - train_size])
-        training_generator = DataLoader(
-            training_set, batch_size=batch_size, shuffle=shuffle,
-            drop_last=True
+        training_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, device=self.device, list_ids=train_ids)
+        training_generator = torch.utils.data.DataLoader(
+            training_set, batch_size=batch_size, shuffle=shuffle
         )
-        self.dataset = total_dataset
+        val_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, device=self.device, list_ids=test_ids)
+        val_generator = torch.utils.data.DataLoader(
+            val_set, batch_size=batch_size, shuffle=shuffle
+        )
 
         loss_values = []
 
@@ -549,7 +543,6 @@ class model:
         cutoff=3,
         round_to_int="stochastic_rounding",
         clip_to_obs=False,
-        get_native_frequencies=False,
         moi=None,
     ):
         """inference infering the expected native signals, noise ratios, Bayesfactors and expected native frequencies
@@ -583,11 +576,6 @@ class model:
                 Use it with caution, as it may lead to over-estimation of overall noise.
 
             .. versionadded:: 0.5.0
-        
-        get_native_frequencies : bool, optional
-            whether to get native frequencies, by default False
-
-            .. versionadded:: 0.7.0
 
         moi : int, optional (under development)
             multiplicity of infection. If assigned, it will allow optimized thresholding, \
@@ -600,33 +588,19 @@ class model:
             native_frequencies, and noise_ratio. \
                 A feature_assignment will be added in 'sgRNA' or 'tag' or 'CMO' feature type.   
         """
+        total_set = UMIDataset(self.raw_count, self.ambient_profile, self.batch_id, device=self.device)
         n_features = self.n_features
         sample_size = self.raw_count.shape[0]
+        self.native_counts = np.empty([sample_size, n_features])
+        self.bayesfactor = np.empty([sample_size, n_features])
+        self.native_frequencies = np.empty([sample_size, n_features])
+        self.noise_ratio = np.empty([sample_size, 1])
 
-        dt = np.int64 if round_to_int=="stochastic_rounding" else np.float32
-        native_counts = sparse.lil_matrix((sample_size, n_features), dtype=dt)
-        noise_ratio = sparse.lil_matrix((sample_size, 1), dtype=np.float32)
-
-        native_frequencies = sparse.lil_matrix((sample_size, n_features), dtype=np.float32) if get_native_frequencies else None
-
-        if self.feature_type.lower() in [
-            "sgrna",
-            "sgrnas",
-            "tag",
-            "tags",
-            "cmo",
-            "cmos",
-            "atac",
-        ]:
-            bayesfactor = sparse.lil_matrix((sample_size, n_features), dtype=np.float32)
-        else:
-            bayesfactor = None
-        
         if not batch_size:
             batch_size = sample_size
         i = 0
-        generator_full_data = DataLoader(
-            self.dataset, batch_size=batch_size, shuffle=False
+        generator_full_data = torch.utils.data.DataLoader(
+            total_set, batch_size=batch_size, shuffle=False
         )
 
         for x_batch_tot, ambient_freq_tot, x_batch_id_onehot_tot in generator_full_data:
@@ -648,27 +622,19 @@ class model:
                 round_to_int=round_to_int,
                 clip_to_obs=clip_to_obs,
             )
-            native_counts[
+            self.native_counts[
                 i * batch_size : i * batch_size + minibatch_size, :
             ] = native_counts_batch
-            noise_ratio[
+            self.bayesfactor[
+                i * batch_size : i * batch_size + minibatch_size, :
+            ] = bayesfactor_batch
+            self.native_frequencies[
+                i * batch_size : i * batch_size + minibatch_size, :
+            ] = native_frequencies_batch
+            self.noise_ratio[
                 i * batch_size : i * batch_size + minibatch_size, :
             ] = noise_ratio_batch
-            if native_frequencies is not None:
-                native_frequencies[
-                    i * batch_size : i * batch_size + minibatch_size, :
-                ] = native_frequencies_batch
-            if bayesfactor is not None:
-                bayesfactor[
-                    i * batch_size : i * batch_size + minibatch_size, :
-                ] = bayesfactor_batch
-
             i += 1
-
-        self.native_counts = native_counts.tocsr()
-        self.noise_ratio = noise_ratio.tocsr()
-        self.bayesfactor = bayesfactor.tocsr() if bayesfactor is not None else None
-        self.native_frequencies = native_frequencies.tocsr() if native_frequencies is not None else None
 
         if self.feature_type.lower() in [
             "sgrna",
@@ -710,7 +676,7 @@ class model:
             index=self.cell_id, columns=[self.feature_type, f"n_{self.feature_type}"]
         )
         bayesfactor_df = pd.DataFrame(
-            self.bayesfactor.toarray(), index=self.cell_id, columns=self.feature_names
+            self.bayesfactor, index=self.cell_id, columns=self.feature_names
         )
         bayesfactor_df[bayesfactor_df < cutoff] = 0  # Apply the cutoff for Bayesfactors
 
@@ -737,39 +703,39 @@ class model:
         if moi:
             raise NotImplementedError
 
-class UMIDataset(Dataset):
+
+class UMIDataset(torch.utils.data.Dataset):
     """Characterizes dataset for PyTorch"""
 
-    def __init__(self, raw_count, ambient_profile, batch_id, device, cache_capacity=20000):
+    def __init__(self, raw_count, ambient_profile, batch_id, device, list_ids=None):
         """Initialization"""
-        
-        self.raw_count = torch.from_numpy(raw_count.fillna(0).values).int() if isinstance(raw_count, pd.DataFrame) else raw_count
-        self.ambient_profile = torch.from_numpy(ambient_profile).float().to(device)
-        self.batch_id = torch.from_numpy(batch_id).to(torch.int64).to(device)
-        self.batch_onehot = torch.from_numpy(np.eye(len(np.unique(batch_id)))).to(torch.int64).to(device)
         self.device = device
-        self.cache_capacity = cache_capacity
+        self.raw_count = torch.from_numpy(raw_count).int().to(device)
+        self.ambient_profile = torch.from_numpy(ambient_profile).float().to(device)
+        self.batch_id = batch_id.to(torch.int64).to(device)
+        self.batch_onehot = self._onehot()
 
-        # Cache data
-        self.cache = {}
+        if list_ids:
+            self.list_ids = list_ids
+        else:
+            self.list_ids = list(range(raw_count.shape[0]))
 
     def __len__(self):
         """Denotes the total number of samples"""
-        return self.raw_count.shape[0]
+        return len(self.list_ids)
 
     def __getitem__(self, index):
         """Generates one sample of data"""
+        # Select sample
+        sc_id = self.list_ids[index]
+        sc_count = self.raw_count[sc_id, :]
+        sc_ambient = self.ambient_profile[self.batch_id[sc_id], :]
+        sc_batch_id_onehot = self.batch_onehot[self.batch_id[sc_id], :]
+        return sc_count, sc_ambient, sc_batch_id_onehot
 
-        if index in self.cache:
-            return self.cache[index]
-        else:
-            # Select samples
-            sc_count = self.raw_count[index].to(self.device) if isinstance(self.raw_count, torch.Tensor) else torch.from_numpy(self.raw_count[index].X.toarray().flatten()).int().to(self.device)
-            sc_ambient = self.ambient_profile[self.batch_id[index], :]
-            sc_batch_id_onehot = self.batch_onehot[self.batch_id[index], :]
-
-            # Cache samples
-            if len(self.cache) <= self.cache_capacity:
-                self.cache[index] = (sc_count, sc_ambient, sc_batch_id_onehot)
-            
-            return sc_count, sc_ambient, sc_batch_id_onehot
+    def _onehot(self):
+        """One-hot encoding"""
+        n_batch = self.batch_id.unique().size()[0]
+        x_onehot = torch.zeros(n_batch, n_batch).to(self.device)
+        x_onehot.scatter_(1, self.batch_id.unique().unsqueeze(1), 1)
+        return x_onehot
