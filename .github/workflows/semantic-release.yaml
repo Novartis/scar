@@ -21,10 +21,6 @@ jobs:
         fetch-depth: 0
 
     - name: Python Semantic Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-      run: |
-        semantic-release publish \
-          --github_token $GITHUB_TOKEN \
-          --pypi_token $PYPI_TOKEN
+      uses: relekang/python-semantic-release@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
