@@ -17,8 +17,8 @@ jobs:
       contents: write
     steps:
     - uses: actions/checkout@v3
-      ref: develop
       with:
+        ref: develop
         fetch-depth: 0
 
     - name: Python Semantic Release
