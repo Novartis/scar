@@ -22,7 +22,7 @@ class ScarIntegration(unittest.TestCase):
             feature_type="sgRNAs",
         )
 
-        scarObj.train(epochs=40, batch_size=64)
+        scarObj.train(epochs=40, batch_size=32)
 
         scarObj.inference()
 
@@ -58,7 +58,7 @@ class ScarIntegration(unittest.TestCase):
             feature_type="ADTs",
         )
 
-        citeseq_scar.train(epochs=200, batch_size=64, verbose=False)
+        citeseq_scar.train(epochs=200, batch_size=32, verbose=False)
         citeseq_scar.inference()
 
         dist = euclidean_distances(
